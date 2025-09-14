@@ -301,7 +301,7 @@ class WebService {
       userInfo.login.result &&
       userInfo.login.result.needLogin
     ) {
-      if (!window.location.pathname.startsWith("/auth")) {
+      if (!SystemClass.browserHistory.location.pathname.startsWith("/auth")) {
         SystemClass.handleUnauthorizeError();
       }
     }
@@ -345,6 +345,7 @@ class WebService {
         //   window.localStorage[
         //     this.name + JSON.stringify(this.params)
         //   ] = JSON.stringify(json);
+          
         // }
 
         if (json._userInfo) {

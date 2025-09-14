@@ -18,18 +18,16 @@ class FieldInfo extends Class_Base {
   //region private properties
   //------------------------------------------------
 
-  // Set from grid component
+  //set from grid
   _grid;
   _row;
   _value;
 
-  // Set by parent component (FormInfo)
   _parentFieldInfo;
-  _parentComponent; // **CRITICAL**: This is the reference to the parent's methods.
   _formId;
   _paramList;
 
-  // Custom error message from web service validation
+  //custom error
   _error;
 
   //------------------------------------------------
@@ -37,11 +35,8 @@ class FieldInfo extends Class_Base {
   //------------------------------------------------
 
   //------------------------------------------------
-  //region public properties (Unabridged)
+  //region public properties
   //------------------------------------------------
-  
-  /** @type {any} The corresponding React component instance. Set by the component itself in its constructor. */
-  component;
 
   combo_SelectedValueColName;
 
@@ -176,6 +171,10 @@ class FieldInfo extends Class_Base {
   sendToServer = false;
 
   idColName;
+  /** @type {(LabelFieldInfo)} */
+
+  component;
+
   /** @type {(string)} */
   placeholder;
   /** @type {(string)} */
@@ -319,7 +318,7 @@ class FieldInfo extends Class_Base {
   button_ActionAfterSuccessfulWsc;
   button_ShowOnFormMenu;
   //endregion components fields
-  
+
   //------------------------------------------------
   //endregion public properties
   //------------------------------------------------
@@ -330,50 +329,55 @@ class FieldInfo extends Class_Base {
 
   update() {
     this._load();
-    if (this.component && typeof this.component.update === 'function') {
+    //TODO isMounted not need now
+
+    if (this.component) {
       try {
         this.component.update();
-      } catch (e) {
-        // Suppress errors if component is unmounting
-      }
-    }
-    if (this.component && typeof this.component.forceUpdate === 'function') {
-        this.component.forceUpdate();
+      } catch (e) {}
+
+      this.component.forceUpdate();
     }
   }
 
   _getForm() {
     let formId = this._formId;
     let paramList = this._paramList;
-    let currentField = this;
 
-    while (!formId && currentField._parentFieldInfo) {
-        currentField = currentField._parentFieldInfo;
-        formId = currentField._formId;
-        paramList = currentField._paramList;
-    }
+    let fieldInfo = this;
+
+    let getForm = () => {
+      if (formId) return;
+      fieldInfo = fieldInfo._parentFieldInfo;
+      formId = fieldInfo._formId;
+      paramList = fieldInfo._paramList;
+      getForm();
+    };
+
+    getForm();
+
     return { formId, paramList };
   }
 
+  // constructor(in systemObject, in jsFieldInfo, in divContainer : Element, in formInfo : FormInfo, in idValue, in dataSourceName)
   isValid() {
-    if (!this.component) return true; // If no component, consider it valid.
     return this.component.isValid();
   }
 
   asInt() {
-    return this.component?.asInt();
+    return this.component.asInt();
   }
 
   asFloat() {
-    return this.component?.asFloat();
+    return this.component.asFloat();
   }
 
   asText() {
-    return this.component?.asText();
+    return this.component.asText();
   }
 
   asDate() {
-    return this.component?.asDate();
+    return this.component.asDate();
   }
 
   getValue() {
@@ -381,114 +385,97 @@ class FieldInfo extends Class_Base {
   }
 
   rebind() {
-    return this.component?.rebind();
+    return this.component.rebind();
   }
 
   rebindCombo() {
-    return this.component?.rebindCombo();
+    return this.component.rebindCombo();
   }
 
   rebindField() {
-    return this.component?.rebindField();
+    return this.component.rebindField();
   }
 
   rebindGrid() {
-    return this.component?.rebindGrid();
+    return this.component.rebindGrid();
   }
 
   /** @param {number} newParentId */
   changeParent_Combo(newParentId) {
-    return this.component?.changeParent_Combo(newParentId);
+    return this.component.changeParent_Combo(newParentId);
   }
 
   onSearchClick() {
-    return this.component?.onSearchClick();
+    return this.component.onSearchClick();
   }
 
   /** @param {function} callee */
   addOnChange_Callee(callee) {
-    return this.component?.addOnChange_Callee(callee);
+    return this.component.addOnChange_Callee(callee);
   }
 
   /** @param  newValue */
-  changeValue(newValue, ...args) {
-    return this.component?.changeValue(newValue, ...args);
+  changeValue(newValue) {
+    //TODO check component
+    return this.component.changeValue(newValue);
   }
 
   /** @return  array[NameValueObject] */
   getFieldValues() {
-    return this.component?.getFieldValues();
+    return this.component.getFieldValues();
   }
 
   button_CallWebSvc_AndRefreshForm() {
-    return this.component?.button_CallWebSvc_AndRefreshForm();
+    return this.component.button_CallWebSvc_AndRefreshForm();
   }
 
   button_OpenDialog_AndInitF() {
-    return this.component?.button_OpenDialog_AndInitF();
+    return this.component.button_OpenDialog_AndInitF();
   }
 
   getDataSource(dataSourceName) {
     const { formId, paramList } = this._getForm();
-    if (!formId) {
-        console.error("Could not determine formId to get DataSource.");
-        return null;
-    }
     const ds = SystemClass.getDataSource(
       dataSourceName || this.dataSourceName,
       formId,
       paramList
     );
     if (!ds) {
-      SystemClass.showErrorMsg("دیتاسورس " + dataSourceName + " یافت نشد !!! ");
-      throw new Error("Data Source Not Found !!!");
+      const dataSourceNameText = dataSourceName || this.dataSourceName
+      SystemClass.showErrorMsg("دیتاسورس " + dataSourceNameText + " یافت نشد !!! ");
+      throw "Data Source Not Found !!!";
     }
     return ds;
   }
 
   getFieldInfo(name) {
-    if (this._parentComponent && typeof this._parentComponent.getFieldInfo === 'function') {
-      return this._parentComponent.getFieldInfo(name);
-    }
-
-    if (this.component && typeof this.component.getFieldInfo === 'function') {
-      return this.component.getFieldInfo(name);
-    }
-    return null;
+    console.log(name)
+    return this.component.getFieldInfo(name);
   }
 
   getFieldList(name) {
-     if (this.component && typeof this.component.getFieldList === 'function') {
-      return this.component.getFieldList(name);
-    }
-     return [];
+    return this.component.getFieldList(name);
   }
 
   getFieldInfoByDSName(name) {
-     if (this._parentComponent && typeof this._parentComponent.getFieldInfoByDSName === 'function') {
-      return this._parentComponent.getFieldInfoByDSName(name);
-    }
-    if (this.component && typeof this.component.getFieldInfoByDSName === 'function') {
-      return this.component.getFieldInfoByDSName(name);
-    }
-    return null;
+    return this.component.getFieldInfoByDSName(name);
   }
 
   /** react component method*/
   componentWillUnmount() {
-    return this.component?.componentWillUnmount();
+    return this.component.componentWillUnmount();
   }
 
-  _rebindFromParent(...args) {
-    return this.component?._rebindFromParent(...args);
+  _rebindFromParent() {
+    return this.component._rebindFromParent();
   }
 
   rebindDataSource() {
-    return this.component?.rebindDataSource();
+    return this.component.rebindDataSource();
   }
 
   click(actionType, extraParam) {
-    return this.component?.click(actionType, extraParam);
+    return this.component.click(actionType, extraParam);
   }
 
   static create(parentFieldInfo, jsFieldInfo, formId, paramList) {
@@ -505,4 +492,3 @@ class FieldInfo extends Class_Base {
 }
 
 export default FieldInfo;
-

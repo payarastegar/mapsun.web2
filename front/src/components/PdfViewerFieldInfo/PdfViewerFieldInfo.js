@@ -1,8 +1,7 @@
 import React, { Component } from "react";
 import Utils from "../../Utils";
 import * as ReactDOM from "react-dom";
-// import Tooltip from "reactstrap/es/Tooltip";
-import { Tooltip } from "reactstrap";
+import Tooltip from "reactstrap/es/Tooltip";
 import { Button, UncontrolledTooltip } from "reactstrap";
 import TextFieldInfo from "../TextFieldInfo/TextFieldInfo";
 import LabelPosition from "../../class/enums/LabelPosition";

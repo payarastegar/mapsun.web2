@@ -1,30 +1,36 @@
-import React from "react";
+import React from 'react';
 import BaseComponent from "./BaseComponent";
+import * as ReactDOM from "react-dom";
 import SystemClass from "../SystemClass";
 
 class LoadingContainer extends BaseComponent {
-  constructor(props) {
-    super(props);
-    this.nodeRef = React.createRef();
-    this.state = {};
-    this.data = {};
-  }
-
-  componentDidMount() {
-  }
-
-  componentWillUnmount() {
-    // Cleanup if needed
-  }
-
-  _handleEvents = (event) => {
-    if (SystemClass.loading || this.props.showCustomLoading) {
-      event && event.stopPropagation();
-      event && event.preventDefault();
+    constructor(props) {
+        super(props);
+        this.state = {};
+        this.data = {};
     }
-  };
 
-  renderCustomLoader = () => {
+    componentDidMount() {
+        // findDOMNode is deprecated in StrictMode. Consider using refs instead if possible.
+        this.data.node = ReactDOM.findDOMNode(this);
+    }
+
+    componentWillUnmount() {
+        // Cleanup if needed
+    }
+
+    _handleEvents = (event) => {
+        // Block user interaction when any loader is active
+        if (SystemClass.loading || this.props.showCustomLoading) {
+            event && event.stopPropagation();
+            event && event.preventDefault();
+        }
+    };
+
+    /**
+     * Renders the custom animated spinner based on the provided image.
+     */
+    renderCustomLoader = () => {
         return (
             <div className="spinner-container">
                 {/* Follower dots are first in the HTML to be visually behind the leader */}
@@ -39,22 +45,21 @@ class LoadingContainer extends BaseComponent {
         );
     }
 
-  render() {
-    const { showCustomLoading } = this.props;
+    render() {
+        const { showCustomLoading } = this.props;
 
-    return (
-      <div
-        ref={this.nodeRef}
-        onKeyDown={this._handleEvents}
-        onTouchStart={this._handleEvents}
-        onKeyPress={this._handleEvents}
-        id="maskDisable"
-        className={"maskDisable"}
-      >
-        {showCustomLoading && this.renderCustomLoader()}
-      </div>
-    );
-  }
+        return (
+            <div
+                onKeyDown={this._handleEvents}
+                onTouchStart={this._handleEvents}
+                onKeyPress={this._handleEvents}
+                id="maskDisable"
+                className={"maskDisable"}
+            >
+                {showCustomLoading && this.renderCustomLoader()}
+            </div>
+        );
+    }
 }
 
 export default LoadingContainer;

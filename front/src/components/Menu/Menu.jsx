@@ -1,199 +1,272 @@
-import React, { Fragment, useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import {
-  Button,
-  UncontrolledTooltip,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-} from "reactstrap";
+import React, { Fragment } from "react";
+import { Button, UncontrolledTooltip } from "reactstrap";
 import LoginLogo from "../../content/first-page-logo.jpg";
 import LoginLogo2 from "../../content/ok logo.png";
 import "./Menu.css";
-// BaseComponent دیگر مورد نیاز نیست چون از هوک‌ها استفاده می‌کنیم
+import BaseComponent from "../BaseComponent";
 import SystemClass from "../../SystemClass";
 import FontAwesome from "react-fontawesome";
+import * as ReactDOM from "react-dom";
+import ConnectionStatus from "../ConnectionStatus/ConnectionStatus";
 import ProgressBar from "../ProgressBar/ProgressBar";
+import { Popup } from "semantic-ui-react";
 import WebService from "../../WebService";
 import UiSetting from "../../UiSetting";
 import { Translation } from "react-i18next";
 
-// تبدیل کامپوننت به یک کامپوننت تابعی
-function Menu() {
-  const navigate = useNavigate(); // استفاده از هوک useNavigate برای مسیریابی
-  const rootNodeRef = useRef(null);
-  const janeshinNodeRef = useRef(null);
-
-  // مدیریت state با هوک useState
-  const [openMenus, setOpenMenus] = useState({});
-  const [openMoreMenu, setOpenMoreMenu] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const [mainMenu, setMainMenu] = useState({ menuItem_Array: [] });
-  const [userImage, setUserImage] = useState(SystemClass.getLastUserImage());
-  const [maxMenuItemInMenuBar, setMaxMenuItemInMenuBar] = useState(-1);
-  const [activeMenuItems, setActiveMenuItems] = useState([]);
-  const [showSearchBar, setShowSearchBar] = useState(false);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  const align = UiSetting.GetSetting("textAlign");
-
-  // معادل getInitialDataSources و بخشی از componentDidMount
-  useEffect(() => {
-    SystemClass.MenuComponent = { update, updateImage }; // اتصال متدهای مورد نیاز به SystemClass
-
-    const fetchInitialData = async () => {
-      setLoaded(false);
-      try {
-        let menuDataSource;
-        if (SystemClass.MainMenuData) {
-          menuDataSource = SystemClass.MainMenuData;
-        } else {
-          menuDataSource = await new WebService(WebService.URL.webService_Menu, { paramList: {} });
-        }
-
-        if (menuDataSource && menuDataSource.menuItem_Array) {
-          menuDataSource.menuItem_Array.sort((a, b) => a.menuItem_Tartib - b.menuItem_Tartib);
-          SystemClass.MainMenuData = menuDataSource;
-          setMainMenu(menuDataSource);
-        }
-      } catch (error) {
-        console.error("Failed to load menu data:", error);
-      } finally {
-        setLoaded(true);
-      }
+class Menu extends BaseComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openMenu1: false,
+      openMenu100: false,
     };
+
+    this.data = {
+      needUpdateMenuSize: true,
+      maxMenuItemInMenuBar: -1,
+      activeMenuItems: [],
+      mainMenu: null,
+    };
+
+    SystemClass.MenuComponent = this;
 
     if (!WebService.getUserInfo().login) {
+      // const url = SystemClass.browserHistory.location.pathname
+
+      // if (!SystemClass.browserHistory.location.pathname.startsWith('/auth')) {
       SystemClass.handleUnauthorizeError();
-    } else {
-      fetchInitialData();
+      // }
     }
-  }, []);
 
-  // مدیریت رویداد تغییر سایز پنجره
-  const _handleWindowResize = useCallback(() => {
-    const menuContainer = rootNodeRef.current?.querySelector(".Menu__container");
-    if (!menuContainer) return;
+    this.initialize();
 
-    const maxMenuItemLength = 53;
-    const maxIconItemLength = 95;
-    const width = menuContainer.clientWidth - maxIconItemLength * 2;
-    const maxLength = Math.floor(width / maxMenuItemLength);
-    setMaxMenuItemInMenuBar(maxLength);
-  }, []);
+    this.getInitialDataSources();
+  }
 
-  useEffect(() => {
-    window.addEventListener("resize", _handleWindowResize);
-    // فراخوانی اولیه برای محاسبه اندازه منو
-    _handleWindowResize();
-    return () => {
-      window.removeEventListener("resize", _handleWindowResize);
-    };
-  }, [_handleWindowResize]);
-  
-  // مدیریت آنلاین/آفلاین شدن
-  useEffect(() => {
-    const handleOnlineStatus = () => setIsOnline(navigator.onLine);
-    window.addEventListener("online", handleOnlineStatus);
-    window.addEventListener("offline", handleOnlineStatus);
-    return () => {
-        window.removeEventListener("online", handleOnlineStatus);
-        window.removeEventListener("offline", handleOnlineStatus);
-    };
-  }, []);
+  initialize = () => {
+    this.MainMenu = this.data.mainMenu || { menuItem_Array: [] };
 
-  // بروزرسانی آیتم‌های فعال منو بر اساس مسیر فعلی
-  useEffect(() => {
-    let currentUrl = window.location.pathname;
+    if (!this.MainMenu.menuItem_Array) return;
+
+    this.MainMenu.menuItem_Array.sort((itemA, itemB) => {
+      return itemA.menuItem_Tartib > itemB.menuItem_Tartib
+        ? 1
+        : itemA.menuItem_Tartib < itemB.menuItem_Tartib
+        ? -1
+        : 0;
+    });
+    this.data.needUpdateMenuSize = true;
+
+    this.data.userImage = SystemClass.getLastUserImage();
+
+    this.align = UiSetting.GetSetting("textAlign");
+
+    // if (!this._getUserInits() && !this.MainMenu.userImage) {
+    //     this.data.userImage = SystemClass.getLastUserImage() || defaultUserImage
+    // }
+  };
+
+  updateImage = () => {
+    this.data.userImage = SystemClass.getLastUserImage();
+    this.forceUpdate();
+  };
+
+  update = () => {
+    this.initialize();
+    this.closeAllMenu();
+  };
+
+  closeAllMenu = () => {
+    Object.keys(this.state).forEach((key) => {
+      if (key.startsWith("openMenu")) {
+        this.state[key] = false;
+      }
+    });
+    this.forceUpdate();
+  };
+
+  getInitialDataSources = async () => {
+    // this._setLoading(true)
+    this.state.loaded = false;
+
+    //get
+    // const menuDataSource = new WebService('Forms/getForm', {
+    //     formId: 457,
+    //     paramList: {formParams: {tblFormInfoId: 457}}
+    // })
+
+    let menuDataSource;
+    if (SystemClass.MainMenuData) {
+      menuDataSource = new Promise((resolve) =>
+        resolve(SystemClass.MainMenuData)
+      );
+    } else {
+      menuDataSource = new WebService(WebService.URL.webService_Menu, {
+        paramList: {},
+      });
+    }
+
+    menuDataSource.then((json) => {
+      if (json.menuItem_Array) {
+        this.data.mainMenu = json;
+        SystemClass.MenuComponent && SystemClass.menuUpdate();
+      }
+    });
+
+    await SystemClass.setLoading(true);
+    const self = this;
+    Promise.all([menuDataSource]).finally(() => {
+      // setTimeout(this._setLoading, 100)
+      // SystemClass.setLoading(false)
+      this.state.loaded = true;
+      SystemClass.setLoading(false);
+      SystemClass.AppComponent && SystemClass.AppComponent.update();
+      self.forceUpdate();
+    });
+  };
+
+  componentDidMount() {
+    window.addEventListener("resize", this._handleWindowResize);
+    window.addEventListener("online", this._handleWindowUpdateOnlineStatus);
+    window.addEventListener("offline", this._handleWindowUpdateOnlineStatus);
+    this.data.node = ReactDOM.findDOMNode(this);
+    this.data.nodeJaneshin = this.data.node.querySelector(
+      "#MenuItem__Janeshin"
+    );
+
+    this.forceUpdate();
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this._handleWindowResize);
+    window.removeEventListener("online", this._handleWindowUpdateOnlineStatus);
+    window.removeEventListener("offline", this._handleWindowUpdateOnlineStatus);
+  }
+
+  // region others
+
+  _getUserInits() {
+    const username = window.sessionStorage.userDisplayName;
+    if (!username || this.MainMenu.userInitials)
+      return this.MainMenu.userInitials;
+
+    const splitedUserName = username.split(/[ ]|-/);
+    let inits = splitedUserName[0] && splitedUserName[0][0];
+    inits += splitedUserName[1] && splitedUserName[1][0];
+    return inits;
+  }
+
+  _menuItemIsOpen(tblMenuItemId) {
+    return this.state["openMenu" + tblMenuItemId];
+  }
+
+  _updateActiveMenuItems = () => {
+    let currentUrl = SystemClass.browserHistory.location.pathname;
+
     let menuItem;
     let menuItems;
     let property = "menuItem_FormCid";
-
-    if (!mainMenu.menuItem_Array) return;
-
-    if (currentUrl.includes("frame")) {
-        property = "menuItem_Frame_Url";
-        menuItem = mainMenu.menuItem_Array.find(
-            (item) => item[property] && currentUrl.includes(item[property])
-        );
-    } else {
-        menuItems = mainMenu.menuItem_Array.filter(
-            (item) => item[property] !== undefined && SystemClass.FormId == item[property]
-        );
-    }
-
-    if (menuItems && menuItems.length > 1 && SystemClass.tblMenuItemId_Opened) {
-        const selectedMenuItem = menuItems.find(
-            (item) => item.tblMenuItemId == SystemClass.tblMenuItemId_Opened
-        );
-        if (selectedMenuItem) {
-            menuItem = selectedMenuItem;
-        }
-    } else if (menuItems && menuItems.length === 1) {
-      menuItem = menuItems[0];
-    }
-
-    const newActiveItems = [];
-    if (menuItem) {
-        const addMenuItem = (item) => {
-            if (!item) return;
-            newActiveItems.push(item.tblMenuItemId);
-            if (item.menuItem_ParentId) {
-                addMenuItem(
-                    mainMenu.menuItem_Array.find((i) => item.menuItem_ParentId == i.tblMenuItemId)
-                );
-            }
-        };
-        addMenuItem(menuItem);
-    }
-    setActiveMenuItems(newActiveItems);
-
-  }, [window.location.pathname, mainMenu.menuItem_Array, SystemClass.FormId]);
-
-
-  const update = () => {
-    // این متد برای سازگاری با SystemClass حفظ شده است
-    // در کامپوننت تابعی، re-render به صورت خودکار با تغییر state انجام می‌شود
-    setOpenMenus({});
-  };
-
-  const updateImage = () => {
-    setUserImage(SystemClass.getLastUserImage());
-  };
-  
-  const _openDialog = async (menuItem) => {
-    await SystemClass.setLoading(true);
-    try {
-      const formModel = await SystemClass.webService_GetForm(
-        menuItem.menuItem_FormCid,
-        menuItem.menuItem_Form_ParamList,
-        null
+    if (currentUrl.indexOf("frame") !== -1) {
+      property = "menuItem_Frame_Url";
+      menuItem = this.MainMenu.menuItem_Array.find(
+        (item) => item[property] && currentUrl.indexOf(item[property]) !== -1
       );
-      if (formModel) {
+    } else {
+      menuItem = this.MainMenu.menuItem_Array.find(
+        (item) =>
+          item[property] !== undefined && SystemClass.FormId == item[property]
+      );
+
+      menuItems = this.MainMenu.menuItem_Array.filter(
+        (item) =>
+          item[property] !== undefined && SystemClass.FormId == item[property]
+      );
+    }
+
+    // Write by Ali Kamel 
+    // method for finding the active menu Item has been updated. 
+    if (menuItems && menuItems.length > 1 && SystemClass.tblMenuItemId_Opened) {
+      const selectedMenuItem = menuItems.find(
+        (item) =>
+          item.tblMenuItemId == SystemClass.tblMenuItemId_Opened
+      );
+      if (selectedMenuItem) {
+        menuItem = selectedMenuItem;
+      }
+    }
+    // End
+
+
+    this.data.activeMenuItems = [];
+
+    if (menuItem) {
+      const addMenuItem = (item) => {
+        if (!item) return;
+        this.data.activeMenuItems.push(item.tblMenuItemId);
+        if (item.menuItem_ParentId) {
+          addMenuItem(
+            this.MainMenu.menuItem_Array.find(
+              (i) => item.menuItem_ParentId == i.tblMenuItemId
+            )
+          );
+        }
+      };
+      addMenuItem(menuItem);
+    }
+  };
+
+  _getDefaultImage = () => {
+    if (UiSetting.GetSetting("logo") === "fintrac") {
+      return LoginLogo2;
+    } else {
+      return LoginLogo;
+    }
+  };
+  //endregion
+
+  //region events
+  _handleWindowResize = (event) => {
+    this.data.needUpdateMenuSize = true;
+    this.forceUpdate();
+  };
+  _handleWindowUpdateOnlineStatus = (event) => {
+    if (this.data.online != navigator.onLine) {
+      this.data.online = navigator.onLine;
+      this.forceUpdate();
+    }
+  };
+
+  _openDialog = async (menuItem) => {
+    //callback to pass to dialog to run when closed
+    let closeDialogCallback = () => {};
+
+    //call webservice to get data and then open dialog
+    await SystemClass.setLoading(true);
+    SystemClass.webService_GetForm(
+      menuItem.menuItem_FormCid,
+      menuItem.menuItem_Form_ParamList,
+      null
+    )
+      .then((jsFormFieldInfo) => {
+        if (!jsFormFieldInfo) return;
         SystemClass.openDialog(
           menuItem.menuItem_FormCid,
           menuItem.menuItem_Form_ParamList,
           null,
-          () => {} // closeDialogCallback
+          closeDialogCallback
         );
-      }
-    } catch (error) {
-      console.error("Error opening dialog:", error);
-    } finally {
-      SystemClass.setLoading(false);
-    }
+      })
+      .finally(() => SystemClass.setLoading(false));
   };
 
-  // **مهم‌ترین تغییر: مدیریت مسیریابی با useNavigate**
-  const _handleOnItemSelect = (menuItem) => {
+  _handleOnItemSelect = (menuItem) => {
     const isDashboard = menuItem.show_PageIsLoading;
     SystemClass.tblMenuItemId_Selected = menuItem.tblMenuItemId;
     SystemClass.showCustomLoading(isDashboard);
-    setOpenMenus({}); // بستن همه منوها پس از انتخاب
 
     if (menuItem.menuItem_OpenDialog) {
-      _openDialog(menuItem);
+      this._openDialog(menuItem);
       return;
     }
 
@@ -202,261 +275,471 @@ function Menu() {
 
     if (menuItem.menuItem_Frame_UseFrame && menuItem.menuItem_Frame_Url) {
       if (formParams.openInNewTab) {
-        window.open(menuItem.menuItem_Frame_Url, "_blank", "noopener,noreferrer");
+        window.open(
+          menuItem.menuItem_Frame_Url,
+          "_blank",
+          "noopener,noreferrer"
+        );
       } else {
-        navigate(`/frame/${menuItem.menuItem_Frame_Url}`);
+        SystemClass.openFrame(menuItem.menuItem_Frame_Url);
       }
     } else if (menuItem.menuItem_FormName && menuItem.menuItem_FormCid) {
-      SystemClass.setFormParam(menuItem.menuItem_FormCid, params);
-      navigate(`/form/${menuItem.menuItem_FormCid}`);
-    } else if (menuItem.menuItem_Url) {
-      navigate(menuItem.menuItem_Url);
+      SystemClass.openForm(
+        menuItem.menuItem_FormCid,
+        menuItem.menuItem_Form_ParamList
+      );
+    } else {
+      menuItem.menuItem_Url && SystemClass.pushLink(menuItem.menuItem_Url);
     }
   };
 
-  const _handleToggleMenuItem = (menuItemId, open) => {
-    setOpenMenus(prev => ({ ...prev, [menuItemId]: open }));
-  };
-  
-  const _handleToggleMoreMenuItem = (open) => {
-    setOpenMoreMenu(open);
+  _handleToggleMenuItem = (menuItem, open) => {
+    if (open === undefined)
+      open = this.state["openMenu" + menuItem.tblMenuItemId];
+    this.setState({ ["openMenu" + menuItem.tblMenuItemId]: open });
   };
 
-  const _handleOnProfileClick = () => {
+  _handleToggleMoreMenuItem = (open) => {
+    if (open === undefined) open = this.state["openMoreMenu"];
+    this.setState({ openMoreMenu: open });
+  };
+
+  _handleToggleSearchBar = (show) => {
+    this.state.showSearchBar = show;
+    this.setState({ showSearchBar: show });
+  };
+
+  _goToLogin() {
+    SystemClass.pushLink("/auth/login");
+  }
+
+  _handleOnProfileClick = (event) => {
     SystemClass.ProfileDialog.showDialog(true);
   };
 
-  const _handleLogoutClick = async (event) => {
-    event?.stopPropagation();
-    event?.preventDefault();
+  _handleLogoutClick = async (event) => {
+    event && event.stopPropagation();
+    event && event.preventDefault();
+
     await SystemClass.setLoading(true);
-    try {
-      await new WebService(WebService.URL.webService_Logout, {});
-      SystemClass.logOut();
-      navigate("/auth/login"); // استفاده از navigate
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      SystemClass.setLoading(false);
-    }
-  };
-  
-  const _getDefaultImage = () => {
-    return UiSetting.GetSetting("logo") === "fintrac" ? LoginLogo2 : LoginLogo;
+
+    return new WebService(WebService.URL.webService_Logout, {})
+      .then((json) => {
+        // window.close()
+        SystemClass.logOut();
+        this._goToLogin();
+      })
+      .finally((i) => SystemClass.setLoading(false));
   };
 
+  //endregion
 
-  const _elementGetMenuItem = (menuItem, index, isSubMenu) => {
-    const subMenuList = mainMenu.menuItem_Array.filter(
-      (item) => item.menuItem_ParentId === menuItem.tblMenuItemId
+  // region element
+  _elementGetModalItemList = () => {
+    return this.data.modalList.map(this._elementGetModalItem);
+  };
+
+  _elementGetMenuItem = (menuItem, index, isSubMenu) => {
+    const subMenuList = this.MainMenu.menuItem_Array.filter(
+      (item) => item.menuItem_ParentId == menuItem.tblMenuItemId
     );
-    isSubMenu = isSubMenu || !!menuItem.menuItem_ParentId;
+
+    isSubMenu = isSubMenu || menuItem.menuItem_ParentId;
+
     const disabled = !!menuItem.menuItem_IsDisabled;
     const haveSubMenu = subMenuList.length > 0 && !disabled;
 
+    const leftAline = this.align == "left"; /* write by ali kamel*/
+    const rightAline = this.align == "right"; /* write by ali kamel*/
+
     const className = [
       "MenuItem__dropdown-menu",
-      openMenus[menuItem.tblMenuItemId] && "MenuItem__dropdown-menu--show",
+      this.state["openMenu" + menuItem.tblMenuItemId] &&
+        "MenuItem__dropdown-menu--show",
       isSubMenu && "MenuItem__dropdown-menu--submenu",
-      align === "right" && "MenuItem__dropdown-menu--fa",
-      align === "left" && "MenuItem__dropdown-menu--en",
-    ].filter(Boolean).join(" ");
-    
-    const activeClass = activeMenuItems.includes(menuItem.tblMenuItemId) ? "MenuItem__button--active" : "";
+      rightAline && "MenuItem__dropdown-menu--fa" /* write by ali kamel*/,
+      leftAline && "MenuItem__dropdown-menu--en" /* write by ali kamel*/,
+    ];
+
+    const activeClass =
+      this.data.activeMenuItems.includes(menuItem.tblMenuItemId) &&
+      "MenuItem__button--active";
 
     return (
       <div
-        key={`${menuItem.tblMenuItemId}-${index}`}
-        className="MenuItem"
-        onMouseEnter={() => _handleToggleMenuItem(menuItem.tblMenuItemId, true)}
-        onMouseLeave={() => _handleToggleMenuItem(menuItem.tblMenuItemId, false)}
+        key={
+          menuItem.tblMenuItemId +
+          (menuItem.menuItem_IsMobile ? "mobile" : "web")
+        }
+        className={"MenuItem"}
+        onMouseEnter={this._handleToggleMenuItem.bind(this, menuItem, true)}
+        onMouseLeave={this._handleToggleMenuItem.bind(this, menuItem, false)}
       >
         {!isSubMenu ? (
           <Button
             size="sm"
-            className={`MenuItem__button ${activeClass}`.trim()}
+            className={["MenuItem__button", activeClass]
+              .filter((c) => c)
+              .join(" ")}
             color="transparent"
-            onClick={() => _handleOnItemSelect(menuItem)}
+            onClick={this._handleOnItemSelect.bind(this, menuItem)}
             disabled={disabled}
           >
+            {/* <div>
+              {menuItem.menuItem_IconName && (
+                <FontAwesome
+                  className={"MenuItem__button__icon"}
+                  name={menuItem.menuItem_IconName}
+                />
+              )}
+            </div> */}
             <div>
-              <span className="MenuItem__displayName">{menuItem.menuItem_DisplayName}</span>
+              <span className={"MenuItem__displayName"}>
+                {menuItem.menuItem_DisplayName !== "تنظیمات"
+                  ? menuItem.menuItem_DisplayName
+                  : ""}
+              </span>
               {haveSubMenu && (
-                <FontAwesome style={{ marginRight: ".25rem" }} className="MenuItem__button__icon" name="caret-down" />
+                <FontAwesome
+                  style={{ marginRight: ".25rem" }}
+                  className={"MenuItem__button__icon"}
+                  name="caret-down"
+                />
               )}
             </div>
           </Button>
         ) : (
           <button
-            className={`MenuItem__item ${activeClass}`.trim()}
-            onClick={() => _handleOnItemSelect(menuItem)}
+            size="sm"
+            className={["MenuItem__item", activeClass]
+              .filter((c) => c)
+              .join(" ")}
+            color="transparent"
+            onClick={this._handleOnItemSelect.bind(this, menuItem)}
             disabled={disabled}
           >
             {menuItem.menuItem_IconName && (
-              <FontAwesome className="MenuItem__button__icon" name={menuItem.menuItem_IconName} />
+              <FontAwesome
+                className={"MenuItem__button__icon"}
+                name={menuItem.menuItem_IconName}
+              />
             )}
-            <span className="MenuItem__displayName">{menuItem.menuItem_DisplayName}</span>
+            <span className={"MenuItem__displayName"}>
+              {menuItem.menuItem_DisplayName !== "تنظیمات"
+                ? menuItem.menuItem_DisplayName
+                : ""}
+            </span>
             <div style={{ flex: 1 }} />
             {haveSubMenu && (
-              <FontAwesome className="MenuItem__button__icon" name="caret-left" />
+              <FontAwesome
+                className={"MenuItem__button__icon"}
+                name="caret-left"
+              />
             )}
           </button>
         )}
+
         {haveSubMenu && (
-          <div tabIndex="-1" role="menu" aria-hidden="false" className={className}>
-            {subMenuList.map((item, subIndex) => _elementGetMenuItem(item, subIndex, true))}
+          <div
+            tabIndex="-1"
+            role="menu"
+            aria-hidden="false"
+            className={className.filter((c) => c).join(" ")}
+          >
+            {subMenuList.map((item, index) =>
+              this._elementGetMenuItem(item, index, false)
+            )}
           </div>
         )}
       </div>
     );
   };
 
-  const _elementGetMoreMenuItem = (hiddenList) => {
-    const className = ["MenuItem__dropdown-menu", openMoreMenu && "MenuItem__dropdown-menu--show"].filter(Boolean).join(" ");
-    const isActive = hiddenList.some(item => activeMenuItems.includes(item.tblMenuItemId));
-    
+  _elementGetMoreMenuItem = (hiddenList) => {
+    const subMenuList = hiddenList;
+
+    const className = [
+      "MenuItem__dropdown-menu",
+      this.state["openMoreMenu"] && "MenuItem__dropdown-menu--show",
+    ];
+    const activeClass =
+      subMenuList.find((item) =>
+        this.data.activeMenuItems.includes(item.tblMenuItemId)
+      ) && "MenuItem__button--active";
     return (
       <div
         key={-1}
-        className="MenuItem"
-        onMouseEnter={() => _handleToggleMoreMenuItem(true)}
-        onMouseLeave={() => _handleToggleMoreMenuItem(false)}
+        className={"MenuItem"}
+        onMouseEnter={this._handleToggleMoreMenuItem.bind(this, true)}
+        onMouseLeave={this._handleToggleMoreMenuItem.bind(this, false)}
       >
-        <Button className={`Menu__icon ${isActive ? "MenuItem__button--active" : ""}`.trim()} outline color="light">
-          <FontAwesome name="ellipsis-v" />
+        <Button className={"Menu__icon " + activeClass} outline color="light">
+          <FontAwesome className={""} name="ellipsis-v" />
         </Button>
-        <div tabIndex="-1" role="menu" aria-hidden="false" className={className}>
-          {hiddenList.map((item, index) => _elementGetMenuItem(item, index, true))}
+
+        <div
+          tabIndex="-1"
+          role="menu"
+          aria-hidden="false"
+          className={className.filter((c) => c).join(" ")}
+        >
+          {subMenuList.map((item, index) =>
+            this._elementGetMenuItem(item, index, true)
+          )}
         </div>
       </div>
     );
   };
 
-  const _elementGetMenuRightSection = () => {
-    if (!mainMenu.menuItem_Array) return null;
-    
-    const menuBarList = mainMenu.menuItem_Array.filter(
+  _elementGetMenuRightSection = () => {
+    if (!this.data.node || !this.data.node.querySelector(".Menu__container"))
+      return;
+
+    this._updateActiveMenuItems();
+
+    if (this.data.needUpdateMenuSize) {
+      const maxMenuItemLength = 53;
+      const maxIconItemLength = 95;
+
+      const width =
+        this.data.node.querySelector(".Menu__container").clientWidth -
+        maxIconItemLength * 2;
+      const maxLength = width / maxMenuItemLength;
+      this.data.maxMenuItemInMenuBar = maxLength;
+    }
+
+    const menuBarList = this.MainMenu.menuItem_Array.filter(
       (item) => !item.menuItem_ShowOnUserMenu && !item.menuItem_ParentId
     );
+    const showList = menuBarList.slice(0, this.data.maxMenuItemInMenuBar);
+    const hiddenList = menuBarList.slice(this.data.maxMenuItemInMenuBar);
 
-    const showList = maxMenuItemInMenuBar > 0 ? menuBarList.slice(0, maxMenuItemInMenuBar) : menuBarList;
-    const hiddenList = maxMenuItemInMenuBar > 0 ? menuBarList.slice(maxMenuItemInMenuBar) : [];
     const showDot = hiddenList.length > 0;
 
     return (
       <Fragment>
-        <Button className="Menu__icon Menu__home-icon" outline color="light" onClick={() => navigate("/")}>
-          <FontAwesome name="home" />
+        <Button className={"Menu__icon Menu__home-icon"} outline color="light">
+          <FontAwesome className={""} name="home" />
         </Button>
-        {showList.map((item, index) => _elementGetMenuItem(item, index, false))}
-        {showDot && _elementGetMoreMenuItem(hiddenList)}
+
+        {showList.map((item, index) =>
+          this._elementGetMenuItem(item, index, false)
+        )}
+
+        {showDot && this._elementGetMoreMenuItem(hiddenList)}
       </Fragment>
     );
   };
-  
-  const _elementGetUserMenu = () => {
-    if (!mainMenu.menuItem_Array) return [];
-    const userMenuBarList = mainMenu.menuItem_Array.filter(item => item.menuItem_ShowOnUserMenu);
-    return userMenuBarList.map((userMenu, index) => (
-      <DropdownItem
-        key={`${userMenu.tblMenuItemId}-${index}`}
-        onClick={() => _handleOnItemSelect(userMenu)}
-        disabled={userMenu.menuItem_IsDisabled}
-      >
-        <FontAwesome className="MenuItem__button__icon" name={userMenu.menuItem_IconName || "user-cog"} />
-        <span className="MenuItem__displayName">{userMenu.menuItem_DisplayName}</span>
-      </DropdownItem>
-    ));
+
+  _elementGetUserMenu = () => {
+    const userMenuBarList = this.MainMenu.menuItem_Array.filter(
+      (item) => item.menuItem_ShowOnUserMenu
+    );
+
+    return userMenuBarList.map((userMenu) => {
+      return (
+        <button
+          key={
+            userMenu.tblMenuItemId +
+            (userMenu.menuItem_IsMobile ? "mobile" : "web")
+          }
+          size="sm"
+          className={["MenuItem__item"].filter((c) => c).join(" ")}
+          color="light"
+          onClick={this._handleOnItemSelect.bind(this, userMenu)}
+          disabled={userMenu.menuItem_IsDisabled}
+        >
+          <FontAwesome
+            className={"MenuItem__button__icon"}
+            name={userMenu.menuItem_IconName || "user-cog"}
+          />
+          <span className={"MenuItem__displayName"}>
+            {" "}
+            {userMenu.menuItem_DisplayName}{" "}
+          </span>
+        </button>
+      );
+    });
   };
 
+  // endregion element
+  render() {
+    const showSearchBar = this.state.showSearchBar;
 
-  return (
-    <div
-      ref={rootNodeRef}
-      className={`MainMenu ${mainMenu.isJaneshin ? "MainMenu--janeshin" : ""}`.trim()}
-    >
-      <div className="Menu__container menu__container--stretch">
-        {_elementGetMenuRightSection()}
-      </div>
-
-      <div className="Menu__container">
-        <div className={`Menu__container Menu__searchBar ${showSearchBar ? "Menu__searchBar--show" : ""}`.trim()}>
-          <Button className="Menu__icon" outline color="light">
-            <FontAwesome name="search" />
-          </Button>
-          <input className="Menu__input" />
-          <Button
-            className="Menu__icon Menu__close-search-icon"
-            outline
-            color="light"
-            onClick={() => setShowSearchBar(false)}
-          >
-            <FontAwesome name="times" />
-          </Button>
-        </div>
-
-        <div className="Menu__search-icon__container">
-          <Button
-            className="Menu__icon Menu__search-icon"
-            outline
-            color="light"
-            onClick={() => setShowSearchBar(true)}
-          >
-            <FontAwesome name="search" />
-          </Button>
-        </div>
-
-        {mainMenu.isJaneshin && (
-          <div
-            ref={janeshinNodeRef}
-            className="MenuItem__Janeshin"
-            id="MenuItem__Janeshin"
-          >
-            <Button size="sm" className="MenuItem__button--janeshin" outline color="light">
-              <span className="MenuItem__displayName"> جانشین </span>
-            </Button>
-            <UncontrolledTooltip target={janeshinNodeRef}>
-              {"پُست جانشین شده: " + mainMenu.namePost}
-            </UncontrolledTooltip>
-          </div>
-        )}
-
-        <UncontrolledDropdown nav inNavbar>
-          <DropdownToggle nav className="p-0">
-            <div className="Menu__avatar-container">
-              <img className="Menu__avatar" alt="User Avatar" src={userImage || _getDefaultImage()} />
-            </div>
-          </DropdownToggle>
-          <DropdownMenu end>
-            <DropdownItem onClick={_handleLogoutClick}>
-              <FontAwesome className="MenuItem__button__icon" name="user-alt-slash" />
-              <span className="MenuItem__displayName">
-                <Translation>{(t) => t("SignOut")}</Translation>
-              </span>
-            </DropdownItem>
-            <DropdownItem onClick={_handleOnProfileClick}>
-              <FontAwesome className="MenuItem__button__icon" name="user-cog" />
-              <span className="MenuItem__displayName">
-                <Translation>{(t) => t("UserProfile")}</Translation>
-              </span>
-            </DropdownItem>
-            {_elementGetUserMenu()}
-          </DropdownMenu>
-        </UncontrolledDropdown>
-      </div>
-
+    return (
       <div
-        className={`MainMenu__Progress ${mainMenu.isJaneshin ? "MenuItem__janeshinBar" : ""}`.trim()}
-      />
-
-      <div
-        id="MainMenuProgress"
-        className={`MainMenu__Progress ${SystemClass.loading ? "MainMenu__Progress--show" : ""}`.trim()}
+        className={[
+          "MainMenu",
+          this.MainMenu.isJaneshin && "MainMenu--janeshin",
+        ]
+          .filter((c) => c)
+          .join(" ")}
       >
-        <ProgressBar />
+        <div
+          className={["Menu__container", "menu__container--stretch"]
+            .filter((c) => c)
+            .join(" ")}
+        >
+          {this._elementGetMenuRightSection()}
+        </div>
+
+        {/*<LogoMapsun className={["Menu__logo"].filter(c => c).join(' ')}/>*/}
+        {/*<img className={["Menu__logo"].filter(c => c).join(' ')} src={LogoMapsunFile}/>*/}
+
+        <div className={["Menu__container"].filter((c) => c).join(" ")}>
+          <div
+            className={[
+              "Menu__container",
+              "Menu__searchBar",
+              showSearchBar && "Menu__searchBar--show",
+            ]
+              .filter((c) => c)
+              .join(" ")}
+          >
+            {/*<FontAwesomeIcon className={''} icon="search"/>*/}
+            <Button className={"Menu__icon"} outline color="light">
+              <FontAwesome className={""} name="search" />
+            </Button>
+
+            <input className={"Menu__input"} />
+
+            <Button
+              className={"Menu__icon Menu__close-search-icon"}
+              outline
+              color="light"
+              onClick={this._handleToggleSearchBar.bind(this, false)}
+            >
+              <FontAwesome className={""} name="times" />
+            </Button>
+          </div>
+
+          <div
+            className={["Menu__search-icon__container"]
+              .filter((c) => c)
+              .join(" ")}
+          >
+            <Button
+              className={["Menu__icon", "Menu__search-icon"]
+                .filter((c) => c)
+                .join(" ")}
+              outline
+              color="light"
+              onClick={this._handleToggleSearchBar.bind(this, true)}
+            >
+              <FontAwesome className={""} name="search" />
+            </Button>
+          </div>
+
+          {/* <ConnectionStatus/> */}
+          {/*{this._elementGetSignalIcon()}*/}
+
+          <div
+            className={"MenuItem__Janeshin"}
+            id={"MenuItem__Janeshin"}
+            style={{ display: this.MainMenu.isJaneshin ? "flex" : "none" }}
+          >
+            <Button
+              size="sm"
+              className={["MenuItem__button--janeshin"]
+                .filter((c) => c)
+                .join(" ")}
+              outline
+              color="light"
+            >
+              <span className={"MenuItem__displayName"}> جانشین </span>
+            </Button>
+
+            {this.data.nodeJaneshin && (
+              <UncontrolledTooltip target={this.data.nodeJaneshin}>
+                {"پُست جانشین شده: " + this.MainMenu.namePost}
+              </UncontrolledTooltip>
+            )}
+          </div>
+
+          <Popup
+            flowing
+            hoverable
+            trigger={
+              <div className="Menu__avatar-container">
+                <span className="Menu__avatar__text">
+                  {/*{this._getUserInits()}*/}
+                </span>
+
+                <img
+                  className="Menu__avatar"
+                  alt=""
+                  src={
+                    SystemClass.getLastUserImage() || this._getDefaultImage()
+                  }
+                />
+              </div>
+            }
+          >
+            <button
+              size="sm"
+              className={["MenuItem__item"].filter((c) => c).join(" ")}
+              color="light"
+              onClick={this._handleLogoutClick}
+            >
+              <FontAwesome
+                className={"MenuItem__button__icon"}
+                name="user-alt-slash"
+              />
+               
+              <span className={"MenuItem__displayName"}>
+                <Translation>{(t) => (t("SignOut"))}</Translation>
+              </span>
+            </button>
+
+            <button
+              size="sm"
+              className={["MenuItem__item"].filter((c) => c).join(" ")}
+              color="light"
+              onClick={this._handleOnProfileClick}
+            >
+              <FontAwesome
+                className={"MenuItem__button__icon"}
+                name="user-cog"
+              />
+              <span className={"MenuItem__displayName"}>
+                <Translation>{(t) => (t("UserProfile"))}</Translation>
+              </span>
+            </button>
+
+            {this._elementGetUserMenu()}
+          </Popup>
+
+          {/*<div className="Menu__avatar-container">*/}
+          {/*<span className="Menu__avatar__text">*/}
+          {/*{this.MainMenu.userInitials}*/}
+          {/*</span>*/}
+          {/*<img className="Menu__avatar" alt="" src={this.MainMenu.userImage || this.data.userImage}/>*/}
+          {/*</div>*/}
+        </div>
+
+        <div
+          className={[
+            "MainMenu__Progress",
+            this.MainMenu.isJaneshin && "MenuItem__janeshinBar",
+          ]
+            .filter((c) => c)
+            .join(" ")}
+        />
+
+        <div
+          id="MainMenuProgress"
+          className={[
+            "MainMenu__Progress",
+            SystemClass.MenuLoading && "MainMenu__Progress--show",
+          ]
+            .filter((c) => c)
+            .join(" ")}
+        >
+          <ProgressBar />
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
 export default Menu;

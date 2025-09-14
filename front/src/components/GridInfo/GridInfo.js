@@ -1,22 +1,22 @@
 import "./GridInfo.css";
 import TextFieldInfo from "../TextFieldInfo/TextFieldInfo";
 import React, { Fragment } from "react";
+import * as ReactDOM from "react-dom";
+import FilterCondition from "../../class/enums/FilterCondition";
+import FieldInfo from "../../class/FieldInfo";
+import ColumnInfo from "../../class/ColumnInfo";
+import ComponentUtils from "../ComponentUtils";
+import Utils from "../../Utils";
 import FontAwesome from "react-fontawesome";
 import SystemClass from "../../SystemClass";
 import GridInfo_Core from "./GridInfo_Core";
-import { UncontrolledPopover, PopoverBody } from "reactstrap";
-import UiSetting from "../../UiSetting";
-import Utils from "../../Utils";
-import ComponentUtils from "../ComponentUtils";
 import ButtonFieldInfo from "../ButtonFieldInfo/ButtonFieldInfo";
 import FieldType from "../../class/enums/FieldType";
+import { Popup } from "semantic-ui-react";
+import defaultUserImage from "../../content/user-circle-solid.svg";
+import UiSetting from "../../UiSetting";
 
 class GridInfo extends GridInfo_Core {
-  constructor(props) {
-    super(props);
-    this.containerRef = React.createRef();
-  }
-
   //------------------------------------------------
   //region public methods
   //------------------------------------------------
@@ -24,6 +24,7 @@ class GridInfo extends GridInfo_Core {
   componentDidMount() {
     super.componentDidMount();
     window.addEventListener("resize", this._handleWindowResize);
+
     this._updateColumnVisibility();
   }
 
@@ -36,9 +37,15 @@ class GridInfo extends GridInfo_Core {
   //endregion public methods
   //------------------------------------------------
 
+  /**
+   * hide some column for mobile
+   * @private
+   */
   _updateColumnVisibility = () => {
-    const container = this.containerRef.current;
-    if (!container) return;
+    //TODO must re implement
+    const container = ReactDOM.findDOMNode(this).querySelector(
+      ".GridInfo__container"
+    );
     const columnList = this.data.columnInfo_List.filter(
       (c) => c.gridColumn_PriorityForSmallWidth
     );
@@ -54,31 +61,37 @@ class GridInfo extends GridInfo_Core {
     let scrollWidth = container.scrollWidth - container.clientWidth;
     for (let i = 0; i < columnList.length; i++) {
       if (scrollWidth <= 0) {
+        //scroll
         break;
       }
-      const headerCell = container.querySelector(
+      scrollWidth -= +container.querySelector(
         `[data-key="${columnList[i].fieldName}"]`
-      );
-      if (headerCell) {
-        scrollWidth -= +headerCell.clientWidth;
-        this.data.columnsHide[columnList[i].fieldName] = true;
-      }
+      ).clientWidth;
+      this.data.columnsHide[columnList[i].fieldName] = true;
     }
 
     this.forceUpdate();
   };
 
+  //TODO remove if not need
+  //must be arrow function (for this problems...)
+  //not need for now
+  /**
+   * simulate click on button
+   * @param row
+   * @param fieldName
+   * @param level
+   */
   clickOnItem = (row, fieldName, level) => {
-    const container = this.containerRef.current;
-    if (!container) return;
-
     const idColName = this.dataSource.idColName;
     const rowKey = this._getRowKey(row[idColName], level);
+
+    const container = ReactDOM.findDOMNode(this).querySelector(
+      ".GridInfo__container"
+    );
     const trNode = container.querySelector(`tr[data-key="${rowKey}"]`);
-    if (trNode) {
-      const tdNode = trNode.querySelector(`td[data-key="${fieldName}"]`);
-      tdNode?.querySelector(`button`)?.click();
-    }
+    const tdNode = trNode.querySelector(`td[data-key="${fieldName}"]`);
+    tdNode.querySelector(`button`).click();
   };
 
   //------------------------------------------------
@@ -86,16 +99,20 @@ class GridInfo extends GridInfo_Core {
   //------------------------------------------------
 
   _elementToggleSelectAll = (selectAll) => {
-    const table = this.containerRef.current?.querySelector(".GridInfo__table");
-    if (!table) return;
+    const container = ReactDOM.findDOMNode(this).querySelector(
+      ".GridInfo__table"
+    );
+    const tdElements = container.querySelectorAll(
+      'tbody tr td[data-key="chbSelect"]'
+    );
 
-    const tdElements = table.querySelectorAll('tbody tr td[data-key="chbSelect"]');
     tdElements.forEach((td) => {
       const input = td.querySelector('input[type="checkbox"]');
       if (input && input.checked !== selectAll) {
-        td.click();
+        td.click(); // Simulate a click on the <td> element
       }
     });
+
     this.forceUpdate();
   };
 
@@ -105,21 +122,20 @@ class GridInfo extends GridInfo_Core {
         ? columnInfo.gridColumn_Width_ByPixel + "px"
         : "",
       display: this._isColumnVisible(columnInfo) ? "" : "none",
-      cursor: columnInfo.gridColumn_IsRowNumber ? "not-allowed" : "pointer",
+      cursor: columnInfo.gridColumn_IsRowNumber && "not-allowed",
     };
 
     const sortIcon = {
-      show: this.data.tartib_FieldName === columnInfo.fieldName,
+      show: this.data.tartib_FieldName == columnInfo.fieldName,
       icon: this.data.tartib_IsDescending ? "caret-down" : "caret-up",
     };
 
-    const hideLabel = columnInfo.gridColumn_HideTitle;
-    const headerId = `grid-header-${columnInfo.fieldName}`;
+    const hideLabel =
+      /*columnInfo.label_HideLabel ||*/ columnInfo.gridColumn_HideTitle;
 
     const header = (
       <th
         key={columnInfo.fieldName}
-        id={headerId}
         data-key={columnInfo.fieldName}
         className={"GridInfo__table__th"}
         style={style}
@@ -140,72 +156,70 @@ class GridInfo extends GridInfo_Core {
     const showMenu =
       index ===
       this.data.columnInfo_List.findIndex((c) => this._isColumnVisible(c));
-
     if (showMenu) {
       const hasCheckboxColumn = this.data.columnInfo_List.some(
         (col) => col.fieldName === "chbSelect"
       );
 
       return (
-        <Fragment key={columnInfo.fieldName}>
-          {header}
-          <UncontrolledPopover
-            placement="bottom-start"
-            target={headerId}
-            trigger="legacy"
+        <Popup on="click" trigger={header} key={1}>
+          <button
+            size="sm"
+            className={["MenuItem__item"].filter((c) => c).join(" ")}
+            color="light"
+            onClick={this._exportToExcel}
           >
-            <PopoverBody>
+            <FontAwesome
+              className={"MenuItem__button__icon"}
+              name="file-excel"
+            />
+            <span className={"MenuItem__displayName"}>
+              {" "}
+              {UiSetting.GetSetting("DefaultPageDirection") === "rtl"
+                ? "دریافت خروجی اکسل"
+                : "Export to excel"}
+            </span>
+          </button>
+          {hasCheckboxColumn && (
+            <>
               <button
-                className="MenuItem__item d-block w-100"
-                onClick={this._exportToExcel}
+                size="sm"
+                className={["MenuItem__item"].filter((c) => c).join(" ")}
+                color="light"
+                onClick={() => this._elementToggleSelectAll(true)}
               >
                 <FontAwesome
                   className={"MenuItem__button__icon"}
-                  name="file-excel"
+                  name="check-square"
                 />
                 <span className={"MenuItem__displayName"}>
-                  {UiSetting.GetSetting("language") === "fa"
-                    ? "دریافت خروجی اکسل"
-                    : "Export to excel"}
+                  {UiSetting.GetSetting("DefaultPageDirection") === "rtl"
+                    ? "انتخاب همه"
+                    : "Select All"}
                 </span>
               </button>
-              {hasCheckboxColumn && (
-                <>
-                  <button
-                    className="MenuItem__item d-block w-100"
-                    onClick={() => this._elementToggleSelectAll(true)}
-                  >
-                    <FontAwesome
-                      className={"MenuItem__button__icon"}
-                      name="check-square"
-                    />
-                    <span className={"MenuItem__displayName"}>
-                      {UiSetting.GetSetting("language") === "fa"
-                        ? "انتخاب همه"
-                        : "Select All"}
-                    </span>
-                  </button>
-                  <button
-                    className="MenuItem__item d-block w-100"
-                    onClick={() => this._elementToggleSelectAll(false)}
-                  >
-                    <FontAwesome
-                      className={"MenuItem__button__icon"}
-                      name="square"
-                    />
-                    <span className={"MenuItem__displayName"}>
-                      {UiSetting.GetSetting("language") === "fa"
-                        ? "لغو انتخاب همه"
-                        : "Deselect All"}
-                    </span>
-                  </button>
-                </>
-              )}
-            </PopoverBody>
-          </UncontrolledPopover>
-        </Fragment>
+              <button
+                size="sm"
+                className={["MenuItem__item"].filter((c) => c).join(" ")}
+                color="light"
+                onClick={() => this._elementToggleSelectAll(false)}
+              >
+                <FontAwesome
+                  className={"MenuItem__button__icon"}
+                  name="square"
+                />
+                <span className={"MenuItem__displayName"}>
+                  {UiSetting.GetSetting("DefaultPageDirection") === "rtl"
+                    ? "لغو انتخاب همه"
+                    : "Deselect All"}
+                </span>
+              </button>
+            </>
+          )}
+        </Popup>
       );
     }
+
     return header;
   }
 
@@ -292,6 +306,7 @@ class GridInfo extends GridInfo_Core {
       textAlign: "center",
     };
 
+    // paddingLeft for English - write by Ali Kamel
     if (UiSetting.GetSetting("textAlign").toLocaleLowerCase() === "left") {
       style.paddingLeft = levelingPercent ? levelingPercent + "%" : "";
       style.paddingRight = "";
@@ -317,6 +332,7 @@ class GridInfo extends GridInfo_Core {
         : "";
     }
 
+    // TODO
     marginRight = "";
 
     let onHyperLinkClick;
@@ -347,7 +363,7 @@ class GridInfo extends GridInfo_Core {
     let leveling = false;
     if (
       this._isGroupColumn(columnInfo) ||
-      this.fieldInfo.leveling_ApplyToField === tdKey
+      this.fieldInfo.leveling_ApplyToField == tdKey
     ) {
       className += " GridInfo__table__td--leveling";
       leveling = true;
@@ -356,11 +372,6 @@ class GridInfo extends GridInfo_Core {
     const canDrag = this._isDragColumn(columnInfo);
 
     let tdValue;
-
-    // تغییر اصلی برای حل مشکل ساختار HTML
-    // بر اساس وجود cardInfo، تگ یا <td> خواهد بود یا <div>
-    const Tag = cardInfo ? "div" : "td";
-
     if (columnInfo.gridColumn_IsRowNumber) {
       let paged = this.fieldInfo.paging_IsPaged;
       let startNumber = 0;
@@ -374,14 +385,14 @@ class GridInfo extends GridInfo_Core {
         tdValue = +startNumber + groupOption.groupRowIndex;
       }
     } else if (this._columnIsFieldInfo(columnInfo)) {
-      let CompTag = ComponentUtils.getComponentTag(columnInfo);
+      let Tag = ComponentUtils.getComponentTag(columnInfo);
       const fieldInfo =
         this.data.componentFields[row[idColName]] &&
         this.data.componentFields[row[idColName]][columnInfo.fieldName];
       let key = this.data.needUpdate ? 1 : 2;
 
       tdValue = fieldInfo && fieldInfo.visible && (
-        <CompTag
+        <Tag
           style={{ marginRight: marginRight }}
           key={key}
           fieldInfo={fieldInfo}
@@ -389,12 +400,13 @@ class GridInfo extends GridInfo_Core {
         />
       );
 
+      //error show 0 if visible == 0
       if (!tdValue) tdValue = "";
 
       const _width = this._styleGetColumnWidth(fieldInfo || columnInfo);
       style.width = style.width || _width;
       return (
-        <Tag 
+        <td
           onDragStart={this._handleTdDragStart.bind(this, columnInfo, row)}
           draggable={canDrag}
           data-key={tdKey}
@@ -404,10 +416,14 @@ class GridInfo extends GridInfo_Core {
           onClick={onHyperLinkClick}
         >
           {tdValue}
-        </Tag>
+        </td>
       );
     } else {
       if (isGrouping && this._isGroupColumn(columnInfo)) {
+        // style.cursor = 'pointer'
+        {
+          /*<FontAwesomeIcon icon={'caret-left'} />*/
+        }
         if (groupOption.showIcon) {
           className += " GridInfo__table__td__group";
         }
@@ -416,6 +432,7 @@ class GridInfo extends GridInfo_Core {
           : this.fieldInfo.grouping_IconName_Expanded;
         tdValue = (
           <span>
+            {" "}
             {groupOption.showIcon && (
               <FontAwesome
                 className={"GridInfo__table__td__icon"}
@@ -430,7 +447,7 @@ class GridInfo extends GridInfo_Core {
           </span>
         );
         return (
-          <Tag 
+          <td
             draggable={canDrag}
             data-key={tdKey}
             onClick={groupOption.onClick}
@@ -444,7 +461,7 @@ class GridInfo extends GridInfo_Core {
                 {`(${groupOption.childSize})`}{" "}
               </span>
             )}
-          </Tag>
+          </td>
         );
       } else {
         if (columnInfo.number_ShowZero_IfValueIsZero) {
@@ -471,12 +488,19 @@ class GridInfo extends GridInfo_Core {
       }
     }
 
+    // if (marginRight) {
+    //     tdValue = <span style={{marginRight: marginRight}}>
+    //             {tdValue}
+    //             </span>
+    // }
+
     tdValue = (
       <Fragment>
         <span
           className={"GridInfo__table__td__Span"}
           style={{
             marginRight: marginRight,
+            // textAlign: leveling && "right",
             textAlign: Utils.isMobile()
               ? "center"
               : UiSetting.GetSetting("textAlign"),
@@ -487,11 +511,14 @@ class GridInfo extends GridInfo_Core {
           }}
           dangerouslySetInnerHTML={{ __html: tdValue }}
         />
+        {/*<span>*/}
+        {/*...*/}
+        {/*</span>*/}
       </Fragment>
     );
 
     return (
-      <Tag // <<--- استفاده از تگ داینامیک
+      <td
         draggable={canDrag}
         data-key={tdKey}
         key={tdKey}
@@ -500,7 +527,7 @@ class GridInfo extends GridInfo_Core {
         onClick={onHyperLinkClick}
       >
         {tdValue}
-      </Tag>
+      </td>
     );
   }
 
@@ -1033,13 +1060,14 @@ class GridInfo extends GridInfo_Core {
     //addd uniqe id to it like time and date
     Utils.TableToExcel(table, this.fieldInfo.fieldName);
   };
-  
+
   render() {
     const pagingOptions = this._pagingGetOptions();
     const rowList = this._dataCurrentPageRowList();
+
     const isCardView = this._isCardView();
 
-    return (
+    const rendered = (
       <div className={"GridInfo"}>
         <div style={{ marginBottom: ".5rem" }}>
           <TextFieldInfo
@@ -1051,10 +1079,7 @@ class GridInfo extends GridInfo_Core {
         </div>
 
         {!isCardView ? (
-          <div
-            ref={this.containerRef}
-            className={"GridInfo__container scroll__container"}
-          >
+          <div className={"GridInfo__container scroll__container"}>
             <table className={"GridInfo__table"}>
               <thead>
                 <tr className={"GridInfo__table__tr--header"}>
@@ -1063,16 +1088,18 @@ class GridInfo extends GridInfo_Core {
                   )}
                 </tr>
               </thead>
+
               <tbody>
                 {rowList.map(this._elementGetRow.bind(this))}
                 {rowList.length === 0 && (
                   <tr>
-                    <td colSpan="100%">
+                    <td colspan="100%">
                       <div className={"GridInfo__emptyContainer"}>
                         <FontAwesome
                           className={"GridInfo__emptyIcon ml-2"}
                           name={"exclamation-circle"}
                         />
+                        {/* داده ای موجود نیست */}
                         {UiSetting.GetSetting("language") === "en"
                           ? "There is nothing to display"
                           : "داده ای موجود نیست "}
@@ -1082,6 +1109,8 @@ class GridInfo extends GridInfo_Core {
                 )}
               </tbody>
             </table>
+
+            
           </div>
         ) : (
           <div className={"GridInfo__CardContainer"}>
@@ -1136,7 +1165,16 @@ class GridInfo extends GridInfo_Core {
         </div>
       </div>
     );
+
+    //after fully
+    this.data.needUpdate = false;
+
+    return rendered;
   }
+
+  //------------------------------------------------
+  //endregion render element
+  //------------------------------------------------
 }
 
 export default GridInfo;

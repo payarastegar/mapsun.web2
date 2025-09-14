@@ -158,7 +158,6 @@ class SystemClass_Core {
       s.substring(2, s.length - 2)
     );
     requireFields.forEach((fieldName) => {
-      console.log("***",fieldName)
       const fieldInfo = formModel.formFieldInfo.getFieldInfo(fieldName);
       if (!fieldInfo.visible) return;
       fieldInfo._error = "updateError";

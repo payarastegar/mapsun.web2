@@ -1,8 +1,7 @@
-import React, { Component, Fragment, PureComponent } from 'react';
+import React, {Component, Fragment, PureComponent} from 'react';
 import BaseComponent from "./BaseComponent";
 import FontAwesome from 'react-fontawesome'
-// import {ReactComponent as Error404} from '../content/error-404.svg';
-import error404Url from '../content/error-404.svg';
+import {ReactComponent as Error404} from '../content/error-404.svg';
 
 class ErrorContainer extends BaseComponent {
     constructor(props) {
@@ -20,11 +19,11 @@ class ErrorContainer extends BaseComponent {
 
     render() {
 
-        window.location.assign('/')
-
+		window.location.assign('/')
+		
         return (
             <div className="Error__container scroll__container2">
-                <img src={error404Url} alt="Error 404" className={'Error__container__icon'} />
+                <Error404 className={'Error__container__icon'}/>
             </div>
         )
     }

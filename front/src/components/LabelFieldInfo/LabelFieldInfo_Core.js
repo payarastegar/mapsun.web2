@@ -23,13 +23,12 @@ class LabelFieldInfo_Core extends BaseComponent {
   //region component method
   //------------------------------------------------
   /**
-   * base component's constructor that load initialize
+   *  base component's constructor that load initialize
    * */
 
   constructor(props) {
     super(props);
     this.fieldInfo = props.fieldInfo;
-    // This line is critical: it links the data object back to the component instance.
     this.fieldInfo.component = this;
     this.props.onChange && this.addOnChange_Callee(this.props.onChange);
     //for init
@@ -43,7 +42,9 @@ class LabelFieldInfo_Core extends BaseComponent {
   componentDidMount() {}
 
   /** react component method*/
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    this.forceUpdate();
+  }
 
   //------------------------------------------------
   //endregion component method
@@ -52,7 +53,10 @@ class LabelFieldInfo_Core extends BaseComponent {
   //------------------------------------------------
   //region field info component method
   //------------------------------------------------
-  
+  /**
+   * initialize that run in constructor for init state and data in component
+   */
+
   initialize() {}
 
   _validationEffect() {}
@@ -67,7 +71,7 @@ class LabelFieldInfo_Core extends BaseComponent {
    */
   getFormInfo = () => {
     let formFieldInfo = this.fieldInfo._parentFieldInfo;
-    while (formFieldInfo && formFieldInfo.fieldType !== FieldType.Form) {
+    while (formFieldInfo.fieldType !== FieldType.Form) {
       formFieldInfo = formFieldInfo._parentFieldInfo;
     }
     return formFieldInfo;
@@ -79,7 +83,7 @@ class LabelFieldInfo_Core extends BaseComponent {
    */
   getFieldInfo(fieldName) {
     const formInfo = this.getFormInfo();
-    return formInfo ? formInfo.getFieldInfo(fieldName) : null;
+    return formInfo.getFieldInfo(fieldName);
   }
 
   /**
@@ -87,11 +91,8 @@ class LabelFieldInfo_Core extends BaseComponent {
    * @return {(FieldInfo)}
    */
   getFieldInfoByDSName(dsName) {
-     if (this.fieldInfo._parentComponent && this.fieldInfo._parentComponent.getFieldInfoByDSName) {
-      return this.fieldInfo._parentComponent.getFieldInfoByDSName(dsName);
-    }
     const formInfo = this.getFormInfo();
-    return formInfo ? formInfo.getFieldInfoByDSName(dsName) : null;
+    return formInfo.getFieldInfoByDSName(dsName);
   }
 
   /**
@@ -99,6 +100,7 @@ class LabelFieldInfo_Core extends BaseComponent {
    * default fire rebind component
    */
   onChange = (value) => {
+    //show form menu on select row in grid (usually check box)
     if (value && this.fieldInfo.checkBox_ShowFormMenu_OnSelect) {
       const formFieldInfo = this.getFormInfo();
       formFieldInfo.component && formFieldInfo.component.showMenu(true);
@@ -106,6 +108,10 @@ class LabelFieldInfo_Core extends BaseComponent {
     this._fireRebindCallees(value);
   };
 
+  /**
+   * rebind all component that need update after this component value change
+   * such comboBox and Parent ComboBox that change in parent Value must rebind child
+   */
   _fireRebindCallees(value) {
     const fieldInfoList = [
       this.getFieldInfo(this.fieldInfo.onChange_Callee_1),
@@ -113,7 +119,7 @@ class LabelFieldInfo_Core extends BaseComponent {
       this.getFieldInfo(this.fieldInfo.onChange_Callee_3),
     ].filter((i) => i);
 
-    fieldInfoList.forEach((fieldInfo) => fieldInfo && fieldInfo._rebindFromParent(value));
+    fieldInfoList.forEach((fieldInfo) => fieldInfo._rebindFromParent(value));
   }
 
   /**
@@ -197,26 +203,106 @@ class LabelFieldInfo_Core extends BaseComponent {
    * for now just say fill field
    */
   getCustomError() {
-    if (this.fieldInfo._error === "updateError") {
+    const error = this.fieldInfo._error;
+    if (error == "updateError") {
       return "فیلد را مشخص نمایید";
     }
   }
 
+  /**
+   * return which component value is valid in form
+   */
   isValid() {
     throw "CustomError: Unimplemented!";
   }
 
+  /**
+   * return value as Int
+   */
+  asInt() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * return value as Float
+   */
+  asFloat() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * return value as String
+   */
+  asText() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * return value as Date
+   */
+  asDate() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * like update bot fully refersh component
+   */
+  rebind() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * like rebind only for combo
+   */
+  rebindCombo() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  rebindField() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  rebindGrid() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /** @param {number} newParentId */
+  changeParent_Combo(newParentId) {
+    throw "CustomError: Unimplemented!";
+  }
+
+  onSearchClick() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /** @param  newValue */
+  changeValue(newValue) {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /** @return  array[NameValueObject] */
+  getFieldValues() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  button_CallWebSvc_AndRefreshForm() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  button_OpenDialog_AndInitF() {
+    throw "CustomError: Unimplemented!";
+  }
+
+  /**
+   * get datasource of component error on not found
+   */
   _dataGetDataSource(dataSourceName) {
     return this.fieldInfo.getDataSource(dataSourceName);
   }
 
-  // Other abstract methods
-  asInt() { throw "CustomError: Unimplemented!"; }
-  asFloat() { throw "CustomError: Unimplemented!"; }
-  asText() { throw "CustomError: Unimplemented!"; }
-  asDate() { throw "CustomError: Unimplemented!"; }
-  rebind() { throw "CustomError: Unimplemented!"; }
-  changeValue(newValue) { throw "CustomError: Unimplemented!"; }
+  //------------------------------------------------
+  //endregion field info component method
+  //------------------------------------------------
 }
 
 export default LabelFieldInfo_Core;

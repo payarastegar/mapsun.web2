@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { Component } from "react";
 import PropTypes from "prop-types";
 import momentJalaali from "moment-jalaali";
+import onClickOutside from "react-onclickoutside";
 import DaysViewHeading from "./DaysViewHeading";
 import DaysOfWeek from "./DaysOfWeek";
 import MonthSelector from "./MonthSelector";
@@ -10,153 +11,290 @@ import { getDaysOfMonth, checkToday } from "../utils/moment-helper";
 import { defaultStyles } from "./DefaultStyles";
 import RangeList from "../utils/RangesList";
 
-// برای استفاده از این کامپوننت، باید یک هوک سفارشی برای تشخیص کلیک بیرونی بسازید
-// می‌توانید این هوک را در یک فایل جداگانه (مثلاً useOnClickOutside.js) قرار دهید
-function useOnClickOutside(ref, handler) {
-  useEffect(() => {
-    const listener = (event) => {
-      if (!ref.current || ref.current.contains(event.target)) {
-        return;
-      }
-      handler(event);
-    };
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
-    return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
-    };
-  }, [ref, handler]);
-}
+export class Calendar extends Component {
+  static propTypes = {
+    min: PropTypes.object,
+    max: PropTypes.object,
+    styles: PropTypes.object,
+    selectedDay: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+    defaultYear: PropTypes.object,
+    defaultMonth: PropTypes.object,
+    onSelect: PropTypes.func,
+    onYearChange: PropTypes.func,
+    onMonthChange: PropTypes.func,
+    onClickOutside: PropTypes.func,
+    containerProps: PropTypes.object,
+    isGregorian: PropTypes.bool,
+    calendarClass: PropTypes.string,
+    showToggleButton: PropTypes.bool,
+    toggleButtonText: PropTypes.any,
+    showTodayButton: PropTypes.bool,
+    disableYearSelector: PropTypes.bool,
+  };
 
+  static childContextTypes = {
+    nextMonth: PropTypes.func.isRequired,
+    prevMonth: PropTypes.func.isRequired,
+    setCalendarMode: PropTypes.func.isRequired,
+    setYear: PropTypes.func.isRequired,
+    setMonth: PropTypes.func.isRequired,
+    setType: PropTypes.func.isRequired,
+  };
 
-const Calendar = (props) => {
-  const {
-    min,
-    max,
-    styles,
-    selectedDay: initialSelectedDay,
+  static defaultProps = {
+    styles: defaultStyles,
+    containerProps: {},
+    isGregorian: true,
+    showToggleButton: false,
+    showTodayButton: true,
+    toggleButtonText: ["تاریخ شمسی", "تاریخ میلادی"],
+  };
+
+  state = {
+    year:
+      this.props.defaultYear ||
+      this.props.selectedDay ||
+      momentJalaali(this.props.min),
+    month:
+      this.props.defaultMonth ||
+      this.props.selectedDay ||
+      momentJalaali(this.props.min),
+    selectedDay: this.props.selectedDay || this.props.value || momentJalaali(),
+    mode: "days",
+    isGregorian: this.props.isGregorian,
+    ranges: new RangeList(this.props.ranges),
+  };
+
+  getChildContext() {
+    return {
+      nextMonth: this.nextMonth.bind(this),
+      prevMonth: this.prevMonth.bind(this),
+      setCalendarMode: this.setMode.bind(this),
+      setYear: this.setYear.bind(this),
+      setMonth: this.setMonth.bind(this),
+      setType: this.setMonth.bind(this),
+    };
+  }
+
+  UNSAFE_componentWillReceiveProps({
+    selectedDay,
     defaultYear,
     defaultMonth,
-    onSelect,
-    onYearChange,
-    onMonthChange,
-    onClickOutside,
-    containerProps,
-    isGregorian: initialIsGregorian,
-    calendarClass,
-    showToggleButton,
-    toggleButtonText,
-    showTodayButton,
-    disableYearSelector,
-    timePicker,
-    ranges: initialRanges,
-    value,
-    onChange,
-    toggleMode,
-  } = props;
-
-  const [year, setYear] = useState(defaultYear || initialSelectedDay || momentJalaali(min));
-  const [month, setMonth] = useState(defaultMonth || initialSelectedDay || momentJalaali(min));
-  const [selectedDay, setSelectedDay] = useState(initialSelectedDay || value || momentJalaali());
-  const [mode, setMode] = useState("days");
-  const [isGregorian, setIsGregorian] = useState(initialIsGregorian);
-  const [ranges, setRanges] = useState(new RangeList(initialRanges));
-
-  const calendarRef = useRef(null);
-
-  useOnClickOutside(calendarRef, onClickOutside);
-
-  useEffect(() => {
-    if (typeof initialIsGregorian !== "undefined" && initialIsGregorian !== isGregorian) {
-      setIsGregorian(initialIsGregorian);
+    min,
+    isGregorian,
+    ranges,
+  }) {
+    if (
+      typeof isGregorian !== "undefined" &&
+      isGregorian !== this.state.isGregorian
+    ) {
+      this.setState({ isGregorian });
     }
 
-    if (initialSelectedDay !== selectedDay) {
-      selectDay(initialSelectedDay || momentJalaali());
-    } else if (defaultYear && defaultYear !== year) {
-      setYear(defaultYear);
-    } else if (defaultMonth && defaultMonth !== month) {
-      setMonth(defaultMonth);
-    } else if (min && !month.isSame(min)) {
-      setMonth(min.clone());
+    if (this.props.selectedDay !== selectedDay) {
+      this.selectDay(selectedDay || momentJalaali());
+    } else if (
+      defaultYear &&
+      this.props.defaultYear !== defaultYear &&
+      this.state.year === this.props.defaultYear
+    ) {
+      this.setYear(defaultYear);
+    } else if (
+      defaultMonth &&
+      this.props.defaultMonth !== defaultMonth &&
+      this.state.month === this.props.defaultMonth
+    ) {
+      this.setMonth(defaultMonth);
+    } else if (
+      min &&
+      this.props.min !== min &&
+      this.state.month.isSame(this.props.min)
+    ) {
+      this.setMonth(min.clone());
     }
 
-    if (JSON.stringify(initialRanges) !== JSON.stringify(ranges.ranges)) {
-      setRanges(new RangeList(initialRanges));
+    if (JSON.stringify(this.props.ranges) !== JSON.stringify(ranges)) {
+      this.setState({ ranges: new RangeList(ranges) });
     }
-  }, [initialSelectedDay, defaultYear, defaultMonth, min, initialIsGregorian, initialRanges]);
+  }
 
-  const nextMonth = () => {
-    const monthFormat = isGregorian ? "Month" : "jMonth";
-    const newMonth = month.clone().add(1, monthFormat);
-    setMonth(newMonth);
-    if (onMonthChange) onMonthChange(newMonth);
+  setMode = (mode) => {
+    this.setState({ mode });
   };
 
-  const prevMonth = () => {
-    const monthFormat = isGregorian ? "Month" : "jMonth";
-    const newMonth = month.clone().subtract(1, monthFormat);
-    setMonth(newMonth);
-    if (onMonthChange) onMonthChange(newMonth);
+  setYear = (year) => {
+    const { onYearChange } = this.props;
+    this.setState({ year });
+    if (onYearChange) {
+      onYearChange(year);
+    }
   };
 
-  const selectDay = (dayToSelect) => {
+  setMonth = (month) => {
+    const { onMonthChange } = this.props;
+    this.setState({ month });
+    if (onMonthChange) {
+      onMonthChange(month);
+    }
+  };
+
+  setType = (type) => {
+    this.setState({ type });
+  };
+
+  nextMonth = () => {
+    const { isGregorian } = this.state;
+    const monthFormat = isGregorian ? "Month" : "jMonth";
+
+    this.setState(
+      {
+        month: this.state.month.clone().add(1, monthFormat),
+      },
+      () =>
+        this.props.onMonthChange && this.props.onMonthChange(this.state.month)
+    );
+  };
+
+  prevMonth = () => {
+    const { isGregorian } = this.state;
+    const monthFormat = isGregorian ? "Month" : "jMonth";
+
+    this.setState(
+      {
+        month: this.state.month.clone().subtract(1, monthFormat),
+      },
+      () =>
+        this.props.onMonthChange && this.props.onMonthChange(this.state.month)
+    );
+  };
+
+  selectDay = (selectedDay) => {
+    const { month, isGregorian } = this.state;
     const yearMonthFormat = isGregorian ? "YYYYMM" : "jYYYYjMM";
-    if (!dayToSelect) {
-      setYear(defaultYear || initialSelectedDay || momentJalaali(min));
-      setMonth(defaultMonth || initialSelectedDay || momentJalaali(min));
-      setSelectedDay(null);
+
+    if (!selectedDay) {
+      this.setState({
+        year:
+          this.props.defaultYear ||
+          this.props.selectedDay ||
+          momentJalaali(this.props.min),
+        month:
+          this.props.defaultMonth ||
+          this.props.selectedDay ||
+          momentJalaali(this.props.min),
+        selectedDay: null,
+      });
       return;
     }
-    if (dayToSelect.format(yearMonthFormat) !== month.format(yearMonthFormat)) {
-      setMonth(dayToSelect);
+
+    // Because there's no `m1.isSame(m2, 'jMonth')`
+    if (selectedDay.format(yearMonthFormat) !== month.format(yearMonthFormat)) {
+      this.setState({ month: selectedDay });
     }
-    setSelectedDay(dayToSelect);
+
+    this.setState({ selectedDay });
   };
 
-  const handleClickOnDay = (dayToSelect) => {
-    selectDay(dayToSelect);
-    if (onSelect) onSelect(dayToSelect);
-    if (onChange) onChange(dayToSelect);
+  handleClickOnDay = (selectedDay) => {
+    const { onSelect, onChange } = this.props;
+    this.selectDay(selectedDay);
+    if (onSelect) {
+      onSelect(selectedDay);
+    }
+    if (onChange) onChange(selectedDay);
   };
 
-  const renderDays = () => {
-    const days = getDaysOfMonth(month, isGregorian);
+  handleClickOutside = (event) => {
+    if (this.props.onClickOutside) {
+      this.props.onClickOutside(event);
+    }
+  };
+
+  days = null;
+
+  lastRenderedMonth = null;
+
+  renderMonthSelector = () => {
+    const { month, isGregorian } = this.state;
+    const { styles, disableYearSelector } = this.props;
+    return (
+      <MonthSelector
+        disableYearSelector={disableYearSelector}
+        styles={styles}
+        isGregorian={isGregorian}
+        selectedMonth={month}
+      />
+    );
+  };
+
+  renderYearSelector = () => {
+    const { year, month, isGregorian } = this.state;
+    const { styles } = this.props;
+    return (
+      <YearSelector
+        styles={styles}
+        isGregorian={isGregorian}
+        selectedYear={year}
+        selectedMonth={month}
+      />
+    );
+  };
+
+  renderDays = () => {
+    const { month, selectedDay, isGregorian } = this.state;
+    const { children, min, max, styles, outsideClickIgnoreClass } = this.props;
+
+    let days;
+
+    if (this.lastRenderedMonth === month) {
+      days = this.days;
+    } else {
+      days = getDaysOfMonth(month, isGregorian);
+      this.days = days;
+      this.lastRenderedMonth = month;
+    }
+
     const monthFormat = isGregorian ? "MM" : "jMM";
     const dateFormat = isGregorian ? "YYYYMMDD" : "jYYYYjMMjDD";
 
     return (
-      <div className={calendarClass}>
+      <div className={this.props.calendarClass}>
+        {children}
         <DaysViewHeading
-          timePicker={timePicker}
+          timePicker={this.props.timePicker}
           isGregorian={isGregorian}
           styles={styles}
           month={month}
-          setCalendarMode={setMode}
-          nextMonth={nextMonth}
-          prevMonth={prevMonth}
         />
         <DaysOfWeek styles={styles} isGregorian={isGregorian} />
         <div className={styles.dayPickerContainer}>
           {days.map((day) => {
-            const isCurrentMonth = day.format(monthFormat) === month.format(monthFormat);
-            const isSelected = selectedDay ? selectedDay.isSame(day, "day") : false;
+            const isCurrentMonth =
+              day.format(monthFormat) === month.format(monthFormat);
+            const selected = selectedDay
+              ? selectedDay.isSame(day, "day")
+              : false;
             const key = day.format(dateFormat);
             const isToday = checkToday(day.format("YYYYMMDD"));
-            const dayState = ranges.getDayState(day);
-            const isDisabled = (min && day.isBefore(min)) || (max && day.isAfter(max)) || dayState.disabled;
+
+            // disabling by old min-max props
+            const disabled =
+              (min ? day.isBefore(min) : false) ||
+              (max ? day.isAfter(max) : false);
+
+            // new method for disabling and highlighting the ranges of days
+            const dayState = this.state.ranges.getDayState(day);
 
             return (
               <Day
                 isGregorian={isGregorian}
                 key={key}
-                onClick={handleClickOnDay}
+                onClick={this.handleClickOnDay}
                 day={day}
                 isToday={isToday}
                 colors={dayState.colors}
-                disabled={isDisabled}
-                selected={isSelected}
+                disabled={disabled || dayState.disabled} // disabled by old method or new range method
+                selected={selected}
                 isCurrentMonth={isCurrentMonth}
                 styles={styles}
               />
@@ -166,90 +304,75 @@ const Calendar = (props) => {
       </div>
     );
   };
+  changeCalendarMode() {
+    this.props.toggleMode();
+  }
+  render() {
+    const {
+      selectedDay,
+      min,
+      max,
+      onClickOutside,
+      outsideClickIgnoreClass,
+      styles,
+      className,
+      showTodayButton,
+    } = this.props;
 
-  const renderMonthSelector = () => (
-    <MonthSelector
-      disableYearSelector={disableYearSelector}
-      styles={styles}
-      isGregorian={isGregorian}
-      selectedMonth={month}
-      setMonth={setMonth}
-      setCalendarMode={setMode}
-    />
-  );
+    const { mode, isGregorian } = this.state;
 
-  const renderYearSelector = () => (
-    <YearSelector
-      styles={styles}
-      isGregorian={isGregorian}
-      selectedYear={year}
-      selectedMonth={month}
-      setYear={setYear}
-      setCalendarMode={setMode}
-    />
-  );
+    const jalaaliClassName = isGregorian ? "" : "jalaali ";
 
-  const jalaaliClassName = isGregorian ? "" : "jalaali ";
-  const today = momentJalaali().set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
-  const todayState = ranges.getDayState(today);
-  const isTodayDisabled = (min && today.isBefore(min)) || (max && today.isAfter(max)) || todayState.disabled;
+    const today = momentJalaali();
+    today.set({ hour: 0, minute: 0, second: 0, millisecond: 0 });
 
-  return (
-    <div ref={calendarRef} className={`${styles.calendarContainer} ${jalaaliClassName} ${props.className}`}>
-      {showToggleButton && (
-        <button className="calendarButton toggleButton" type="button" onClick={toggleMode}>
-          {isGregorian ? toggleButtonText[0] : toggleButtonText[1]}
-        </button>
-      )}
-      {mode === "days" && renderDays()}
-      {mode === "monthSelector" && renderMonthSelector()}
-      {mode === "yearSelector" && renderYearSelector()}
-      {showTodayButton && (
-        <button
-          type="button"
-          className="calendarButton selectToday"
-          onClick={() => handleClickOnDay(today)}
-          disabled={isTodayDisabled}
-        >
-          {isGregorian ? "Today" : "امروز"}
-        </button>
-      )}
-    </div>
-  );
-};
+    // check today state -----------
 
-Calendar.propTypes = {
-  min: PropTypes.object,
-  max: PropTypes.object,
-  styles: PropTypes.object,
-  selectedDay: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
-  defaultYear: PropTypes.object,
-  defaultMonth: PropTypes.object,
-  onSelect: PropTypes.func,
-  onYearChange: PropTypes.func,
-  onMonthChange: PropTypes.func,
-  onClickOutside: PropTypes.func,
-  containerProps: PropTypes.object,
-  isGregorian: PropTypes.bool,
-  calendarClass: PropTypes.string,
-  showToggleButton: PropTypes.bool,
-  toggleButtonText: PropTypes.any,
-  showTodayButton: PropTypes.bool,
-  disableYearSelector: PropTypes.bool,
-  timePicker: PropTypes.bool,
-  ranges: PropTypes.array,
-  value: PropTypes.object,
-  onChange: PropTypes.func,
-  toggleMode: PropTypes.func,
-};
+    // disabling by old min-max props
+    const disabled =
+      (min ? today.isBefore(min) : false) || (max ? today.isAfter(max) : false);
+    // new method for disabling and highlighting the ranges of days
+    const dayState = this.state.ranges.getDayState(today);
 
-Calendar.defaultProps = {
-  styles: defaultStyles,
-  containerProps: {},
-  isGregorian: true,
-  showToggleButton: false,
-  showTodayButton: true,
-  toggleButtonText: ["تاریخ شمسی", "تاریخ میلادی"],
-};
+    const isTodayDisabled = disabled || dayState.disabled;
 
-export default Calendar;
+    // ------------------------------
+
+    console.log(styles.calendarContainer);
+
+    return (
+      <div
+        className={`${
+          styles.calendarContainer
+        } ${jalaaliClassName}${className}`}
+      >
+        {this.props.showToggleButton && (
+          <button
+            className="calendarButton toggleButton"
+            type="button"
+            onClick={this.changeCalendarMode.bind(this)}
+          >
+            {isGregorian
+              ? this.props.toggleButtonText[0]
+              : this.props.toggleButtonText[1]}
+          </button>
+        )}
+        {mode === "days" && this.renderDays()}
+        {mode === "monthSelector" && this.renderMonthSelector()}
+        {mode === "yearSelector" && this.renderYearSelector()}
+        {showTodayButton && (
+          <button
+            type="button"
+            className="calendarButton selectToday"
+            onClick={() => this.handleClickOnDay(today)}
+            disabled={isTodayDisabled}
+          >
+            {isGregorian ? "today" : "امروز"}
+          </button>
+        )}
+      </div>
+    );
+  }
+}
+
+export default onClickOutside(Calendar);

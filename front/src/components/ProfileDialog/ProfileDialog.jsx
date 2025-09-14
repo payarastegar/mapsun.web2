@@ -8,7 +8,7 @@ import SystemClass from "../../SystemClass";
 import Utils from "../../Utils";
 import FormInfo from "../FormInfo/FormInfo";
 import FieldInfo from "../../class/FieldInfo";
-import {conditionallyUpdateScrollbar, setScrollbarWidth} from "reactstrap";
+import {conditionallyUpdateScrollbar, setScrollbarWidth} from "reactstrap/es/utils";
 import FontAwesome from 'react-fontawesome';
 import FileCompressor from "../../file/FileCompressor";
 import WebService from "../../WebService";

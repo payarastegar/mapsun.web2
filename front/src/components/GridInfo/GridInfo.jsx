@@ -1,18 +1,19 @@
 import "./GridInfo.css";
 import TextFieldInfo from "../TextFieldInfo/TextFieldInfo";
 import React, { Fragment } from "react";
+import * as ReactDOM from "react-dom";
+import FilterCondition from "../../class/enums/FilterCondition";
+import FieldInfo from "../../class/FieldInfo";
+import ColumnInfo from "../../class/ColumnInfo";
+import ComponentUtils from "../ComponentUtils";
+import Utils from "../../Utils";
 import UiSetting from "../../UiSetting";
 import FontAwesome from "react-fontawesome";
 import SystemClass from "../../SystemClass";
 import GridInfo_Core from "./GridInfo_Core";
-import ComponentUtils from "../ComponentUtils";
+import ButtonFieldInfo from "../ButtonFieldInfo/ButtonFieldInfo";
 
 class GridInfo extends GridInfo_Core {
-  constructor(props) {
-    super(props);
-    this.containerRef = React.createRef();
-  }
-
   //------------------------------------------------
   //region public methods
   //------------------------------------------------
@@ -38,9 +39,10 @@ class GridInfo extends GridInfo_Core {
    * @private
    */
   _updateColumnVisibility = () => {
-    const container = this.containerRef.current;
-    if (!container) return;
-
+    //TODO must re implement
+    const container = ReactDOM.findDOMNode(this).querySelector(
+      ".GridInfo__container"
+    );
     const columnList = this.data.columnInfo_List.filter(
       (c) => c.gridColumn_PriorityForSmallWidth
     );
@@ -56,16 +58,15 @@ class GridInfo extends GridInfo_Core {
     let scrollWidth = container.scrollWidth - container.clientWidth;
     for (let i = 0; i < columnList.length; i++) {
       if (scrollWidth <= 0) {
+        //scroll
         break;
       }
-      const headerCell = container.querySelector(
+      scrollWidth -= +container.querySelector(
         `[data-key="${columnList[i].fieldName}"]`
-      );
-      if (headerCell) {
-        scrollWidth -= +headerCell.clientWidth;
-        this.data.columnsHide[columnList[i].fieldName] = true;
-      }
+      ).clientWidth;
+      this.data.columnsHide[columnList[i].fieldName] = true;
     }
+
     this.forceUpdate();
   };
 
@@ -79,16 +80,15 @@ class GridInfo extends GridInfo_Core {
    * @param level
    */
   clickOnItem = (row, fieldName, level) => {
-    const container = this.containerRef.current;
-    if (!container) return;
-
     const idColName = this.dataSource.idColName;
     const rowKey = this._getRowKey(row[idColName], level);
+
+    const container = ReactDOM.findDOMNode(this).querySelector(
+      ".GridInfo__container"
+    );
     const trNode = container.querySelector(`tr[data-key="${rowKey}"]`);
-    if (trNode) {
-      const tdNode = trNode.querySelector(`td[data-key="${fieldName}"]`);
-      tdNode?.querySelector(`button`)?.click();
-    }
+    const tdNode = trNode.querySelector(`td[data-key="${fieldName}"]`);
+    tdNode.querySelector(`button`).click();
   };
 
   //------------------------------------------------
@@ -798,6 +798,7 @@ class GridInfo extends GridInfo_Core {
   render() {
     const pagingOptions = this._pagingGetOptions();
     const rowList = this._dataCurrentPageRowList();
+
     const isCardView = this._isCardView();
 
     const rendered = (
@@ -812,10 +813,7 @@ class GridInfo extends GridInfo_Core {
         </div>
 
         {!isCardView ? (
-          <div
-            ref={this.containerRef}
-            className={"GridInfo__container scroll__container"}
-          >
+          <div className={"GridInfo__container scroll__container"}>
             <table className={"GridInfo__table"}>
               <thead>
                 <tr className={"GridInfo__table__tr--header"}>
@@ -894,7 +892,11 @@ class GridInfo extends GridInfo_Core {
       </div>
     );
 
+    //after fully
     this.data.needUpdate = false;
+
+    console.log();
+
     return rendered;
   }
 

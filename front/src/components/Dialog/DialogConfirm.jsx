@@ -1,106 +1,210 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef, useCallback } from "react";
-import { Button, Modal, ModalBody, ModalFooter, Input, Label, FormGroup } from "reactstrap";
+import React, { Component } from "react";
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Input,
+} from "reactstrap";
+
 import "./Dialog.css";
+import BaseComponent from "../BaseComponent";
 import SystemClass from "../../SystemClass";
 import Utils from "../../Utils";
+import FormInfo from "../FormInfo/FormInfo";
+import FontAwesome from "react-fontawesome";
 import moment from "moment";
+import CheckBoxFieldInfo from "../CheckBoxFieldInfo/CheckBoxFieldInfo";
+import FieldInfo from "../../class/FieldInfo";
+import FieldType from "../../class/enums/FieldType";
+import { Checkbox } from "semantic-ui-react";
 import UiSetting from "../../UiSetting";
 
-const DialogConfirm = forwardRef((props, ref) => {
-    const [isShow, setIsShow] = useState(false);
-    const [msg, setMsg] = useState("");
-    const [canPostpone, setCanPostpone] = useState(false);
-    const [fieldCid, setFieldCid] = useState(null);
-    const [dontShowAgain, setDontShowAgain] = useState(false);
-
-    const promiseRef = useRef({ resolve: null, reject: null });
-
-    useImperativeHandle(ref, () => ({
-        openDialog: (message, canPostponeFlag, cid) => {
-            setDontShowAgain(false);
-            setCanPostpone(canPostponeFlag);
-            
-            if (canPostponeFlag) {
-                const storageKey = `_confirm${cid}${Utils.hashCode(message)}`;
-                const lastDate = window.localStorage.getItem(storageKey);
-                if (lastDate) {
-                    const now = moment(Utils.getCurrentDataTime(), "jYYYY/jMM/jDD HH:mm:ss");
-                    const lastMoment = moment(lastDate, "jYYYY/jMM/jDD HH:mm:ss");
-                    const differentDays = now.diff(lastMoment, 'days');
-
-                    if (differentDays < 30) {
-                        return Promise.resolve(true);
-                    }
-                }
-            }
-
-            setMsg(message);
-            setFieldCid(cid);
-            setIsShow(true);
-
-            return new Promise((resolve, reject) => {
-                promiseRef.current = { resolve, reject };
-            });
-        }
-    }));
-
-    const closeDialog = (resolveValue) => {
-        if (!isShow) return;
-
-        if (resolveValue && canPostpone && dontShowAgain) {
-            const storageKey = `_confirm${fieldCid}${Utils.hashCode(msg)}`;
-            window.localStorage.setItem(storageKey, Utils.getCurrentDataTime());
-        }
-
-        if (promiseRef.current.resolve) {
-            promiseRef.current.resolve(resolveValue);
-        }
-        setIsShow(false);
+class DialogConfirm extends BaseComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      titleCancel:
+        UiSetting.GetSetting("language") === "fa"
+          ? "خیر، انجام نده"
+          : "No, cancel",
+      titleDo:
+        UiSetting.GetSetting("language") === "fa"
+          ? "بله، انجام بده"
+          : "Yes, I'm sure",
+      dontShowAgain: false,
     };
 
-    const handleOnDoClick = () => closeDialog(true);
-    const handleOnCancelClick = () => closeDialog(false);
+    this.data = {
+      checkBoxFieldInfo: FieldInfo.create(null, {
+        checkBox_FalseColor: "#212529",
+        checkBox_TrueColor: "#212529",
+        fieldType: FieldType.CheckBox,
+        checkBox_FalseText:
+          UiSetting.GetSetting("language") === "fa"
+            ? "دیگر این پیغام را نمایش نده"
+            : "Don't show this message again",
+        checkBox_TrueText:
+          UiSetting.GetSetting("language") === "fa"
+            ? "دیگر این پیغام را نمایش نده"
+            : "Don't show this message again",
+      }),
+    };
 
-    const handleOnDialogKeyPress = useCallback((event) => {
-        if (event.keyCode === 27 && !SystemClass.loading) {
-            closeDialog(false);
+    SystemClass.confirmDialogComponent = this;
+
+    this.data.promise = {
+      resolve: () => {},
+      reject: () => {},
+    };
+  }
+
+  openDialog = (msg, canPostpone, fieldCid) => {
+    this.state.dontShowAgain = false;
+
+    if (canPostpone) {
+      this.data.canPostpone = true;
+      const lastDate =
+        window.localStorage["_confirm" + fieldCid + Utils.hashCode(msg)];
+      if (lastDate) {
+        //and not expire
+        const now = moment(
+          Utils.getCurrentDataTime(),
+          "jYYYY/jMM/jDD HH:mm:ss"
+        );
+        const lastMoment = moment(lastDate, "jYYYY/jMM/jDD HH:mm:ss");
+        const differentDays = moment.duration(lastMoment.diff(now)).asDays();
+
+        //one month
+        if (differentDays < 30) {
+          return new Promise((resolve, reject) => {
+            resolve(true);
+          });
         }
-    }, []);
+      }
+    }
 
+    this.state.msg = msg;
+    this.state.fieldCid = fieldCid;
+    this.state.isShow = true;
+    this.data.promise._promise = new Promise((resolve, reject) => {
+      this.data.promise.resolve = resolve;
+      this.data.promise.reject = reject;
+    });
+
+    this.forceUpdate();
+
+    return this.data.promise._promise;
+  };
+
+  cancelDialog(resolve) {
+    if (!this.state.isShow) return;
+
+    this.state.isShow = false;
+    this.data.promise.resolve(resolve);
+
+    if (resolve) {
+      if (this.data.canPostpone && this.state.dontShowAgain) {
+        window.localStorage[
+          "_confirm" + this.state.fieldCid + Utils.hashCode(this.state.msg)
+        ] = Utils.getCurrentDataTime();
+      }
+    }
+
+    this.forceUpdate();
+  }
+
+  componentWillUnmount() {
+    //  this.data.observer.disconnect();
+  }
+
+  //region events
+  _handleOnDialogKeyPress = (event) => {
+    if (event.keyCode === 27 && !SystemClass.loading) {
+      this.cancelDialog();
+    }
+  };
+
+  _handleOnDoClick = () => {
+    this.cancelDialog(true);
+  };
+
+  _handleOnCancelClick = () => {
+    this.cancelDialog();
+  };
+
+  _handleOnDialogClose = () => {
+    this.cancelDialog();
+  };
+
+  _toggleCheckBox = () =>
+    this.setState((prevState) => ({ dontShowAgain: !prevState.dontShowAgain }));
+  //endregion
+
+  // region element
+
+  // endregion element
+  render() {
     return (
-        <div className="dialog" onKeyDown={handleOnDialogKeyPress}>
-            <Modal isOpen={isShow} centered onClosed={() => closeDialog(false)}>
-                <ModalBody style={{ fontSize: "14px", padding: "1.5rem" }}>
-                    {msg}
-                </ModalBody>
-                <ModalFooter className="d-flex flex-column align-items-start">
-                    <div className="mb-3">
-                        <Button color="primary" onClick={handleOnDoClick}>
-                            {UiSetting.GetSetting("language") === "fa" ? "بله، انجام بده" : "Yes, I'm sure"}
-                        </Button>
-                        <Button color="secondary" onClick={handleOnCancelClick} className="mx-3">
-                            {UiSetting.GetSetting("language") === "fa" ? "خیر، انجام نده" : "No, cancel"}
-                        </Button>
-                    </div>
-                    <div>
-                        {canPostpone && (
-                            <FormGroup check>
-                                <Input
-                                    type="checkbox"
-                                    id="dontShowAgainCheckbox"
-                                    checked={dontShowAgain}
-                                    onChange={() => setDontShowAgain(prev => !prev)}
-                                />
-                                <Label check htmlFor="dontShowAgainCheckbox">
-                                    به مدت یک ماه این پیغام را نمایش نده
-                                </Label>
-                            </FormGroup>
-                        )}
-                    </div>
-                </ModalFooter>
-            </Modal>
-        </div>
+      <div
+        id="DialogContainer"
+        className={["dialog"].filter((c) => c).join(" ")}
+        onKeyDown={this._handleOnDialogKeyPress}
+      >
+        <Modal
+          size=""
+          isOpen={this.state.isShow}
+          modalClassName={"scroll__container"}
+          className={[""].filter((c) => c).join(" ")}
+          onClosed={this._handleOnDialogClose.bind(this)}
+          key={"_confirmDialog"}
+          centered={true}
+          style={{}}
+        >
+          <ModalBody
+            style={{ fontSize: "14px", padding: "1.5rem" }}
+            className={["dialog__body"].filter((c) => c).join(" ")}
+          >
+            {this.state.msg}
+          </ModalBody>
+
+          {/*TODO FOOTER*/}
+          <ModalFooter className="d-flex flex-column align-items-start">
+            {/*<CheckBoxFieldInfo fieldInfo={ this.data.checkBoxFieldInfo}/>*/}
+
+            {/* <div style={{ flex: 1 }} /> */}
+            <div className="mb-3">
+              <Button
+                color="primary"
+                onClick={this._handleOnDoClick.bind(this)}
+              >
+                {" "}
+                {this.state.titleDo}{" "}
+              </Button>
+              <Button
+                color="secondary"
+                onClick={this._handleOnCancelClick.bind(this)}
+                className="mx-3"
+              >
+                {" "}
+                {this.state.titleCancel}{" "}
+              </Button>
+            </div>
+            <div>
+              {this.data.canPostpone && (
+                <Checkbox
+                  label="به مدت یک ماه این پیغام را نمایش نده"
+                  onChange={this._toggleCheckBox}
+                  checked={this.state.dontShowAgain}
+                />
+              )}
+            </div>
+          </ModalFooter>
+        </Modal>
+      </div>
     );
-});
+  }
+}
 
 export default DialogConfirm;
