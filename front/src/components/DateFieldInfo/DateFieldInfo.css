@@ -1,0 +1,4 @@
+.tether-element {
+    z-index: 2000;
+  } /* rastegar 140104 رفع مشکل تقویم از طریق اعمال  z-index */
+  

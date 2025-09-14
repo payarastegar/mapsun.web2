@@ -1,0 +1,12 @@
+.MapFieldInfo{
+    min-height: 24rem;
+    direction: ltr;
+}
+
+.MapFieldInfo g[style="cursor: pointer;"][opacity][transform][filter][aria-labelledby]{
+    display: none;
+}
+
+.FormInfo__fieldInfo .leaflet-container {
+	font-family: IRANSans, serif; /* جهت نمایش صحیح تولتیپ ها */
+}

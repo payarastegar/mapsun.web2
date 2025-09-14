@@ -1,0 +1,13 @@
+.FieldInfo {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.FieldInfo__label {
+
+}
+
+.FieldInfo--column {
+    flex-direction: column;
+}

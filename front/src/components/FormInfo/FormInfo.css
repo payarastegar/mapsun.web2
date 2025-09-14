@@ -1,0 +1,127 @@
+.FormInfo__container {
+  display: flex;
+  /*flex-direction: column;*/
+  flex-wrap: wrap;
+  align-self: stretch;
+  /* margin-top: 0.5rem; */
+  /* padding: 1rem; */
+}
+
+.FormInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  word-wrap: break-word;
+  background-clip: border-box;
+  /*background-color: #fff;*/
+  /*border: 1px solid rgba(0, 0, 0, .125);*/
+  /*border-radius: .25rem;*/
+}
+
+.FormInfo__header {
+  /*padding: 1rem;*/
+  margin: 0;
+  height: 0; /*for hiding when show toolbar*/
+  margin-top: 1rem !important;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/*inside dialog no need*/
+.dialog__body .FormInfo__header {
+  display: none;
+}
+
+.dialog__body .FormInfo {
+  border: none;
+}
+
+.FormInfo__menu {
+  display: inline-flex;
+  z-index: 9;
+  /*flex-wrap: wrap;*/
+  justify-content: center;
+  position: sticky;
+  top: 0;
+  vertical-align: middle;
+  border-radius: 1000rem;
+  background: #7ea7e6;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  padding: 0 1rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+    0 2px 1px -1px rgba(0, 0, 0, 0.12);
+
+  transition: all 0.3s;
+  visibility: visible;
+  opacity: 1;
+  transform: scale(1);
+  /*animation: zoomInScaleAnimation .3s ease-in-out;*/
+}
+
+.FormInfo__menuIconContainer {
+  padding: 0.5rem 0;
+}
+
+.FormInfo__menuIcon {
+  font-size: 1.5rem;
+  line-height: 2.4rem;
+}
+
+.FormInfo__menu--hide {
+  display: none;
+  /* opacity: 0; */
+  /* transform: scale(0.5); */
+}
+
+/*drag files*/
+
+.FormInfo__fileDrop {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-color: #00000033;
+  outline: 2px dashed #4285f4;
+  outline-offset: -1rem;
+  transform: translateZ(1px);
+  z-index: 1;
+  cursor: grabbing;
+  pointer-events: none;
+}
+
+.file-drop-dragging-over-target .FormInfo__fileDrop {
+  display: block;
+}
+
+.FormInfo__fieldInfo {
+  padding: 0.5rem !important;
+  height: 100%;
+}
+
+@keyframes zoomInScaleAnimation {
+  0% {
+    transform: scale(0.5);
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.dialog__body .FormInfo__menu {
+  /*TODO check*/
+  margin-top: -4.7rem;
+  top: 1rem;
+}
+
+@media screen and (max-width: 760) {
+  .FormInfo__container {
+    margin: 10rem;
+    padding: 0rem;
+  }
+}

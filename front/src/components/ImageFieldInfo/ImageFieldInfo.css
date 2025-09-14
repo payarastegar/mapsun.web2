@@ -1,0 +1,25 @@
+.ImageFieldInfo {
+  max-width: inherit;
+  max-height: inherit;
+  min-width: inherit;
+  min-height: inherit;
+}
+
+.ImageFieldInfo * {
+  max-width: inherit;
+  max-height: inherit;
+  min-width: inherit;
+  min-height: inherit;
+}
+
+.ImageFieldInfo__image {
+  width: 100%;
+  object-fit: fill;
+  object-position: center;
+  /* filter: opacity(0.5); */
+  transition: all 0.2s ease-in-out;
+}
+
+.ImageFieldInfo__container {
+  text-align: center;
+}

@@ -1,0 +1,15 @@
+﻿.SelectParameter_ButtonContainer_Div {
+	display:block;
+	float:right;
+	margin:1px;
+}
+
+.SelectParameter_ButtonContainer_A {
+	text-decoration:none;
+}
+
+.SelectParameter_ButtonContainer_Img {
+	border:0;
+	height:39px;
+	width:150px;
+}

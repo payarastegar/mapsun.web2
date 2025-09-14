@@ -1,0 +1,2274 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>صفحه ی گزارشات تی اس</title>
+  <link rel="stylesheet" href="style.css" type="text/css" />
+  <link rel="stylesheet" href="IMAGES/ControlProje/ControlProje.css" type="text/css" />
+  <link href="IMAGES/amcharts/jquery.multiselect.css" rel="stylesheet" type="text/css" />
+  <script src="IMAGES/AmCharts/amcharts.js" type="text/javascript"></script>
+  <script src="IMAGES/AmCharts/pie.js" type="text/javascript"></script>
+  <script src="IMAGES/AmCharts/gauge.js"></script>
+  <script src="IMAGES/AmCharts/jquery.min.js"></script>
+  <script src="IMAGES/AmCharts/serial.js"></script>
+  <script src="IMAGES/AmCharts/xy.js"></script>
+  <script src="IMAGES/AmCharts/export.min.js"></script>
+  <link rel="stylesheet" href="IMAGES/AmCharts/export.css" type="text/css" media="all" />
+  <script src="IMAGES/AmCharts/light.js"></script>
+  <script src="IMAGES/AmCharts/jquery.multiselect.js"></script>
+  <style>
+    .amChartsLegend.amcharts-legend-div>svg {
+      position: relative !important;
+      margin-right: -300px;
+      margin-left: 26px;
+      /* width: 849px !important; */
+    }
+
+    .amChartsLegend.amcharts-legend-div>svg text[text-anchor="start"] {
+      /* transform: translate(120px, 7px) !important; */
+      direction: ltr;
+    }
+
+    .amChartsLegend.amcharts-legend-div>svg text[text-anchor="end"] {
+      /* transform: translate(130px, 7px) !important; */
+      direction: ltr;
+
+    }
+
+    .diiv {
+      /* float: right; */
+      font-family: B Yekan, Traditional Arabic, Tahoma;
+      font-weight: bold;
+      color: #000066;
+      /* margin: 0px auto; */
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    input.btnShortcut.IsHighlighte {
+      color: white;
+      background-color: #5693de;
+    }
+
+    input.btnShortcut {
+      border-radius: 0px 0px 8px 8px;
+      margin: 1xp;
+      border-radius: 0px;
+      font-weight: bold;
+      border-color: #077abc;
+      color: #077abc;
+      border-width: 1px;
+      font-family: tahoma;
+      line-height: 22px;
+      background-color: rgba(255, 255, 255, 0.18);
+      margin: 3px;
+      padding: 3px;
+      cursor: pointer;
+    }
+
+    input.btnShortcut:hover {
+      border-color: #077abc;
+      color: #000;
+      background-color: #7dade9;
+    }
+
+    /*--------------------------multiselect need this Styles-------------------------------------*/
+    body {
+      font-family: "Open Sans" Arial, Helvetica, sans-serif;
+    }
+
+    ul,
+    li {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .label {
+      color: #000;
+      font-size: 16px;
+    }
+
+    /*---------------------------------------------------------------*/
+    .diiv:hover {
+      /*background-color :rgba(0,0,0,1);*/
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      -webkit-box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+      -moz-box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    }
+
+    .Nazariye_Hame_Onvan {
+      width: 100%;
+      font-family: "Tahoma";
+      font-size: x-small;
+      color: rgba(0, 0, 0, 0);
+    }
+
+    .Nazariye_Hame_NoeProje {
+      padding-right: 5px;
+      width: 100%;
+      font-family: "Tahoma";
+      font-size: x-small;
+      color: rgba(0, 0, 0, 0.2);
+    }
+
+    .Nazariye_Hame_Nazariye {
+      margin-right: 5px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      width: 90%;
+      font-family: "Tahoma";
+      font-size: x-small;
+      border-style: Solid;
+      border-width: 1px;
+      color: Black;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    .divText>div {
+      padding-right: 15px;
+    }
+
+    .transform-origin-top-left {
+      transform-origin: top left;
+      /* IE 10+, Firefox, etc. */
+      -webkit-transform-origin: top left;
+      /* Chrome */
+      -ms-transform-origin: top left;
+    }
+  </style>
+</head>
+
+<body id="body" style="
+      width: 100vw;
+      margin: 0;
+      overflow-y: hidden;
+      overflow-x: hidden;
+      background-color: #b9b9b9;
+    " dir="rtl">
+  <div class="load-bar" style="
+    position: fixed;
+    z-index: 9999;
+    right: 0;
+    left: 0;
+    margin-right: auto;
+    margin-left: auto;
+    display: none;
+  " id="linear-wait">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
+  </div>
+  <div class="loader" id="first-circ-wait" style="
+    position: fixed;
+    width: 100px;
+    z-index: 9999;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    /*display: none;*/
+  "></div>
+  <div id="first-fade" style="
+        background-color: #c1c8e4;
+        position: fixed;
+        z-index: 9998;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+      "></div>
+  <div id="not-found" style="
+        background-color: #F30067;
+        position: fixed;
+        z-index: 9999;
+        width: 700px;
+        right: 0;
+        left: 0;
+        top: 0;
+        margin: auto;
+        color: White;
+        font-weight: bold;
+        text-align: center;
+        display: none;
+        border-radius: 10px;
+        padding: 8px;
+      ">
+    اطلاعاتی یافت نشد.
+  </div>
+  <script type="text/javascript">
+    var jxTables = [];
+    var LastPageID = 0;
+    var isIE8 = false;
+    var ID_Jari;
+    var Row_Jari;
+    var Column_Jari;
+    var ID_Last;
+    var Row_Last;
+    var Column_Last;
+    var DateTime_Last;
+    var DateTime_Now;
+    var Time_Last;
+    var PrePassedParamNoeProjeUID = ";Amp$NoeProjeUID;Eq$";
+    var PrePassedParamShahrUID = ";Amp$ShahrUID;Eq$";
+    var UserLoginName = "1289039763";
+
+    UserLoginName = UserLoginName.substring(UserLoginName.indexOf("\\") + 1);
+
+
+    var Setting = {
+      "mapsunapp.ir": {
+        webService_baseAddress: "api.mapsunapp.ir"
+      },
+      "mapsun2.tci.ir": {
+        webService_baseAddress: "mapsun2-api.tci.ir"
+      },
+      "mapsun.tci.ir": {
+        webService_baseAddress: "mapsun-api.tci.ir"
+      },
+      "nezarat.tci.ir": {
+        webService_baseAddress: "nezarat-api.tci.ir"
+      },
+      "hiradpmo.ir": {
+        webService_baseAddress: "api.hiradpmo.ir"
+      },
+      "hamgoonpmo.ir": {
+        webService_baseAddress: "api.hamgoonpmo.ir"
+      },
+      "amstrategiesgroup.ca": {
+        webService_baseAddress: "api.amstrategiesgroup.ca"
+      },
+      "localhost": {
+        webService_baseAddress: "api.mapsunapp.ir"
+      }
+    };
+
+    function GetWebService_baseAddress(webServiceUrl) {
+      const domain = new URL(webServiceUrl).hostname;
+      const protocol = window.location.protocol;
+      if (protocol === 'https:') {
+        return "https://" + this.Setting[domain]["webService_baseAddress"];
+      } else {
+        return "http://" + this.Setting[domain]["webService_baseAddress"];
+      }
+    }
+
+    OnLoad();
+    function OnLoad() {
+      CheckBrowser();
+      if (isIE() && isIE() < 9) {
+        anim = 0;
+        isIE8 = true;
+      } else {
+        anim = 1;
+        isIE8 = false;
+      }
+      var pageUrl = window.location.href;
+      if (pageUrl.indexOf("?PassedParam=") != -1) {
+        var sPassedParam_Full = pageUrl.substring(
+          pageUrl.indexOf("?PassedParam=") + "?PassedParam=".length
+        );
+        OpenNoeProje_ByPassParam(sPassedParam_Full);
+      } else OpenNewPage(-1, "", "NoeProje");
+    }
+
+    function CheckBrowser() {
+      if (isIE()) {
+        alert(".لطفا از مرور گر کروم یا فایر فاکس استفاده نمایید");
+      }
+      if (isChorome() && isChorome() < 49) {
+        alert(
+          "نسخه مرورگر کروم شما «" +
+          isChorome() +
+          "» می باشد ،لطفا آن را به نسخه « 49 » یا بیشتر ارتقاء دهید."
+        );
+      }
+      if (isFireFox() > 0 && isFireFox() == 39) {
+        alert(
+          "نسخه مرورگر فایر فاکس شما " +
+          isFireFox() +
+          " یا کمتر می باشد لطفا آن را به نسخه 46 به بعد ارتقاء دهید."
+        );
+      } else if (isFireFox() > 0 && isFireFox() < 45) {
+        alert(
+          "نسخه مرورگر فایر فاکس شما " +
+          isFireFox() +
+          " می باشد لطفا آن را به نسخه 46 به بعد ارتقاء دهید."
+        );
+      }
+    }
+    function isChorome() {
+      var raw = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+      return raw ? parseInt(raw[2], 10) : false;
+    }
+    function OnClickOpenProje(PageID, ChartIndex, Command) {
+      OpenNewPage(PageID, ChartIndex, Command);
+    }
+    function OpenNewPage(
+      PageID,
+      ChartIndex,
+      Command,
+      ShortcutUID,
+      ChangeList
+    ) {
+      var PassParamNoeProjeUID = "";
+      var PassParamShahrUID = "";
+
+      if (PageID == -1 || ShortcutUID) {
+        var passedParams_FirstLoad = AddOrReplaceParameter(
+          PrePassedParamNoeProjeUID +
+          (ShortcutUID || "00000000-0000-0000-0000-000000000000"),
+          "ShortcutUID",
+          ShortcutUID || "00000000-0000-0000-0000-000000000000"
+        );
+
+        // passedParams_FirstLoad = AddOrReplaceParameter(
+        //   passedParams_FirstLoad,
+        //   "UserLoginName",
+        //   UserLoginName
+        // );
+
+        if (!ChangeList) {
+          ChangeList = {
+            ShowMajazi: 0,
+          };
+        }
+        if (!ChangeList.ShowMajazi) ChangeList.ShowMajazi = 0;
+        Object.keys(ChangeList).forEach(function (name) {
+          passedParams_FirstLoad = AddOrReplaceParameter(
+            passedParams_FirstLoad,
+            name,
+            ChangeList[name]
+          );
+        });
+        OpenNoeProje(PageID, passedParams_FirstLoad, Command);
+      } else {
+        if (
+          jxTables[PageID]["listData_Json"][ChartIndex].HasChilds == 1 &&
+          Command == "NoeProje"
+        ) {
+          PassParamNoeProjeUID = AddOrReplaceParameter(
+            jxTables[PageID]["sPassedParam"],
+            PrePassedParamNoeProjeUID,
+            jxTables[PageID]["listData_Json"][ChartIndex].LookupMemberUID
+          );
+          OpenNoeProje(PageID, PassParamNoeProjeUID, "NoeProje");
+        } else {
+          if (
+            jxTables[PageID]["listData_Json"][ChartIndex].HasChilds == 0 &&
+            Command == "NoeProje"
+          ) {
+            jxTables[PageID]["sCommand"] = "Shahrestan";
+            jxTables[PageID]["sPassedParam"] = AddOrReplaceParameter(
+              jxTables[PageID]["sPassedParam"],
+              PrePassedParamNoeProjeUID,
+              jxTables[PageID]["listData_Json"][ChartIndex].LookupMemberUID
+            );
+            PassParamShahrUID = AddOrReplaceParameter(
+              jxTables[PageID]["sPassedParam"],
+              PrePassedParamShahrUID,
+              "00000000-0000-0000-0000-000000000000"
+            );
+            OpenNoeProje(PageID, PassParamShahrUID, "Shahrestan");
+          } else if (
+            jxTables[PageID]["listData_Json"][ChartIndex].HasChilds == 1 &&
+            Command == "Shahrestan"
+          ) {
+            jxTables[PageID]["sPassedParam"] = AddOrReplaceParameter(
+              jxTables[PageID]["sPassedParam"],
+              PrePassedParamShahrUID,
+              jxTables[PageID]["listData_Json"][ChartIndex].LookupMemberUID
+            );
+            OpenNoeProje(
+              PageID,
+              jxTables[PageID]["sPassedParam"],
+              "Shahrestan"
+            );
+          }else if (
+            jxTables[PageID]["listData_Json"][ChartIndex].HasChilds == 0 &&
+            Command == "Shahrestan"
+          ) {
+            jxTables[PageID]["sCommand"] = "NoeProje";
+            jxTables[PageID]["sPassedParam"] = AddOrReplaceParameter(
+              jxTables[PageID]["sPassedParam"],
+              PrePassedParamNoeProjeUID,
+              jxTables[PageID]["listData_Json"][ChartIndex].LookupMemberUID
+            );
+            PassParamShahrUID = AddOrReplaceParameter(
+              jxTables[PageID]["sPassedParam"],
+              PrePassedParamShahrUID,
+              "00000000-0000-0000-0000-000000000000"
+            );
+            OpenNoeProje(PageID, PassParamShahrUID, "NoeProje");
+          }
+          else {
+            // not any way found to open new page
+            // alert("اطلاعاتی یافت نشد.");
+
+            ShowErrorMassage("اطلاعاتی یافت نشد");
+          }
+        }
+      }
+    }
+    function ShowErrorMassage(ErrorMassage) {
+      $("#not-found").text(ErrorMassage);
+      $("#not-found").stop();
+      $("#not-found").fadeIn(100);
+      $("#not-found").fadeOut(25000);
+    }
+
+    function ToggelShowRightDiv(Page_ID) {
+      var divright = $("#divright" + Page_ID);
+      var charts = document.getElementById("charts" + Page_ID);
+      var miniFelesh = document.getElementById("miniFelesh" + Page_ID);
+      if (divright.css("display") == "none") {
+        divright.show();
+        charts.style.width = "64%";
+        miniFelesh.style["transform"] = "initial";
+        miniFelesh.style["-webkit-transform"] = "initial";
+        miniFelesh.style["-ms-transform"] = "initial";
+      } else {
+        divright.hide();
+        charts.style.width = "99%";
+        miniFelesh.style["transform"] =
+          "rotate(180deg) translate(-100%, -100%)";
+        miniFelesh.style["-webkit-transform"] =
+          "rotate(180deg) translate(-100%, -100%)";
+        miniFelesh.style["-ms-transform"] =
+          "rotate(180deg) translateX(-100%, -100%)";
+      }
+    }
+    function NewBlankPage(BeforPage_ID) {
+      var befor;
+      var after;
+      if (BeforPage_ID != -1) {
+        befor = document.getElementById(BeforPage_ID);
+        EnableImageItem("btnDown" + BeforPage_ID);
+      }
+      if (befor != null) after = befor.NextElement();
+      var node = document.createElement("div");
+      node.id = LastPageID; // انتساب آی دی صرفا جهت دسترسی بعدی است و ترتیبی ایجاد نمی کند.
+      setNodePStyle(node);
+      node.innerHTML =
+        '<div id="divright' +
+        LastPageID +
+        '" style="background-image:url(images/ControlProje/back1.jpg);width:18%; position: relative; height: 100%; float: right; border-left: 1px solid Gray; background-color:#F7F3F7;">' +
+        '<div id="divText' +
+        LastPageID +
+        '" class="divText" style="height:90%; overflow-y:auto;" >' +
+        "</div>" +
+        '<div id="divBtns' +
+        LastPageID +
+        '" style="bottom: 10px; width:200px; height:10%; margin:0px auto; ">' +
+        '<div style="width:40px; height:40px; float:left; ">' +
+        '<img id="btnLeft' +
+        LastPageID +
+        '" style=" width:40px; height:40px; display :none " src="IMAGES/ControlProje/Left_Disable.png"  />' +
+        "</div>" +
+        '<div style="width:40px; height:40px; float:left; ">' +
+        '<img id="btnTop' +
+        LastPageID +
+        '" style=" width:40px; height:40px; " src="IMAGES/ControlProje/top_Disable.png" onclick ="gotoTop(' +
+        LastPageID +
+        ')" />' +
+        "</div>" +
+        '<div style="width:40px; height:40px; float:left; ">' +
+        '<img id="btnRemove' +
+        LastPageID +
+        '" style=" width:40px; height:40px; " src="IMAGES/ControlProje/remove.png" onclick="remov(' +
+        LastPageID +
+        ')" />' +
+        "</div>" +
+        '<div style="width:40px; height:40px; float:left; ">' +
+        '<img id="btnDown' +
+        LastPageID +
+        '" style=" width:40px; height:40px;  " src="IMAGES/ControlProje/Down_Disable.png" onclick ="gotoDown(' +
+        LastPageID +
+        ')" />' +
+        "</div>" +
+        '<div style="width:40px; height:40px; float:left; ">' +
+        '<img id="btnRight' +
+        LastPageID +
+        '" style=" width:40px; height:40px; display :none " src="IMAGES/ControlProje/Right_Disable.png"  />' +
+        "</div>" +
+        "</div>" +
+        "</div>" +
+        "<div style='width:0.5%; height: 100%; float: right;'>" +
+        "<img id='miniFelesh" +
+        LastPageID +
+        "' class='transform-origin-top-left' src='IMAGES/ControlProje/MiniFelesh.png' onclick='ToggelShowRightDiv(" +
+        LastPageID +
+        ")' style='height: 100%; width: 100%;' />" +
+        "</div>" +
+        '<div id="charts' +
+        LastPageID +
+        '" style="background-color:#ffffff;width:81%; height: 100%; float: right; text-align:center; overflow-y: scroll; display: flex; flex-wrap: wrap; align-content: flex-start;">' +
+        "</div>";
+
+      if (after != null) {
+        document.getElementById("body").insertBefore(node, after);
+      } else {
+        document.getElementById("body").appendChild(node, after);
+      }
+
+      document.getElementById("btnRemove" + LastPageID)[
+        "ImageSourceDisable"
+      ] = "IMAGES/ControlProje/remove_Disable.png";
+      document.getElementById("btnRemove" + LastPageID)["ImageSourceEnable"] =
+        "IMAGES/ControlProje/remove.png";
+      document.getElementById("btnTop" + LastPageID)["ImageSourceDisable"] =
+        "IMAGES/ControlProje/top_Disable.png";
+      document.getElementById("btnTop" + LastPageID)["ImageSourceEnable"] =
+        "IMAGES/ControlProje/top.png";
+      document.getElementById("btnDown" + LastPageID)["ImageSourceDisable"] =
+        "IMAGES/ControlProje/Down_Disable.png";
+      document.getElementById("btnDown" + LastPageID)["ImageSourceEnable"] =
+        "IMAGES/ControlProje/Down.png";
+
+      DisableImageItem("btnTop" + LastPageID);
+      DisableImageItem("btnDown" + LastPageID);
+      DisableImageItem("btnRemove" + LastPageID);
+      if (BeforPage_ID == -1) {
+        DisableImageItem("btnTop" + LastPageID);
+        DisableImageItem("btnRemove" + LastPageID);
+      } else {
+        EnableImageItem("btnRemove" + LastPageID);
+        EnableImageItem("btnTop" + LastPageID);
+      }
+      if (after != null && after.id != null) {
+        EnableImageItem("btnDown" + LastPageID);
+      }
+
+      return LastPageID++;
+    }
+
+    function DisableImageItem(id) {
+      var Item = document.getElementById(id);
+      Item["myEnable"] = false;
+      Item.src = Item["ImageSourceDisable"];
+    }
+    function EnableImageItem(id) {
+      var Item = document.getElementById(id);
+      Item["myEnable"] = true;
+      Item.src = Item["ImageSourceEnable"];
+    }
+    //function OpenNoeProje(BeforPageID, sPassedParam, sCommand) {
+    //sPassedParam
+    //OpenNoeProje_ByPassedParam(sPassedParam);
+    //}
+    function OpenNoeProje_ByPassParam(sPassedParam_Full) {
+      var sCommand = ExtractParameterValue(sPassedParam_Full, "Command");
+      var sNemodar = ExtractParameterValue(sPassedParam_Full, "Nemodar");
+      sPassedParam_Full = RemoveParameter(sPassedParam_Full, "Command");
+      sPassedParam_Full = RemoveParameter(sPassedParam_Full, "Nemodar");
+      OpenNoeProje(-1, sPassedParam_Full, sCommand, sNemodar);
+    }
+
+    //startup:
+    //$(document).ready(function () {
+    //    setTimeout(function () {
+    //        var pageUrl = window.location.href;
+    //        if (pageUrl.indexOf('?PassedParam=') != -1) {
+    //            var sPassedParam_Full = pageUrl.substring(pageUrl.indexOf('?PassedParam=') + '?PassedParam='.length);
+    //            OpenNoeProje_ByPassParam(sPassedParam_Full);
+    //        }
+    //    }, 2000);
+    //});
+    function getPassedParam_Full(PageID) {
+      var sPassedParam_Full = jxTables[NewPageID]["sPassedParam"];
+      sPassedParam_Full = AddOrReplaceParameter(
+        sPassedParam_Full,
+        "Command",
+        jxTables[NewPageID]["sCommand"]
+      );
+      sPassedParam_Full = AddOrReplaceParameter(
+        sPassedParam_Full,
+        "Nemodar",
+        jxTables[NewPageID]["ChartType"]
+      );
+
+      return sPassedParam_Full;
+    }
+    function OpenNoeProje(BeforPageID, sPassedParam, sCommand, sNemodar) {
+      $("#linear-wait").fadeIn(700);
+
+      //for debug {
+      var sPassedParam_Full = sPassedParam;
+      sPassedParam_Full = AddOrReplaceParameter(
+        sPassedParam_Full,
+        "Command",
+        sCommand
+      );
+      sPassedParam_Full = AddOrReplaceParameter(
+        sPassedParam_Full,
+        "Nemodar",
+        sNemodar || "Pie"
+      );
+
+      // console.log("?PassedParam=" + sPassedParam_Full);
+      // }
+
+      //Get buttonCid from Url
+      let queryParams = window.location.search;
+      const urlParams = new URLSearchParams(queryParams);
+      let buttonCid = urlParams.get("buttonCid_btnRefresh_ProjectDashboard");
+      const userInfo = JSON.parse(window.sessionStorage._userInfo);
+      const baseUrl = window.location.origin
+      const WebService_baseAddress = GetWebService_baseAddress(baseUrl);
+      const webServiceUrl = `${WebService_baseAddress}/api/Forms/Update_Forms`;
+      const formData = new FormData();
+
+      const paramList = {
+        sPassedParam: sPassedParam,
+        sCommad: sCommand,
+        sNemodar: sNemodar || "Pie",
+      };
+
+      // "{'sPassedParam':'" +
+      //   sPassedParam +
+      //   "','sCommand':'" +
+      //   sCommand +
+      //   "','sNemodar':'" +
+      //   (sNemodar || "Pie") +
+      //   "'}";
+
+      formData.append("paramList", JSON.stringify(paramList));
+      formData.append("userInfo", JSON.stringify(userInfo));
+      formData.append(
+        "webService_Update",
+        "wsuUpdate_GhTask_AnvaeProje_SelectParam"
+      );
+      formData.append("buttonCid", buttonCid);
+
+      $.ajax({
+        type: "POST",
+        // url: "ProjectReport_Service_WSV.asmx/getNoeProje_SelectParam",
+        url: webServiceUrl,
+        data: formData,
+
+        // contentType: "application/json; charset=utf-8",
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function (msg) {
+          console.log(msg);
+          // var data = JSON.parse(msg.d);
+
+          if (!msg.webSvcResult_List) {
+            ShowErrorMassage(msg.errorMsg);
+
+            return;
+          }
+
+          try {
+            window.sessionStorage._userInfo = JSON.stringify(msg._userInfo);
+            console.log("sessionStorage._userInfo updated successfully");
+          } catch (error) {
+            console.error("Error updating sessionStorage:", error);
+          }
+
+          var data =
+            msg.webSvcResult_List[0].updatedItems[0].dataArray[0]
+              .dtAnvaeProje_SelectParam_Result_Json;
+          var NewPageID;
+
+          if (!data) {
+            console.log(data.ErrorMsg);
+            ShowErrorMassage(
+              "دریافت اطلاعات با خطا مواجه شد:\n" + data.ErrorMsg
+            );
+            return;
+          }
+          NewPageID = NewBlankPage(BeforPageID);
+          jxTables.push(data);
+          jxTables[NewPageID]["StartIndex"] = 0;
+          jxTables[NewPageID]["listData_Json"] = data;
+          jxTables[NewPageID]["MaxChartShow"] = 1000;
+          jxTables[NewPageID]["ChartType"] = sNemodar || "Pie";
+          //jxTables[NewPageID]["Command"]="ShowProje";
+          jxTables[NewPageID]["sPassedParam"] = sPassedParam;
+          jxTables[NewPageID]["sCommand"] = sCommand;
+          jxTables[NewPageID]["NoeSakhtar"] = sCommand;
+          jxTables[NewPageID]["ListParameters_Json_Decoded"] =
+            msg.webSvcResult_List[0].updatedItems[0].dataArray[0].parameters_Json;
+          ShowParametrs(NewPageID);
+          AddShortcutsToPage(NewPageID);
+          //ShowProjeChart(NewPageID);
+          switch (sNemodar || "Pie") {
+            case "Pie": {
+              ShowProjeChart(NewPageID);
+              break;
+            }
+            case "Mileei": {
+              ShowNemoodareMileei(NewPageID);
+              break;
+            }
+          }
+          if (BeforPageID != -1) {
+            gotoDown(BeforPageID);
+          }
+
+          $("#first-circ-wait").stop();
+          $("#first-fade").stop();
+          $("#linear-wait").stop();
+          $("#first-circ-wait").fadeOut(200);
+          $("#first-fade").fadeOut(500);
+          $("#linear-wait").fadeOut(200);
+        },
+        error: function (msg) {
+          //var data = JSON.parse(msg.d);
+
+          alert("خطا در برقراری ارتباط با سرور");
+          ShowErrorMassage(
+            "دریافت اطلاعات با خطا مواجه شد. با مدیر سیستم تماس بگیرید."
+          );
+          console.log(msg);
+          console.log(JSON.stringify(msg));
+        },
+      });
+    }
+    function AddShortcutsToPage(PageID) {
+      jxTables[PageID].shortcuts =
+        jxTables[PageID].shortcuts ||
+        jxTables[PageID].ListParameters_Json_Decoded.filter(function (p) {
+          return p.Name == "Shortcut_List";
+        })[0].Values;
+      if (!jxTables[PageID].shortcuts) alert("shortcuts not founded");
+      else {
+        jxTables[PageID].shortcuts
+          .sort(function (s1, s2) {
+            return s1.Tartib > s2.Tartib;
+          })
+          .forEach(function (s) {
+            var btnShortcut = document.createElement("input");
+            btnShortcut.className = "btnShortcut";
+            btnShortcut.style.width = s.Width + "px";
+            btnShortcut.type = "button";
+            btnShortcut.value = s.Onvan;
+            btnShortcut.onclick = new Function(
+              "event",
+              "OpenNewPage(" +
+              PageID +
+              ', null,"' +
+              jxTables[PageID]["sCommand"] +
+              '","' +
+              s.NoeProjeUID +
+              '",' +
+              JSON.stringify(s.ChangeList) +
+              "); return false;"
+            );
+            if (s.IsHighlighte) {
+              btnShortcut.className = "btnShortcut IsHighlighte";
+              //btnShortcut.style['background-color'] = '#90BAEE';
+            }
+            document
+              .getElementById("charts" + PageID)
+              .appendChild(btnShortcut);
+          });
+        var div = document.createElement("div");
+        div.style.width = "100%";
+        div.style.clear = "both";
+        document.getElementById("charts" + PageID).appendChild(div);
+      }
+    }
+    function RefreshPage(PageID, updateCache = 0) {
+      var sPassedParam = "";
+      sPassedParam = GetParameterValues(jxTables[PageID]["sPassedParam"]);
+      $("#linear-wait").fadeIn(700);
+
+      //Get buttonCid from Url
+      let queryParams = window.location.search;
+      const urlParams = new URLSearchParams(queryParams);
+      let buttonCid = urlParams.get("buttonCid_btnRefresh_ProjectDashboard");
+
+      const userInfo = JSON.parse(window.sessionStorage._userInfo);
+      const baseUrl = window.location.origin
+      const WebService_baseAddress = GetWebService_baseAddress(baseUrl);
+      const webServiceUrl = `${WebService_baseAddress}/api/Forms/Update_Forms`;
+      const formData = new FormData();
+
+      const paramList = {
+        sPassedParam: sPassedParam,
+        sCommad: jxTables[PageID]["sCommand"],
+        sNemodar: jxTables[PageID]["ChartType"] || "Pie",
+        updateCache: updateCache,
+      };
+
+      formData.append("paramList", JSON.stringify(paramList));
+      formData.append("userInfo", JSON.stringify(userInfo));
+      formData.append(
+        "webService_Update",
+        "wsuUpdate_GhTask_AnvaeProje_SelectParam"
+      );
+      formData.append("buttonCid", buttonCid);
+
+      $.ajax({
+        type: "POST",
+        url: webServiceUrl /*"ProjectReport_Service_WSV.asmx/getNoeProje_SelectParam"*/,
+        data: formData, //contentType: "application/json; charset=utf-8",
+          /*"{'sPassedParam':'" +
+            PassParam +
+            "','sCommand':'" +
+            jxTables[PageID]["sCommand"] +
+            "','sNemodar':'" +
+            jxTables[PageID]["ChartType"] +
+            "'}"*/ contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function (msg) {
+          //var data = JSON.parse(msg.d);
+          console.log(msg);
+
+          if (!msg.webSvcResult_List) {
+            ShowErrorMassage(msg.errorMsg);
+            return;
+          }
+
+          try {
+            window.sessionStorage._userInfo = JSON.stringify(msg._userInfo);
+            console.log("sessionStorage._userInfo updated successfully");
+          } catch (error) {
+            console.error("Error updating sessionStorage:", error);
+          }
+          
+          var data =
+            msg.webSvcResult_List[0].updatedItems[0].dataArray[0]
+              .dtAnvaeProje_SelectParam_Result_Json;
+          var sCommand = jxTables[PageID]["sCommand"];
+          jxTables[PageID]["listData_Json"] = data; //data["listData_Json"];
+          // jxTables[PageID]["ListParameters_Json_Decoded"] = JSON.parse(
+          //   data["ListParameters_Json"]
+          // );
+          jxTables[PageID]["ListParameters_Json_Decoded"] =
+            msg.webSvcResult_List[0].updatedItems[0].dataArray[0].parameters_Json;
+
+          jxTables[PageID]["ListParameters_Json"] = JSON.stringify(
+            msg.webSvcResult_List[0].updatedItems[0].dataArray[0]
+              .parameters_Json
+          );
+          jxTables[PageID]["Tedad"] = 0;
+          jxTables[PageID]["StartIndex"] = 0;
+          jxTables[PageID]["MaxChartShow"] = 1000;
+          jxTables[PageID]["sPassedParam"] = sPassedParam;
+          jxTables[PageID]["sCommand"] = sCommand;
+          jxTables[PageID]["NoeSakhtar"] = sCommand;
+          switch (jxTables[PageID]["ChartType"]) {
+            case "Pie": {
+              ShowProjeChart(PageID);
+              break;
+            }
+            case "Mileei": {
+              ShowNemoodareMileei(PageID);
+              break;
+            }
+          }
+          $("#linear-wait").stop();
+          $("#linear-wait").fadeOut(200);
+        },
+        error: function (msg) {
+          //var data = JSON.parse(msg.d);
+          console.log(msg);
+          console.log(JSON.stringify(msg));
+        },
+      });
+    }
+    function CreateNewNemoodareMileei(BeforPageID) {
+      jxTables.push(jxTables[BeforPageID]);
+      //jxTables.push(JSON.parse(JSON.stringify(jxTables[BeforPageID])));
+      var NewPageID;
+      NewPageID = NewBlankPage(BeforPageID);
+      jxTables[NewPageID]["StartIndex"] = 0;
+      jxTables[NewPageID]["MaxChartShow"] = 100;
+      jxTables[NewPageID]["ChartType"] = "Mileei";
+      ShowParametrs(NewPageID);
+      ShowNemoodareMileei(NewPageID);
+      if (BeforPageID != -1) {
+        gotoDown(BeforPageID);
+      }
+      RefreshPage(NewPageID);
+    }
+
+    var ReportShortcuts;
+    function ShowReportShortcuts(PageID) {
+      ReportShortcuts = jxTables[PageID].ReportShortcuts =
+        jxTables[PageID].ReportShortcuts ||
+        jxTables[PageID].ListParameters_Json_Decoded.filter(function (p) {
+          return p.Name == "ReportShortcut_List";
+        })[0].Values;
+      var divText = document.getElementById("divText" + PageID);
+      divText.style.fontWeight = "bold";
+      divText.style.fontFamily = "B Yekan";
+      divText.innerHTML = "";
+
+      var beforeUrl = window.location.href;
+      if (beforeUrl.indexOf("?") > 0) {
+        beforeUrl = beforeUrl.substring(0, beforeUrl.indexOf("?"));
+      }
+      beforeUrl += "?PassedParam=";
+
+      jQuery.each(ReportShortcuts, function (Index) {
+        var divReportShortcuts = document.createElement("div");
+        document
+          .getElementById("divText" + PageID)
+          .appendChild(divReportShortcuts);
+        divReportShortcuts.style.width = "90%";
+        var tagA = document.createElement("a");
+        divReportShortcuts.appendChild(tagA);
+        tagA.innerHTML = this["Onvan"];
+        tagA.href = beforeUrl + this["PassedParam"];
+        tagA.target = "_blank";
+        tagA.style.width = "90%";
+        tagA.className = "button";
+      });
+      var divBtnAddUrl = document.createElement("div");
+      document.getElementById("divText" + PageID).appendChild(divBtnAddUrl);
+      divBtnAddUrl.style.width = "50%";
+      divBtnAddUrl.style.height = "25px";
+      divBtnAddUrl.style.bottom = "10px";
+      var BtnAddUrl = document.createElement("a");
+      divBtnAddUrl.appendChild(BtnAddUrl);
+      BtnAddUrl.innerHTML = " افزودن میانبر این صفحه ";
+      BtnAddUrl.className = "button";
+      //BtnAddUrl.style.fontFamily = "B Yekan";
+      BtnAddUrl.href =
+        "http://tsx/Project/ReportShortcut?addPassedParam=" +
+        getPassedParam_Full(PageID);
+      BtnAddUrl.target = "_blank";
+      divBtnAddUrl.style.margin = "0px auto";
+
+      var BtnAddUrl = document.createElement("a");
+      divBtnAddUrl.appendChild(BtnAddUrl);
+      BtnAddUrl.innerHTML = " ویرایش میانبرها ";
+      BtnAddUrl.className = "button";
+      //BtnAddUrl.style.fontFamily = "B Yekan";
+      BtnAddUrl.href = "http://tsx/Project/ReportShortcut";
+      BtnAddUrl.target = "_blank";
+      divBtnAddUrl.style.margin = "0px auto";
+
+      //jxTables[PageID].renderedReportShortcuts = document.getElementById("divText" + PageID).innerHTML;
+    }
+    var Parametrs;
+    function ShowParametrs(PageID) {
+      var divText = document.getElementById("divText" + PageID);
+      divText.style.fontWeight = "bold";
+      divText.style.fontFamily = "B Yekan";
+      divText.innerHTML = "";
+      if (!jxTables[PageID]["ListParameters_Json_Decoded"]) {
+        // console.log(jxTables[PageID]);
+        Parametrs = JSON.parse(
+          jxTables[PageID]["ListParameters_Json"].replace("\\", "")
+        );
+        jxTables[PageID]["ListParameters_Json_Decoded"] = Parametrs;
+      } else Parametrs = jxTables[PageID]["ListParameters_Json_Decoded"];
+      //if (jxTables[PageID].renderedParameters) {
+      //    document.getElementById("divText" + PageID).innerHTML = jxTables[PageID].renderedParameters;
+      //    return;
+      //}
+      jQuery.each(Parametrs, function (Index) {
+        if (!this["Type"]) return;
+        var divParameters = document.createElement("div");
+        document
+          .getElementById("divText" + PageID)
+          .appendChild(divParameters);
+        divParameters.style.width = "90%";
+        divParameters.style.height = "80px";
+        var divTitle = document.createElement("div");
+        divParameters.appendChild(divTitle);
+        divTitle.innerHTML = this["Title"];
+        divTitle.style.height = "25px";
+        divParameters.style.float = "right";
+        var newElement = document.createElement(this["Type"]);
+        divParameters.appendChild(newElement);
+        //newElement.name = "langOpt[]";
+        newElement.class = "jqmsLoaded";
+        newElement.id = PageID + "_" + this["Type"] + "_" + Index;
+        this["ElementName"] = newElement.id;
+        newElement.style.width = "180px";
+        newElement.style.height = "30px";
+        newElement.style.fontFamily = "B Yekan";
+        newElement.style.fontSize = "14px";
+        newElement.style.float = "left";
+        newElement.style.margin = "0px auto";
+        newElement.style.fontWeight = "bold";
+        var TypeElementChild = this["TypeChild"];
+        var NeedRefresh = 0;
+        switch (this["Type"]) {
+          case "select": {
+            if (this.Multiple == 1) {
+              newElement.multiple = "true";
+              if (Array.isArray(this["Values"]))
+                jQuery.each(this["Values"], function (Index) {
+                  //var newElementChild = document.createElement(TypeElementChild);
+                  //var newElementChild = $('<option value="' + this["Value"] + '"' + (this.Selected ? ' selected ' : '') + '>' + this.Title + '</option>');
+                  //                                    newElementChild.text = this["Title"];
+                  //                                    newElementChild.value = this["Value"];
+                  //newElementChild.selected = true;
+                  //newElement.add(newElementChild);
+                  $(newElement).append(
+                    '<option value="' +
+                    this["Value"] +
+                    '"' +
+                    (this.Selected ? " selected " : "") +
+                    ">" +
+                    this.Title +
+                    "</option>"
+                  );
+                });
+              //                                 $(document).ready(function () {
+              //                                        $('#' + newElement.id).SumoSelect();
+              //                                    });
+              $("#" + newElement.id).multiselect({
+                columns: 1,
+                placeholder: this["Title"], // + '(' + this["Values"].length + ' مورد)',
+                search: true,
+                selectAll: true,
+              });
+            } else {
+              jQuery.each(this["Values"], function (Index) {
+                var newElementChild = document.createElement(
+                  TypeElementChild
+                );
+                newElementChild.text = this["Title"];
+                newElementChild.value = this["Value"];
+                newElement.add(newElementChild);
+              });
+            }
+            NeedRefresh = this["NeedRefresh"];
+            newElement.onchange = new Function(
+              "event",
+              "RerenderPage(" +
+              PageID +
+              ',"' +
+              newElement.id +
+              '",' +
+              NeedRefresh +
+              ")"
+            );
+            break;
+          }
+        }
+        newElement.value = this["DefaultValue"];
+      });
+      var divBtnRefresh = document.createElement("div");
+      document.getElementById("divText" + PageID).appendChild(divBtnRefresh);
+      divBtnRefresh.style.width = "50%";
+      divBtnRefresh.style.height = "25px";
+      divBtnRefresh.style.bottom = "10px";
+      var BtnRefresh = document.createElement("button");
+      divBtnRefresh.appendChild(BtnRefresh);
+      BtnRefresh.innerHTML = "   بروزرسانی اطلاعات   ";
+      BtnRefresh.id = PageID + "BeroozRasani";
+      BtnRefresh.style.width = "100%";
+      BtnRefresh.style.height = "100%";
+      BtnRefresh.style.fontFamily = "B Yekan";
+      BtnRefresh.onclick = new Function(
+        "event",
+        "RefreshPage(" + PageID + ",1)"
+      );
+      divBtnRefresh.style.margin = "0px auto";
+      //jxTables[PageID].renderedParameters = document.getElementById("divText" + PageID).innerHTML;
+    }
+    function GetParameterValues(sPassParameters_Full) {
+      var ParametersValues = "";
+      var thisElement = "";
+      var strTemp = sPassParameters_Full;
+      jQuery.each(Parametrs, function (Index) {
+        if (this["NeedRefresh"] == 1) {
+          thisElement = this["ElementName"];
+          var e = document.getElementById(thisElement);
+          if (this["Multiple"] == 0)
+            ParametersValues = e.options[e.selectedIndex].value;
+          else {
+            var result = [];
+            var opt;
+            var mymultiselect = $("#" + thisElement).multiselect();
+            jQuery.each(mymultiselect[0].childNodes, function (item) {
+              if (this.selected)
+                // || this.defaultChecked)
+                result.push(this.value);
+            });
+            ParametersValues = result.join("~");
+          }
+          strTemp = AddOrReplaceParameter(
+            strTemp,
+            ";Amp$" + this.Name + ";Eq$",
+            ParametersValues
+          );
+        }
+      });
+      sPassParameters_Full = strTemp;
+      return sPassParameters_Full;
+    }
+    function ExtractParameterValue(sPassParameters_Full, sParameterName) {
+      if (sParameterName.indexOf(";Amp$") == -1)
+        sParameterName = ";Amp$" + sParameterName;
+      if (sParameterName.indexOf(";Eq$") == -1)
+        sParameterName = sParameterName + ";Eq$";
+
+      var value = null;
+      if (sPassParameters_Full.indexOf(sParameterName) == -1) return null;
+      var afterParameterName = sPassParameters_Full.substring(
+        sPassParameters_Full.indexOf(sParameterName) + sParameterName.length
+      );
+
+      if (afterParameterName.indexOf(";Amp$") == -1)
+        value = afterParameterName;
+      else {
+        value = afterParameterName.substring(
+          0,
+          afterParameterName.indexOf(";Amp$")
+        );
+      }
+      return value;
+    }
+    function AddOrReplaceParameter(
+      sPassParameters_Full,
+      sParameterName,
+      sParameterValue
+    ) {
+      if (sParameterName.indexOf(";Amp$") == -1)
+        sParameterName = ";Amp$" + sParameterName;
+      if (sParameterName.indexOf(";Eq$") == -1)
+        sParameterName = sParameterName + ";Eq$";
+      var R = "";
+      if (sPassParameters_Full.indexOf(sParameterName) > -1)
+        R = RemoveParameter(sPassParameters_Full, sParameterName);
+      else R = sPassParameters_Full;
+      return R + sParameterName + sParameterValue;
+    }
+    function RemoveParameter(sPassParameters_Full, sParameterName) {
+      var IndexPreParam = sPassParameters_Full.indexOf(sParameterName);
+      var IndexPasParam = 0;
+      var PreParam = sPassParameters_Full.substring(0, IndexPreParam);
+      var PasParam = "";
+      sPassParameters_Full = sPassParameters_Full.slice(IndexPreParam + 5);
+      IndexPasParam = sPassParameters_Full.indexOf(";Amp$");
+      //sPassParameters_Full += PreParam;
+      if (IndexPasParam != -1)
+        PasParam = sPassParameters_Full.slice(IndexPasParam);
+      return (sPassParameters_Full = PreParam + PasParam);
+    }
+    function AlertNeedRefresh(PageID, sElement) {
+      //document.getElementById(sElement).style.backgroundColor = "#ffff77";
+      document.getElementById(PageID + "BeroozRasani").style.backgroundColor =
+        "#ffff77";
+    }
+    function RerenderPage(PageID, newElement, NeedRefresh) {
+      if (NeedRefresh == 1) {
+        AlertNeedRefresh(PageID, newElement);
+        return;
+      }
+
+      switch (jxTables[PageID]["ChartType"]) {
+        case "Pie": {
+          ShowProjeChart(PageID);
+          break;
+        }
+        case "Mileei": {
+          ShowNemoodareMileei(PageID);
+          break;
+        }
+      }
+    }
+    function ShowProjeChart(PageID) {
+      var data = CalcData_NoeProje_Shahrestan(PageID);
+      //document.getElementById("charts" + PageID).innerHTML = "";
+
+      //region debbug dupplicate
+      //clear Items to add them again
+      var container = document.getElementById("charts" + PageID);
+      container.querySelectorAll(".diiv").forEach((node) => node.remove());
+      //endregion
+      // console.log(jxTables[PageID].NoeSakhtar);
+      jQuery.each(data, function (Index) {
+        if (
+          (Index < jxTables[PageID]["MaxChartShow"] &&
+            jxTables[PageID].NoeSakhtar == "NoeProje") ||
+          jxTables[PageID].NoeSakhtar == "Shahrestan"
+        ) {
+          var div = document.createElement("div");
+          div.className = "diiv";
+          div.style.width = "140px"; //##################################################120
+          div.style.height = "auto";
+          var chart = document.createElement("div");
+          chart.id = PageID + "_Chart_" + this["id"];
+          chart.style.width = "120px"; //##################################################110
+          chart.style.height = "120px"; //##################################################110
+          chart.style.margin = "0px auto";
+
+          chart.onmousemove = new Function(
+            "event",
+            "ShowText(" +
+            PageID +
+            "," +
+            this["id"] +
+            ',"LinkeTamameGozareshat","0")'
+          );
+          chart.onclick = new Function(
+            "event",
+            "ShowText(" +
+            PageID +
+            "," +
+            this["id"] +
+            ',"LinkeTamameGozareshat","1")'
+          );
+          var divGauge_Nazar = document.createElement("div");
+          divGauge_Nazar.style.width = "100px";
+          divGauge_Nazar.style.height = "40px";
+          divGauge_Nazar.style.margin = "0px auto";
+
+          var Gauge = document.createElement("div");
+          Gauge.id = PageID + "_Gauge_" + this["id"];
+          Gauge.style.width = "50px";
+          Gauge.style.height = "40px";
+          Gauge.style.margin = "0px auto";
+          Gauge.style.float = "Left";
+          //Gauge.className = "diiv";
+          Gauge.onclick = new Function(
+            "event",
+            "ShowText(" + PageID + "," + this["id"] + ',"Hint_Takhirat","1")'
+          );
+          Gauge.onmousemove = new Function(
+            "event",
+            "ShowText(" + PageID + "," + this["id"] + ',"Hint_Takhirat","0")'
+          );
+
+          if (jxTables[PageID].NoeSakhtar == "NoeProje") {
+            //Gauge.style.float = "right";
+
+            var Nazar = document.createElement("div");
+            Nazar.id = PageID + "_Nazar_" + this["id"];
+            Nazar.style.width = "50px";
+            Nazar.style.height = "40px";
+            Nazar.style.float = "Right";
+            //Nazar.className = "diiv";
+            Nazar.innerHTML =
+              '<img src="IMAGES/ControlProje/NazarPic.png" style="background-color:' +
+              jxTables[PageID]["listData_Json"][this["id"]].Nazariye_Rang +
+              '; height:30px; width:40px; "/>';
+            Nazar.onclick = new Function(
+              "event",
+              "ShowText(" +
+              PageID +
+              "," +
+              this["id"] +
+              ',"Nazariye_Hame","1")'
+            );
+            Nazar.onmousemove = new Function(
+              "event",
+              "ShowText(" +
+              PageID +
+              "," +
+              this["id"] +
+              ',"Nazariye_Hame","0")'
+            );
+            divGauge_Nazar.appendChild(Nazar);
+          }
+          divGauge_Nazar.appendChild(Gauge);
+          var Name = document.createElement("a");
+          Name.setAttribute("href", "");
+          Name.style.width = "120px";
+          Name.style.height = "35px";
+          Name.style.fontSize = "12px";
+          Name.style.color = "#007bff";
+          if (this.category.length < 20) Name.style.fontSize = "14px";
+          if (this.category.length < 15) Name.style.fontSize = "16px";
+          if (this.category.length < 10) Name.style.fontSize = "18px";
+          if (this.category.length < 5) Name.style.fontSize = "20px";
+          Name.innerHTML = this.category;
+          Name.onclick = new Function(
+            "event",
+            "OnClickOpenProje(" +
+            PageID +
+            "," +
+            this["id"] +
+            ',"' +
+            jxTables[PageID]["sCommand"] +
+            '"); return false;'
+          );
+          Name.onmousemove = new Function(
+            "event",
+            "ShowText(" +
+            PageID +
+            "," +
+            this["id"] +
+            ',"LinkeTamameGozareshat","0")'
+          );
+
+          var TedadeProje = document.createElement("div");
+          TedadeProje.style.width = "140px";
+          TedadeProje.style.height = "20px";
+          TedadeProje.innerHTML = "تعداد پروژه:" + this.tedad;
+
+          div.appendChild(chart);
+          div.appendChild(divGauge_Nazar);
+          div.appendChild(TedadeProje);
+          div.appendChild(Name);
+          document.getElementById("charts" + PageID).appendChild(div);
+          SetNoeProjeChartToTihsDiv(chart.id, this["kol-akhir"], this.akhir);
+          SetGaugeChartToThisDiv(
+            Gauge.id,
+            jxTables[PageID]["listData_Json"][this["id"]].DarsadeTakhir
+          );
+        }
+      });
+      CheckRightLeftBtns(PageID, "NoeProje");
+    }
+    function CheckRightLeftBtns(PageID, Command) {
+      if (jxTables[PageID].Tedad <= jxTables[PageID]["MaxChartShow"]) {
+        document.getElementById("btnRight" + PageID).style.display = "none";
+        document.getElementById("btnLeft" + PageID).style.display = "none";
+      } else {
+        document.getElementById("btnRight" + PageID).style.display = "";
+        document.getElementById("btnLeft" + PageID).style.display = "";
+
+        if (
+          jxTables[PageID]["StartIndex"] >= jxTables[PageID]["MaxChartShow"]
+        ) {
+          document.getElementById("btnLeft" + PageID).src =
+            "IMAGES/ControlProje/Left.png";
+          document.getElementById("btnLeft" + PageID).onclick = new Function(
+            "event",
+            "onClickLeft(" + PageID + ',"NoeProje")'
+          );
+        } else {
+          document.getElementById("btnLeft" + PageID).src =
+            "IMAGES/ControlProje/Left_Disable.png";
+          document.getElementById("btnLeft" + PageID).onclick = new Function(
+            "event",
+            ""
+          );
+        }
+
+        if (
+          jxTables[PageID]["StartIndex"] <
+          jxTables[PageID].Tedad - jxTables[PageID]["MaxChartShow"]
+        ) {
+          document.getElementById("btnRight" + PageID).src =
+            "IMAGES/ControlProje/Right.png";
+          document.getElementById("btnRight" + PageID).onclick = new Function(
+            "event",
+            "onClickRight(" + PageID + ',"NoeProje")'
+          );
+        } else {
+          document.getElementById("btnRight" + PageID).src =
+            "IMAGES/ControlProje/Right_Disable.png";
+          document.getElementById("btnRight" + PageID).onclick = new Function(
+            "event",
+            ""
+          );
+        }
+      }
+    }
+    function onClickRight(PageID, Command) {
+      if (
+        Command == "NoeProje" &&
+        (jxTables[PageID].NoeSakhtar == "NoeProje" ||
+          jxTables[PageID].NoeSakhtar == "Shahrestan")
+      )
+        if (
+          jxTables[PageID]["StartIndex"] <
+          jxTables[PageID]["Tedad"] - jxTables[PageID]["MaxChartShow"]
+        ) {
+          jxTables[PageID]["StartIndex"] += jxTables[PageID]["MaxChartShow"];
+          ShowProjeChart(PageID);
+        }
+    }
+    function onClickLeft(PageID, Command) {
+      if (
+        Command == "NoeProje" &&
+        (jxTables[PageID].NoeSakhtar == "NoeProje" ||
+          jxTables[PageID].NoeSakhtar == "Shahrestan")
+      )
+        if (
+          jxTables[PageID]["StartIndex"] >= jxTables[PageID]["MaxChartShow"]
+        ) {
+          jxTables[PageID]["StartIndex"] -= jxTables[PageID]["MaxChartShow"];
+          ShowProjeChart(PageID);
+        }
+    }
+    function CalcData_NoeProje_Shahrestan(PageID) {
+      var data = [];
+      for (
+        var chartIndex = jxTables[PageID]["StartIndex"];
+        chartIndex <
+        jxTables[PageID]["StartIndex"] + jxTables[PageID]["MaxChartShow"] &&
+        chartIndex < jxTables[PageID]["listData_Json"].length;
+        chartIndex++
+      ) {
+        var hafteha = jxTables[PageID]["listData_Json"][chartIndex][
+          "DarsadeTakmil_Akhir"
+        ].split("~");
+        var akhir = 0;
+        akhir = parseFloat(akhir);
+        for (
+          var i = 0;
+          i < parseInt(GetElementValue(PageID, "_select_0"));
+          i++
+        ) {
+          akhir = parseFloat(akhir) + parseFloat(hafteha[i]);
+        }
+        var item = {
+          id: chartIndex,
+          category:
+            jxTables[PageID]["listData_Json"][chartIndex]["MemberValue"],
+          "kol-akhir": Math.round(
+            jxTables[PageID]["listData_Json"][chartIndex]["DarsadeTakmil"] -
+            akhir.toFixed(2)
+          ),
+          akhir: Math.round(akhir),
+          tedad: jxTables[PageID]["listData_Json"][chartIndex]["Tedad"],
+          ErtefaeNemodar:
+            jxTables[PageID]["listData_Json"][chartIndex]["Tedad"],
+          kol: jxTables[PageID]["listData_Json"][chartIndex]["DarsadeTakmil"],
+          darsadeTakhir:
+            jxTables[PageID]["listData_Json"][chartIndex]["DarsadeTakhir"] < 0
+              ? 0
+              : jxTables[PageID]["listData_Json"][chartIndex][
+              "DarsadeTakhir"
+              ],
+        };
+        if (
+          jxTables[PageID]["listData_Json"][chartIndex]["FaghedeKol"] !=
+          undefined
+        ) {
+          item["FaghedeKol"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["FaghedeKol"];
+          item["SumAmadeMontazer1"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["Goroohe1Amade"] +
+            jxTables[PageID]["listData_Json"][chartIndex]["Goroohe1Montazer"];
+          item["Goroohe1TakmileTafazoli"] =
+            jxTables[PageID]["listData_Json"][chartIndex][
+            "Goroohe1TakmileTafazoli"
+            ];
+          item["Goroohe1Takmil"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["Goroohe1Takmil"];
+          item["Goroohe2TakmileTafazoli"] =
+            jxTables[PageID]["listData_Json"][chartIndex][
+            "Goroohe2TakmileTafazoli"
+            ];
+          item["Goroohe2Takmil"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["Goroohe2Takmil"];
+          item["Goroohe3TakmileTafazoli"] =
+            jxTables[PageID]["listData_Json"][chartIndex][
+            "Goroohe3TakmileTafazoli"
+            ];
+          item["Goroohe3Takmil"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["Goroohe3Takmil"];
+          item["ErtefaeNemodar"] =
+            jxTables[PageID]["listData_Json"][chartIndex]["ErtefaeNemodar"];
+        }
+        data.push(item);
+      }
+      data.sort(function (a, b) {
+        return parseFloat(
+          b[GetElementValue(PageID, "_select_1")] -
+          parseFloat(a[GetElementValue(PageID, "_select_1")])
+        );
+      });
+      return data;
+    }
+    function GetElementValue(PageID, id) {
+      var element = document.getElementById(PageID + id);
+      if (typeof element != "undefined" && element != null) {
+        // if Exists Element then ...
+        jxTables[PageID][id] = element.value;
+        return jxTables[PageID][id];
+      } else return jxTables[PageID][id];
+    }
+    function addHoverToImageSource(pevEvent) {
+      var emThisElement = $(pevEvent.target);
+      var sSource_Old = emThisElement.prop("src");
+      var sSource_New = sSource_Old.replace("_Normal.", "_Hover.");
+      emThisElement.prop("src", sSource_New);
+    }
+
+    function removeHoverFromImageSource(pevEvent) {
+      var emThisElement = $(pevEvent.target);
+      var sSource_Old = emThisElement.prop("src");
+      var sSource_New = sSource_Old.replace("_Hover.", "_Normal.");
+      emThisElement.prop("src", sSource_New);
+    }
+
+    function ShowText(PageId, ChartIndex, Column, IsForce) {
+      if (IsForce != 1) {
+        if (
+          ID_Jari == PageId &&
+          Row_Jari == ChartIndex &&
+          Column_Jari == Column
+        ) {
+          return;
+        }
+        //else:
+        if (
+          !(
+            PageId == ID_Last &&
+            ChartIndex == Row_Last &&
+            Column == Column_Last
+          )
+        ) {
+          ID_Last = PageId;
+          Row_Last = ChartIndex;
+          Column_Last = Column;
+          DateTime_Last = new Date();
+          Time_Last = DateTime_Last.getTime();
+          return;
+        }
+        //else :
+        DateTime_Now = new Date();
+        Time_Now = DateTime_Now.getTime();
+        if (Time_Now - Time_Last < 300) return;
+        //else : Goto Code
+      }
+      //code:
+      ID_Jari = PageId;
+      Row_Jari = ChartIndex;
+      Column_Jari = Column;
+      if (CheckSakhtar(PageId, Column)) {
+        while (
+          jxTables[PageId]["listData_Json"][ChartIndex][Column].includes(
+            "$PageID$"
+          )
+        ) {
+          jxTables[PageId]["listData_Json"][ChartIndex][Column] = jxTables[
+            PageId
+          ]["listData_Json"][ChartIndex][Column].replace("$PageID$", PageId);
+        }
+        jxTables[PageId]["listData_Json"][ChartIndex][Column] = jxTables[
+          PageId
+        ]["listData_Json"][ChartIndex][Column].split("\n").join("<br><br>");
+
+        document.getElementById("divText" + ID_Jari).innerHTML =
+          jxTables[PageId]["listData_Json"][ChartIndex][Column];
+        //تنظیم رخداد ورود و خروج ماوس جهت تغییر تصویر هنگام عبور ماوس
+        if (
+          jxTables[PageId]["listData_Json"][ChartIndex][Column].indexOf(
+            "img"
+          ) > 0
+        ) {
+          $(".SelectParameter_ButtonContainer_Img").mouseenter(
+            addHoverToImageSource
+          );
+          $(".SelectParameter_ButtonContainer_Img").mouseleave(
+            removeHoverFromImageSource
+          );
+        }
+      } else {
+        alert("ShowText() خطا در هنگام چک کردن ساختار تابع ");
+        console.log("PageId " + PageId + " Column " + Column);
+      }
+    }
+    function addHoverToImageSource(pevEvent) {
+      var emThisElement = $(pevEvent.target);
+      var sSource_Old = emThisElement.prop("src");
+      var sSource_New = sSource_Old.replace("_Normal.", "_Hover.");
+      emThisElement.prop("src", sSource_New);
+    }
+
+    function removeHoverFromImageSource(pevEvent) {
+      var emThisElement = $(pevEvent.target);
+      var sSource_Old = emThisElement.prop("src");
+      var sSource_New = sSource_Old.replace("_Hover.", "_Normal.");
+      emThisElement.prop("src", sSource_New);
+    }
+    function CheckSakhtar(PageID, Column) {
+      if (
+        jxTables &&
+        jxTables[PageID] &&
+        jxTables[PageID]["listData_Json"] &&
+        jxTables[PageID]["listData_Json"][0] &&
+        jxTables[PageID]["listData_Json"][0][Column] != undefined
+      )
+        //.SakhtarMembers.indexOf("~" + Column + "~") > 0)
+        return true;
+      return false;
+    }
+    function isFireFox() {
+      var firefoxVersion = 0;
+      if (navigator.userAgent.indexOf("Firefox") != -1) {
+        if (typeof Symbol.match === "undefined") firefoxVersion = 39;
+        if (
+          typeof Symbol.match !== "undefined" &&
+          typeof Symbol.species === "undefined"
+        ) {
+          firefoxVersion = 40;
+        } else if (
+          typeof Symbol.species !== "undefined" &&
+          typeof Reflect === "undefined"
+        ) {
+          firefoxVersion = 41;
+        } else if (
+          typeof Reflect !== "undefined" &&
+          typeof window.screen.orientation === "undefined"
+        ) {
+          firefoxVersion = 42;
+        } else if (
+          typeof window.screen.orientation !== "undefined" &&
+          typeof document.charset === "undefined"
+        ) {
+          firefoxVersion = 43;
+        } else if (
+          typeof document.charset !== "undefined" &&
+          typeof window.onstorage === "undefined"
+        ) {
+          firefoxVersion = 44;
+        } else if (
+          typeof window.onstorage !== "undefined" &&
+          typeof window.onabsolutedeviceorientation === "undefined"
+        ) {
+          firefoxVersion = 45;
+        } else if (
+          typeof window.onabsolutedeviceorientation !== "undefined"
+        ) {
+          firefoxVersion = 46;
+        }
+      }
+      return firefoxVersion;
+    }
+
+    function isIE() {
+      var myNav = navigator.userAgent.toLowerCase();
+      return myNav.indexOf("msie") != -1
+        ? parseInt(myNav.split("msie")[1])
+        : false;
+    }
+    function setNodePStyle(node) {
+      node.style.width = "100vw";
+      if (screen.availWidth > 1024)
+        document.getElementById("body").style.margin = "0px auto";
+      if (isIE8) {
+        node.style.height = screen.availHeight - 150 + "px";
+      } else {
+        node.style.height = "100vh"; //(screen.availHeight - 100) + "px";
+      }
+      //node.style.borderBottom = "1px solid Gray";
+      node.style.align = "center";
+      node.style.margin = "0";
+      node.style.padding = "0.1vh 0px";
+      node.style.overflow = "hidden";
+    }
+    function gotoTop(id) {
+      if (!document.getElementById("btnTop" + id)["myEnable"]) return;
+      goto(document.getElementById(id).PreviousElement().id);
+    }
+    function gotoDown(id) {
+      if (!document.getElementById("btnDown" + id)["myEnable"]) return;
+      goto(document.getElementById(id).NextElement().id);
+    }
+
+    //scrolls function:
+    var keydds = { 37: 1, 38: 1, 39: 1, 40: 1 };
+    function preventDefault(e) {
+      e = e || window.event;
+      if (e.preventDefault) e.preventDefault();
+      e.returnValue = !ScrollIsInWork; //false;
+      setTimeout(function () {
+        myScrollFunction();
+      }, 50);
+    }
+    function preventDefaultForScrollKeys(e) {
+      if (keydds[e.keyCode]) {
+        preventDefault(e);
+        return !ScrollIsInWork; //false;
+      }
+    }
+    function disableScroll() {
+      if (window.addEventListener)
+        // older FF
+        window.addEventListener("DOMMouseScroll", preventDefault, false);
+      window.onwheel = preventDefault; // modern standard
+      window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
+      window.ontouchmove = preventDefault; // mobile
+      document.onkeydown = preventDefaultForScrollKeys;
+    }
+    disableScroll();
+    //window.addEventListener("scroll", myScrollFunction);
+    //window.addEventListener("onwheel", myScrollFunction);
+
+    var lastScrollTop = 0;
+    var lastScrollId = 0;
+    var ScrollIsInWork = false;
+    function myScrollFunction() {
+      var st = window.pageYOffset || document.documentElement.scrollTop;
+      if (ScrollIsInWork || st == lastScrollTop) return;
+      if (st > lastScrollTop) {
+        gotoDown(lastScrollId);
+      } else {
+        gotoTop(lastScrollId);
+      }
+      lastScrollTop = st;
+    }
+    Element.prototype.NextElement = function () {
+      var el = this;
+      do {
+        el = el.nextSibling;
+      } while (el && el.nodeType !== 1);
+      return el;
+    };
+    Element.prototype.PreviousElement = function () {
+      var el = this;
+      do {
+        el = el.previousSibling;
+      } while (el && el.nodeType !== 1);
+      return el;
+    };
+    function goto(id) {
+      if (ScrollIsInWork) return;
+      ScrollIsInWork = true;
+      $("html, body").animate(
+        {
+          scrollTop: $("#" + id).offset().top,
+        },
+        300,
+        null,
+        function () {
+          lastScrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
+          const chartsElement = document.getElementById('charts' + id);
+          if (chartsElement) {
+            chartsElement.style.overflowY = 'hidden';
+            setTimeout(function () {
+              chartsElement.style.overflowY = 'scroll';
+            }, 100);
+          }
+          setTimeout(function () {
+            ScrollIsInWork = false;
+          }, 50);
+          lastScrollId = id;
+        }
+      );
+    }
+    function remov(id) {
+      var node = document.getElementById(id);
+      if (!document.getElementById("btnRemove" + id)["myEnable"]) return;
+      if (node.NextElement() == null || node.NextElement().id == null) {
+        DisableImageItem("btnDown" + node.PreviousElement().id);
+      }
+      $("html, body").animate(
+        {
+          scrollTop: $("#" + node.PreviousElement().id).offset().top,
+        },
+        300,
+        null,
+        function () {
+          var thiss = document.getElementById(id);
+          if (thiss && thiss.parentElement) {
+            thiss.parentElement.removeChild(thiss);
+          }
+        }
+      );
+    }
+    function SetGaugeChartToThisDiv(divID, DarsadeTakhir) {
+      if (DarsadeTakhir < 0) DarsadeTakhir = 0;
+      if (DarsadeTakhir > 300) DarsadeTakhir = 300;
+
+      var value = 255 - parseInt((DarsadeTakhir * 255) / 300);
+      var Color = value.toString(16);
+      if (Color.length == 1) Color = "0" + Color;
+      else Color;
+      AnimatedGauge = AmCharts.makeChart(divID, {
+        theme: "light",
+        type: "gauge",
+        marginBottom: 0,
+        marginLeft: 0,
+        marginRight: 0,
+        marginTop: 0,
+        fontSize: 0,
+        startDuration: 0,
+        arrows: [
+          {
+            id: "GaugeArrow-1",
+            innerRadius: "35%",
+            nailRadius: 0,
+            startWidth: 3,
+            radius: "170%",
+            value: DarsadeTakhir,
+          },
+        ],
+        axes: [
+          {
+            axisColor: "#31d6ea",
+            endAngle: 90,
+            endValue: 300,
+            id: "GaugeAxis-1",
+            radius: "50%",
+            startAngle: -90,
+            tickColor: "#ff" + Color + Color,
+            topTextFontSize: 20,
+            topTextYOffset: 70,
+            unit: "%",
+            valueInterval: 10,
+            bands: [
+              {
+                color: "#ff" + Color + Color,
+                endValue: 300,
+                gradientRatio: [0.5, 0, -0.5],
+                id: "GaugeBand-1",
+                innerRadius: "105%",
+                radius: "170%",
+                startValue: 0,
+              },
+            ],
+          },
+        ],
+        allLabels: [],
+        balloon: {},
+        titles: [],
+      });
+    }
+    function SetNoeProjeChartToTihsDiv(
+      divID,
+      DarsadeTakmil_Kol,
+      DarsadeTakmil_Akhir
+    ) {
+      DarsadeTakmil_Kol = DarsadeTakmil_Kol;
+      DarsadeTakmil_Akhir = parseInt(DarsadeTakmil_Akhir);
+      AmCharts.makeChart(divID, {
+        type: "pie",
+        //"labelsEnabled": false,
+        autoMargins: false,
+        marginTop: 15,
+        marginBottom: 0,
+        marginLeft: 10,
+        marginRight: 10,
+        pullOutRadius: 0,
+        //              "marginBottom": -50,
+        //			    "marginLeft": 0,
+        //			    "marginRight": 0,
+        //			    "marginTop": -50,
+        balloonText:
+          "[[title]]<br><span style='font-size:14px'> ([[balloonTitle]]%)</span>",
+        labelRadius: -35,
+        labelText: "allLabels",
+        startDuration: 0,
+        colors: ["#6BB2FE", "#619694", "#FFCE44"],
+        labelColorField: "#FF0000",
+        labelsEnabled: false,
+        titleField: "Title",
+        valueField: "Value",
+        allLabels: [
+          {
+            text: DarsadeTakmil_Kol + DarsadeTakmil_Akhir + "%",
+            bold: true,
+            x: 75,
+            y: 55,
+          },
+        ],
+        balloon: {},
+        titles: [],
+        dataProvider: [
+          {
+            Title: "انجام شده",
+            Value: DarsadeTakmil_Kol,
+            balloonTitle: DarsadeTakmil_Kol + DarsadeTakmil_Akhir,
+          },
+          {
+            Title: "پیشرفت اخیر",
+            Value: DarsadeTakmil_Akhir,
+            balloonTitle: DarsadeTakmil_Akhir,
+          },
+          {
+            Title: "باقی مانده",
+            Value: 100 - DarsadeTakmil_Kol - DarsadeTakmil_Akhir,
+            balloonTitle: 100 - DarsadeTakmil_Kol - DarsadeTakmil_Akhir,
+          },
+        ],
+      });
+    }
+
+    function ShowNemoodareMileei(PageID) {
+      var data = CalcData_NoeProje_Shahrestan(PageID);
+      var maxErtefaeNemodar = null,
+        maxTedad = null;
+      var takhirMax = 0;
+      document.getElementById("charts" + PageID).innerHTML = "";
+      var max = data.filter(function (el) {
+        return el.category == "همه موارد" || el.category == "همه شهرستان ها";
+      });
+      if (max != null && max.length > 0 && max[0] != null) {
+        maxErtefaeNemodar = max[0].ErtefaeNemodar;
+        maxTedad = max[0].tedad;
+      } else {
+        maxErtefaeNemodar = 0;
+        maxTedad = 0;
+        jQuery.each(data, function (Index) {
+          maxErtefaeNemodar += this.ErtefaeNemodar;
+          maxTedad += this.tedad;
+        });
+      }
+      if (maxErtefaeNemodar == null || maxTedad == null)
+        alert("maxErtefaeNemodar or maxTedad is null");
+      //CheckRightLeftBtns(PageID, "Shahrestan");
+
+      //        var jazrTedadeKol = Math.pow(TedadeKol,0.34);
+      //        jQuery.each(data, function (Index) {
+      //            this["ErtefaeNemodar"] = (Math.pow(this.tedad,0.34) / jazrTedadeKol) * 100;
+      //        });
+      var lgErtefaeNemodar = Math.log2(maxErtefaeNemodar);
+      var lgTedad = Math.log2(maxTedad);
+      function logErtefaeNemodar(input) {
+        var i =
+          input < 1 ? 0 : (Math.log2(input + 1) / lgErtefaeNemodar) * 100;
+        return i > 100 ? 100 : i;
+      }
+      function logTedad(input) {
+        var i = input < 1 ? 0 : (Math.log2(input + 1) / lgTedad) * 100;
+        return i > 100 ? 100 : i;
+      }
+      jQuery.each(data, function (Index) {
+        this["tedadPercent"] = logTedad(this.tedad); // (this.tedad < 1 ? 0 : ((Math.log2(this.tedad) / logTedadeKol) * 100) + 1);
+        //this["tedadPercent"] *= 2;// this["tedadPercent"] > 95 ? 95 : this["tedadPercent"];
+        this["-tedadPercent"] = -this["tedadPercent"];
+        this["ErtefaeNemodarPercent"] = logErtefaeNemodar(
+          this.ErtefaeNemodar
+        );
+        this["-ErtefaeNemodarPercent"] = -this["ErtefaeNemodarPercent"];
+
+        //this["tedadPercent"] = (this["tedadPercent"] > 100 ? 100 : this["tedadPercent"])
+        //        });
+        //
+
+        //        jQuery.each(data, function (Index) {
+        if (this["darsadeTakhir"] > takhirMax) {
+          takhirMax = this["darsadeTakhir"];
+        }
+        if (this["FaghedeKol"] != undefined) {
+          this["-tedadPercent"] *= 3;
+          this["-ErtefaeNemodarPercent"] *= 3;
+          this["-FaghedeKol"] = logErtefaeNemodar(this.FaghedeKol); // myRound((this.tedad < 1 ? 0 : ((Math.log2(this.FaghedeKol) / logTedadeKol) * 100) + 1)/20,2);// this['FaghedeKol'];
+          this["-SumAmadeMontazer1"] = logErtefaeNemodar(
+            this.SumAmadeMontazer1
+          ); // myRound((this.tedad < 1 ? 0 : ((Math.log2(this.SumAmadeMontazer1) / logTedadeKol) * 100) + 1)/20,2);// this['FaghedeKol'];
+          this["-Goroohe1TakmileTafazoli"] = logErtefaeNemodar(
+            this.Goroohe1TakmileTafazoli
+          ); //myRound((this.tedad < 1 ? 0 : ((Math.log2(this.Goroohe1TakmileTafazoli) / logTedadeKol) * 100) + 1)/20,2);// this['FaghedeKol'];
+          this["-Goroohe2TakmileTafazoli"] = logErtefaeNemodar(
+            this.Goroohe2TakmileTafazoli
+          ); //myRound((this.tedad < 1 ? 0 : ((Math.log2(this.Goroohe2TakmileTafazoli) / logTedadeKol) * 100) + 1)/20,2);// this['FaghedeKol'];
+          this["-Goroohe3TakmileTafazoli"] = logErtefaeNemodar(
+            this.Goroohe3TakmileTafazoli
+          ); //myRound((this.tedad < 1 ? 0 : ((Math.log2(this.Goroohe3TakmileTafazoli) / logTedadeKol) * 100) + 1)/20,2);// this['FaghedeKol'];
+
+          var sumGoroohha =
+            this["-FaghedeKol"] +
+            this["-SumAmadeMontazer1"] +
+            this["-Goroohe1TakmileTafazoli"] +
+            this["-Goroohe2TakmileTafazoli"] +
+            this["-Goroohe3TakmileTafazoli"];
+          var percentGoroohha = -(
+            this["-ErtefaeNemodarPercent"] / sumGoroohha
+          );
+          this["-FaghedeKol"] = -this["-FaghedeKol"] * percentGoroohha;
+          this["-SumAmadeMontazer1"] =
+            -this["-SumAmadeMontazer1"] * percentGoroohha;
+          this["-Goroohe1TakmileTafazoli"] =
+            -this["-Goroohe1TakmileTafazoli"] * percentGoroohha;
+          this["-Goroohe2TakmileTafazoli"] =
+            -this["-Goroohe2TakmileTafazoli"] * percentGoroohha;
+          this["-Goroohe3TakmileTafazoli"] =
+            -this["-Goroohe3TakmileTafazoli"] * percentGoroohha;
+
+          this["-FaghedeKol"] =
+            this["-FaghedeKol"] == 0 ? undefined : this["-FaghedeKol"];
+          this["-SumAmadeMontazer1"] =
+            this["-SumAmadeMontazer1"] == 0
+              ? undefined
+              : this["-SumAmadeMontazer1"];
+          this["-Goroohe1TakmileTafazoli"] =
+            this["-Goroohe1TakmileTafazoli"] == 0
+              ? undefined
+              : this["-Goroohe1TakmileTafazoli"];
+          this["-Goroohe2TakmileTafazoli"] =
+            this["-Goroohe2TakmileTafazoli"] == 0
+              ? undefined
+              : this["-Goroohe2TakmileTafazoli"];
+          this["-Goroohe3TakmileTafazoli"] =
+            this["-Goroohe3TakmileTafazoli"] == 0
+              ? undefined
+              : this["-Goroohe3TakmileTafazoli"];
+
+          //                item['Goroohe1Takmil'] = jxTables[PageID]["listData_Json"][chartIndex]["Goroohe1Takmil"];
+          //                item['Goroohe2Takmil'] = jxTables[PageID]["listData_Json"][chartIndex]["Goroohe2Takmil"];
+          //                item['Goroohe3Takmil'] = jxTables[PageID]["listData_Json"][chartIndex]["Goroohe3Takmil"];
+        }
+      });
+      jQuery.each(data, function (Index) {
+        this["takhirPercent"] = Math.round(
+          (this.darsadeTakhir / takhirMax) * 100
+        );
+        //        });
+        //        //اگر درصد پیشرفت اخیر بیشتر از کل پیشرفت باشد آن گاه پیشرفت اخیر برابر کل پیشرفت قرار میگیرد و پیشرفت کل منهای اخیر رو هم برابر صفر قرار میگیرد
+        //        jQuery.each(data, function (Index) {
+        //this["takhirPercent"] = Math.round((this.darsadeTakhir / takhirMax) * 100);
+        if (this.akhir > this.kol) {
+          this.akhir = this.kol;
+          this["kol-akhir"] = 0;
+        }
+
+        this["sabet10"] = 10;
+      });
+
+      var myGraphs = [
+        {
+          accessibleLabel: "[[title]] [[category]] [[kol]]",
+          //"balloonText": "[[title]] [[category]]:%[[kol]]",
+          fillAlphas: 1,
+          id: "AmGraph-1",
+          //"labelText": "[[kol]]\n%",
+          title: "درصد پیشرفت تا کنون",
+          legendValueText: "[[kol]]",
+          type: "column",
+          valueField: "kol-akhir",
+        },
+        {
+          //"balloonText": "[[title]] [[category]]:%[[value]]",
+          fillAlphas: 1,
+          id: "AmGraph-2",
+          labelText: "[[value]]%",
+          title: "درصد پیشرفت اخیر",
+          type: "column",
+          valueField: "akhir",
+        },
+        {
+          accessibleLabel: "[[title]][[category]] [[tedad]]",
+          //"balloonText": "[[title]][[category]]: [[tedad]]",
+          bullet: "round",
+          gapPeriod: 2,
+          id: "AmGraph-3",
+          labelText: "[[tedad]]",
+          lineAlpha: 0.5,
+          lineThickness: 2,
+          bulletAlpha: 0.4,
+          title: "تعداد پروژه ها",
+          legendValueText: "[[tedad]]",
+          valueField:
+            data[1].FaghedeKol != undefined
+              ? "-tedadPercent"
+              : "tedadPercent",
+        },
+        {
+          accessibleLabel: "[[title]][[category]] [[darsadeTakhir]]",
+          //"balloonText": "[[title]][[category]]: %[[darsadeTakhir]]",
+          bullet: "square",
+          lineAlpha: 0.3,
+          lineThickness: 2,
+          bulletAlpha: 0.3,
+          gapPeriod: 1,
+          id: "AmGraph-4",
+          labelText: "[[darsadeTakhir]]",
+          legendValueText: "[[darsadeTakhir]]",
+          title: "درصد میزان تاخیر",
+          valueField: "takhirPercent",
+          type: "smoothedLine",
+        },
+        {
+          showBalloon: false,
+          showAllValueLabels: true,
+          fillAlphas: 0,
+          visibleInLegend: false,
+          id: "AmGraph-5",
+          labelText: "[[kol]]",
+          type: "column",
+          valueField: "sabet10",
+        },
+      ];
+      if (data[1].FaghedeKol != undefined) {
+        var TaskName_List_1_Name = "گروه 1",
+          TaskName_List_2_Name = "گروه 2",
+          TaskName_List_3_Name = "گروه 3";
+        jQuery.each(jxTables[PageID]["ListParameters_Json_Decoded"], function (
+          index
+        ) {
+          var item = jxTables[PageID]["ListParameters_Json_Decoded"][index];
+          if (item.Name == "TaskName_List_1")
+            TaskName_List_1_Name = item.Title;
+          else if (item.Name == "TaskName_List_2")
+            TaskName_List_2_Name = item.Title;
+          else if (item.Name == "TaskName_List_3")
+            TaskName_List_3_Name = item.Title;
+        });
+        myGraphs.push(
+          {
+            accessibleLabel: "[[title]] [[category]] [[Goroohe3Takmil]]",
+            color: "#ffffdd",
+            showAllValueLabels: true,
+            //"balloonText": "[[title]] [[category]]:%[[kol]]",
+            fillAlphas: 1,
+            id: "AmGraph-10",
+            labelText: "[[Goroohe3Takmil]]",
+            title: TaskName_List_3_Name,
+            legendValueText: "[[Goroohe3Takmil]]",
+            type: "column",
+            valueField: "-Goroohe3TakmileTafazoli",
+          },
+          {
+            accessibleLabel: "[[title]] [[category]] [[Goroohe2Takmil]]",
+            showAllValueLabels: true,
+            //"balloonText": "[[title]] [[category]]:%[[kol]]",
+            fillAlphas: 1,
+            id: "AmGraph-9",
+            labelText: "[[Goroohe2Takmil]]",
+            title: TaskName_List_2_Name,
+            legendValueText: "[[Goroohe2Takmil]]",
+            type: "column",
+            valueField: "-Goroohe2TakmileTafazoli",
+          },
+          {
+            accessibleLabel: "[[title]] [[category]] [[Goroohe1Takmil]]",
+            showAllValueLabels: true,
+            //"balloonText": "[[title]] [[category]]:%[[kol]]",
+            fillAlphas: 1,
+            id: "AmGraph-8",
+            labelText: "[[Goroohe1Takmil]]",
+            title: TaskName_List_1_Name,
+            legendValueText: "[[Goroohe1Takmil]]",
+            type: "column",
+            valueField: "-Goroohe1TakmileTafazoli",
+          },
+          {
+            accessibleLabel: "[[title]] [[category]] [[SumAmadeMontazer1]]",
+            showAllValueLabels: true,
+            //"balloonText": "[[title]] [[category]]:%[[kol]]",
+            fillAlphas: 1,
+            id: "AmGraph-7",
+            labelText: "[[SumAmadeMontazer1]]",
+            title: "در حال شروع",
+            legendValueText: "[[SumAmadeMontazer1]]",
+            type: "column",
+            valueField: "-SumAmadeMontazer1",
+          },
+          {
+            accessibleLabel: "[[title]] [[category]] [[FaghedeKol]]",
+            showAllValueLabels: true,
+            //"balloonText": "[[title]] [[category]]:%[[kol]]",
+            fillAlphas: 1,
+            id: "AmGraph-11",
+            labelText: "[[FaghedeKol]]",
+            title: "فاقد فعالیت ها",
+            legendValueText: "[[FaghedeKol]]",
+            type: "column",
+            valueField: "-FaghedeKol",
+          }
+        );
+      }
+      var chart = AmCharts.makeChart("charts" + PageID, {
+        type: "serial",
+        categoryField: "category",
+        angle: 30,
+        startDuration: 1,
+        fontFamily: "Tahoma",
+        fontSize: 16,
+        colors: [
+          "#6BB2FE", //Pishraft
+          "#619694", //PishrafteAkhir
+          "#000000",
+          "#FF0000", //Takhir
+          "#FFFFFF", //TedadeProje
+
+          "#1b5e20", //3
+          "#00c853", //2
+          "#76ff03", //1
+          "#ffff00", //amade
+          "#e91e63", //faghed
+        ],
+        categoryAxis: {
+          gridPosition: "start",
+          labelRotation: 45,
+          minorGridEnabled: true,
+          autoGridCount: false,
+          gridCount: 40,
+        },
+        chartCursor: {
+          enabled: true,
+        },
+        trendLines: [],
+        graphs: myGraphs,
+        guides: [],
+        valueAxes: [
+          {
+            id: "ValueAxis-1",
+            stackType: "regular",
+            labelsEnabled: false,
+            minVerticalGap: 10,
+            title: "در صد پیشرفت پروژه ها",
+          },
+        ],
+        allLabels: [],
+        balloon: {
+          enabled: false,
+        },
+        legend: {
+          enabled: true,
+          //                "switchable": false,
+          //                "useGraphSettings": true
+        },
+        titles: [
+          {
+            id: "Title-1",
+            size: 15,
+            text: "نمودار میله ای پروژه ها",
+          },
+        ],
+        dataProvider: data,
+        listeners: [
+          {
+            event: "clickGraphItem",
+            method: function (e) {
+              ShowText(
+                PageID,
+                e.item.dataContext.id,
+                "LinkeTamameGozareshat",
+                1
+              );
+            },
+          },
+        ],
+      });
+    }
+
+    $("#langOpt").multiselect({
+      columns: 1,
+      placeholder: "Select Languages",
+    });
+
+    $("#langOpt2").multiselect({
+      columns: 1,
+      placeholder: "Select Languages",
+      search: true,
+    });
+
+    $("#langOpt3").multiselect({
+      columns: 1,
+      placeholder: "Select Languages",
+      search: true,
+      selectAll: true,
+    });
+
+    $("#langOptgroup").multiselect({
+      columns: 4,
+      placeholder: "Select Languages",
+      search: true,
+      selectAll: true,
+    });
+    function myRound(number, precision) {
+      // round Math.round
+      // myRound(1234.5678, 1); // 1234.6
+      // myRound(1234.5678, -1); // 1230
+      var factor = Math.pow(10, precision);
+      var tempNumber = number * factor;
+      var roundedTempNumber = Math.round(tempNumber);
+      return roundedTempNumber / factor;
+    }
+  </script>
+</body>
+
+</html>

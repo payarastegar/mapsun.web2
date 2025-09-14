@@ -1,0 +1,18 @@
+.ConnectionStatus {
+    will-change: transform;
+}
+
+.ConnectionStatus__button {
+
+}
+
+.ConnectionStatus__icon {
+    transition: all .4s cubic-bezier(.25, .8, .25, 1);
+    transition-duration: .2s;
+    will-change: transform;
+    opacity: 1;
+}
+
+.ConnectionStatus__icon--offline {
+    opacity: .6;
+}

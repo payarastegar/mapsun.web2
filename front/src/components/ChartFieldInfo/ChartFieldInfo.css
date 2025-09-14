@@ -1,0 +1,8 @@
+.ChartFieldInfo {
+  direction: ltr;
+}
+
+.ChartFieldInfo
+  g[style="cursor: pointer;"][opacity][transform][filter][aria-labelledby] {
+  display: none;
+}

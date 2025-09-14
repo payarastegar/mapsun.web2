@@ -1,0 +1,2 @@
+mapsun server= https://api.mapsunapp.ir
+esfahan server= npassive.tce.local

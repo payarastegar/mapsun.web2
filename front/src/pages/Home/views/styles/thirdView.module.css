@@ -1,0 +1,25 @@
+.txtViewContainer {
+    display: inline;
+    /*display-inside: ruby-text;*/
+}
+.txtNormal{
+    font-size: 24px;
+    /*text-align: justify;*/
+}
+.txtBold {
+    display: inline;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.container {
+    /*background-color: #ff600a;*/
+}
+
+.cardViewContainer {
+    /*background-color: darkcyan;*/
+}
+
+.colContainer {
+    /*background-color: darkgoldenrod;*/
+}

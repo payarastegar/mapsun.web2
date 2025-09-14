@@ -1,0 +1,886 @@
+{
+  "ReportVersion": "2019.4.1",
+  "ReportGuid": "e48da59833654702843c2bbc1cc15dbc",
+  "ReportName": "Report",
+  "ReportAlias": "Report",
+  "ReportFile": "Report.mrt",
+  "ReportCreated": "/Date(1575356379000+0330)/",
+  "ReportChanged": "/Date(1575356379000+0330)/",
+  "EngineVersion": "EngineV2",
+  "CalculationMode": "Interpretation",
+  "ReportUnit": "Centimeters",
+  "PreviewSettings": 268435455,
+  "Dictionary": {
+    "DataSources": {
+      "0": {
+        "Ident": "StiDataTableSource",
+        "Name": "root",
+        "Alias": "root",
+        "Columns": {
+          "0": {
+            "Name": "dataArray",
+            "Index": -1,
+            "NameInSource": "dataArray",
+            "Alias": "dataArray",
+            "Type": "System.String"
+          },
+          "1": {
+            "Name": "fieldCid",
+            "Index": -1,
+            "NameInSource": "fieldCid",
+            "Alias": "fieldCid",
+            "Type": "System.String"
+          },
+          "2": {
+            "Name": "fieldName",
+            "Index": -1,
+            "NameInSource": "fieldName",
+            "Alias": "fieldName",
+            "Type": "System.String"
+          },
+          "3": {
+            "Name": "fieldType",
+            "Index": -1,
+            "NameInSource": "fieldType",
+            "Alias": "fieldType",
+            "Type": "System.String"
+          },
+          "4": {
+            "Name": "formName",
+            "Index": -1,
+            "NameInSource": "formName",
+            "Alias": "formName",
+            "Type": "System.String"
+          },
+          "5": {
+            "Name": "idColName",
+            "Index": -1,
+            "NameInSource": "idColName",
+            "Alias": "idColName",
+            "Type": "System.String"
+          },
+          "6": {
+            "Name": "tblFieldInfoId",
+            "Index": -1,
+            "NameInSource": "tblFieldInfoId",
+            "Alias": "tblFieldInfoId",
+            "Type": "System.Decimal"
+          },
+          "7": {
+            "Name": "timeLog",
+            "Index": -1,
+            "NameInSource": "timeLog",
+            "Alias": "timeLog",
+            "Type": "System.String"
+          }
+        },
+        "NameInSource": "report_kala.root"
+      },
+      "1": {
+        "Ident": "StiDataTableSource",
+        "Name": "root_dataArray",
+        "Alias": "root_dataArray",
+        "Columns": {
+          "0": {
+            "Name": "bargashti_Riyali",
+            "Index": -1,
+            "NameInSource": "bargashti_Riyali",
+            "Alias": "bargashti_Riyali",
+            "Type": "System.Decimal"
+          },
+          "1": {
+            "Name": "btnOpenGardesh",
+            "Index": -1,
+            "NameInSource": "btnOpenGardesh",
+            "Alias": "btnOpenGardesh",
+            "Type": "System.String"
+          },
+          "2": {
+            "Name": "mande_Riyali",
+            "Index": -1,
+            "NameInSource": "mande_Riyali",
+            "Alias": "mande_Riyali",
+            "Type": "System.Decimal"
+          },
+          "3": {
+            "Name": "masrafi_Riyali",
+            "Index": -1,
+            "NameInSource": "masrafi_Riyali",
+            "Alias": "masrafi_Riyali",
+            "Type": "System.Decimal"
+          },
+          "4": {
+            "Name": "namePeymankar",
+            "Index": -1,
+            "NameInSource": "namePeymankar",
+            "Alias": "namePeymankar",
+            "Type": "System.String"
+          },
+          "5": {
+            "Name": "relationId",
+            "Index": -1,
+            "NameInSource": "relationId",
+            "Alias": "relationId",
+            "Type": "System.String"
+          },
+          "6": {
+            "Name": "shomareGharardad",
+            "Index": -1,
+            "NameInSource": "shomareGharardad",
+            "Alias": "shomareGharardad",
+            "Type": "System.String"
+          },
+          "7": {
+            "Name": "tahvili_Riyali",
+            "Index": -1,
+            "NameInSource": "tahvili_Riyali",
+            "Alias": "tahvili_Riyali",
+            "Type": "System.Decimal"
+          },
+          "8": {
+            "Name": "tblPeymankarId",
+            "Index": -1,
+            "NameInSource": "tblPeymankarId",
+            "Alias": "tblPeymankarId",
+            "Type": "System.Decimal"
+          },
+          "9": {
+            "Name": "tedadeGardesh",
+            "Index": -1,
+            "NameInSource": "tedadeGardesh",
+            "Alias": "tedadeGardesh",
+            "Type": "System.Decimal"
+          }
+        },
+        "NameInSource": "report_kala.root_dataArray"
+      },
+      "2": {
+        "Ident": "StiDataTableSource",
+        "Name": "root_dataArray_btnOpenGardesh",
+        "Alias": "root_dataArray_btnOpenGardesh",
+        "Columns": {
+          "0": {
+            "Name": "button_ParamList",
+            "Index": -1,
+            "NameInSource": "button_ParamList",
+            "Alias": "button_ParamList",
+            "Type": "System.String"
+          },
+          "1": {
+            "Name": "relationId",
+            "Index": -1,
+            "NameInSource": "relationId",
+            "Alias": "relationId",
+            "Type": "System.String"
+          },
+          "2": {
+            "Name": "visible",
+            "Index": -1,
+            "NameInSource": "visible",
+            "Alias": "visible",
+            "Type": "System.Boolean"
+          }
+        },
+        "NameInSource": "report_kala.root_dataArray_btnOpenGardesh"
+      },
+      "3": {
+        "Ident": "StiDataTableSource",
+        "Name": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "Alias": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "Columns": {
+          "0": {
+            "Name": "formParams",
+            "Index": -1,
+            "NameInSource": "formParams",
+            "Alias": "formParams",
+            "Type": "System.String"
+          },
+          "1": {
+            "Name": "relationId",
+            "Index": -1,
+            "NameInSource": "relationId",
+            "Alias": "relationId",
+            "Type": "System.String"
+          }
+        },
+        "NameInSource": "report_kala.root_dataArray_btnOpenGardesh_button_ParamList"
+      },
+      "4": {
+        "Ident": "StiDataTableSource",
+        "Name": "root_dataArray_btnOpenGardesh_button_ParamList_formParams",
+        "Alias": "root_dataArray_btnOpenGardesh_button_ParamList_formParams",
+        "Columns": {
+          "0": {
+            "Name": "relationId",
+            "Index": -1,
+            "NameInSource": "relationId",
+            "Alias": "relationId",
+            "Type": "System.String"
+          },
+          "1": {
+            "Name": "tblGharardadId",
+            "Index": -1,
+            "NameInSource": "tblGharardadId",
+            "Alias": "tblGharardadId",
+            "Type": "System.Decimal"
+          },
+          "2": {
+            "Name": "tblGorooheKalaId",
+            "Index": -1,
+            "NameInSource": "tblGorooheKalaId",
+            "Alias": "tblGorooheKalaId",
+            "Type": "System.Decimal"
+          },
+          "3": {
+            "Name": "tblPeymankarId",
+            "Index": -1,
+            "NameInSource": "tblPeymankarId",
+            "Alias": "tblPeymankarId",
+            "Type": "System.Decimal"
+          }
+        },
+        "NameInSource": "report_kala.root_dataArray_btnOpenGardesh_button_ParamList_formParams"
+      },
+      "5": {
+        "Ident": "StiDataTableSource",
+        "Name": "root_timeLog",
+        "Alias": "root_timeLog",
+        "Columns": {
+          "0": {
+            "Name": "relationId",
+            "Index": -1,
+            "NameInSource": "relationId",
+            "Alias": "relationId",
+            "Type": "System.String"
+          },
+          "1": {
+            "Name": "t",
+            "Index": -1,
+            "NameInSource": "t",
+            "Alias": "t",
+            "Type": "System.String"
+          }
+        },
+        "NameInSource": "report_kala.root_timeLog"
+      }
+    },
+    "Databases": {
+      "0": {
+        "Ident": "StiJsonDatabase",
+        "Name": "report_kala",
+        "Alias": "report_kala",
+        "PathData": "C:\\Users\\farjad-a\\Desktop\\report_kala.json"
+      }
+    },
+    "Relations": {
+      "0": {
+        "Name": "root",
+        "ChildColumns": {
+          "0": "relationId"
+        },
+        "ParentColumns": {
+          "0": "dataArray"
+        },
+        "NameInSource": "root_dataArray",
+        "Alias": "root",
+        "IsCloud": null,
+        "ParentSource": "root",
+        "ChildSource": "root_dataArray"
+      },
+      "1": {
+        "Name": "root_dataArray",
+        "ChildColumns": {
+          "0": "relationId"
+        },
+        "ParentColumns": {
+          "0": "btnOpenGardesh"
+        },
+        "NameInSource": "root_dataArray_btnOpenGardesh",
+        "Alias": "root_dataArray",
+        "IsCloud": null,
+        "ParentSource": "root_dataArray",
+        "ChildSource": "root_dataArray_btnOpenGardesh"
+      },
+      "2": {
+        "Name": "root_dataArray_btnOpenGardesh",
+        "ChildColumns": {
+          "0": "relationId"
+        },
+        "ParentColumns": {
+          "0": "button_ParamList"
+        },
+        "NameInSource": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "Alias": "root_dataArray_btnOpenGardesh",
+        "IsCloud": null,
+        "ParentSource": "root_dataArray_btnOpenGardesh",
+        "ChildSource": "root_dataArray_btnOpenGardesh_button_ParamList"
+      },
+      "3": {
+        "Name": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "ChildColumns": {
+          "0": "relationId"
+        },
+        "ParentColumns": {
+          "0": "formParams"
+        },
+        "NameInSource": "root_dataArray_btnOpenGardesh_button_ParamList_formParams",
+        "Alias": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "IsCloud": null,
+        "ParentSource": "root_dataArray_btnOpenGardesh_button_ParamList",
+        "ChildSource": "root_dataArray_btnOpenGardesh_button_ParamList_formParams"
+      },
+      "4": {
+        "Name": "root",
+        "ChildColumns": {
+          "0": "relationId"
+        },
+        "ParentColumns": {
+          "0": "timeLog"
+        },
+        "NameInSource": "root_timeLog",
+        "Alias": "root",
+        "IsCloud": null,
+        "ParentSource": "root",
+        "ChildSource": "root_timeLog"
+      }
+    }
+  },
+  "Pages": {
+    "0": {
+      "Ident": "StiPage",
+      "Name": "Page1",
+      "Guid": "dd6c6552ad801b5918efa12ef681f3fb",
+      "Interaction": {
+        "Ident": "StiInteraction"
+      },
+      "Border": ";;2;;;;;solid:Black",
+      "Brush": "solid:Transparent",
+      "Components": {
+        "0": {
+          "Ident": "StiPageHeaderBand",
+          "Name": "PageHeaderBand1",
+          "ClientRectangle": "0,0.4,19,1.6",
+          "Interaction": {
+            "Ident": "StiInteraction"
+          },
+          "Border": ";;;;;;;solid:Black",
+          "Brush": "solid:Transparent",
+          "Components": {
+            "0": {
+              "Ident": "StiText",
+              "Name": "Text1",
+              "Guid": "6d56dc56af0f3033656480f60b8377ab",
+              "ClientRectangle": "5.4,0.4,8.6,1.2",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "گزارش مانده کالاها نزد پیمان کار"
+              },
+              "HorAlignment": "Center",
+              "Font": ";14;;",
+              "Border": ";;;;;;;solid:Black",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "Type": "Expression"
+            }
+          }
+        },
+        "1": {
+          "Ident": "StiTable",
+          "Name": "Table2",
+          "ClientRectangle": "0,2.8,19,2.4",
+          "Interaction": {
+            "Ident": "StiBandInteraction"
+          },
+          "Border": ";;;;;;;solid:Black",
+          "Brush": "solid:Transparent",
+          "Components": {
+            "0": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell1",
+              "Guid": "9e838a82ae9befa2d0e564d7bb2ae8ee",
+              "ClientRectangle": "0,0,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "شماره قرارداد"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Niagara Solid;10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 30
+            },
+            "1": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell2",
+              "Guid": "13ce12035a3b17f1e36fca1dcb52e8c2",
+              "ClientRectangle": "2.8,0,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "مانده"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 25
+            },
+            "2": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell3",
+              "Guid": "c18f53b05016178f1d728e367307ca74",
+              "ClientRectangle": "5.6,0,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "برگشتی"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 0
+            },
+            "3": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell4",
+              "Guid": "94b5cf26cc1cbc370c4eeeec54a093af",
+              "ClientRectangle": "8.4,0,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "مصرفی"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 1
+            },
+            "4": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell5",
+              "Guid": "d897fbb8db9f447b5fd0c93fdab40d68",
+              "ClientRectangle": "11.2,0,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "تحویلی"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 2
+            },
+            "5": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell6",
+              "Guid": "6606b78c824c69601670c1e478e34173",
+              "ClientRectangle": "13.8,0,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "نام پیمانکار"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 3
+            },
+            "6": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell7",
+              "Guid": "e219a789e64335af811011edbab3600a",
+              "ClientRectangle": "16.4,0,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "#"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";10;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:0,176,240",
+              "Type": "Expression",
+              "ID": 4
+            },
+            "7": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell8",
+              "Guid": "9de15c3666725f8c39cbd932107257f3",
+              "ClientRectangle": "0,0.8,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{root_dataArray.shomareGharardad}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "Type": "DataColumn",
+              "ID": 98
+            },
+            "8": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell9",
+              "Guid": "da58698a974663efe536b67bad8caa75",
+              "ClientRectangle": "2.8,0.8,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "HideZeros": true,
+              "Text": {
+                "Value": "{root_dataArray.mande_Riyali}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "DataColumn",
+              "ID": 99
+            },
+            "9": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell10",
+              "Guid": "49faef334b89e29b61a71f9852be6b21",
+              "ClientRectangle": "5.6,0.8,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "HideZeros": true,
+              "Text": {
+                "Value": "{root_dataArray.bargashti_Riyali}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "DataColumn",
+              "ID": 100
+            },
+            "10": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell11",
+              "Guid": "46566b1b79225aa95fca77cc394efe3e",
+              "ClientRectangle": "8.4,0.8,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "HideZeros": true,
+              "Text": {
+                "Value": "{root_dataArray.masrafi_Riyali}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "DataColumn",
+              "ID": 101
+            },
+            "11": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell12",
+              "Guid": "bf6c3384514458cdc3bbb917086bc45e",
+              "ClientRectangle": "11.2,0.8,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "HideZeros": true,
+              "Text": {
+                "Value": "{root_dataArray.tahvili_Riyali}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "DataColumn",
+              "ID": 102
+            },
+            "12": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell13",
+              "Guid": "511741837497a69aedc9b8a76a8abd53",
+              "ClientRectangle": "13.8,0.8,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "HideZeros": true,
+              "Text": {
+                "Value": "{root_dataArray.namePeymankar}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextOptions": {
+                "RightToLeft": true
+              },
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "DataColumn",
+              "ID": 103
+            },
+            "13": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell14",
+              "Guid": "7db85a2be34752a98f8268b7a9419e2a",
+              "ClientRectangle": "16.4,0.8,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{Line}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": "Estrangelo Edessa;10;;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "Type": "SystemVariables",
+              "ID": 104
+            },
+            "14": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell15",
+              "Printable": false,
+              "ClientRectangle": "0,1.6,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Enabled": false,
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "ID": 105
+            },
+            "15": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell16",
+              "Guid": "c2d021c56460f33102af1626e61c920c",
+              "ClientRectangle": "2.8,1.6,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{Sum(Table2,root_dataArray.mande_Riyali)}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";12;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "Totals",
+              "ID": 106
+            },
+            "16": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell17",
+              "ClientRectangle": "5.6,1.6,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "ID": 107
+            },
+            "17": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell18",
+              "ClientRectangle": "8.4,1.6,2.8,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "ID": 108
+            },
+            "18": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell19",
+              "Guid": "1a743755a65ce700898549810b6adf10",
+              "ClientRectangle": "11.2,1.6,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Text": {
+                "Value": "{Sum(Table2,root_dataArray.tahvili_Riyali)}"
+              },
+              "HorAlignment": "Center",
+              "VertAlignment": "Center",
+              "Font": ";12;Bold;",
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "TextFormat": {
+                "Ident": "StiNumberFormatService",
+                "NegativePattern": 1,
+                "DecimalDigits": 0,
+                "GroupSeparator": ",",
+                "UseLocalSetting": false
+              },
+              "Type": "Totals",
+              "ID": 109
+            },
+            "19": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell20",
+              "Printable": false,
+              "ClientRectangle": "13.8,1.6,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Enabled": false,
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "ID": 110
+            },
+            "20": {
+              "Ident": "StiTableCell",
+              "Name": "Table2_Cell21",
+              "Printable": false,
+              "ClientRectangle": "16.4,1.6,2.6,0.8",
+              "Restrictions": "AllowMove, AllowSelect, AllowChange",
+              "Enabled": false,
+              "Interaction": {
+                "Ident": "StiInteraction"
+              },
+              "Border": "All;105,105,105;;;;;;solid:105,105,105",
+              "Brush": "solid:Transparent",
+              "TextBrush": "solid:Black",
+              "ID": 111
+            }
+          },
+          "MinHeight": 0.4,
+          "DataSourceName": "root_dataArray",
+          "RowCount": 3,
+          "ColumnCount": 7,
+          "FooterRowsCount": 1,
+          "HeaderRowsCount": 1,
+          "NumberID": 112
+        }
+      },
+      "PageWidth": 21,
+      "PageHeight": 29.7,
+      "Watermark": {
+        "TextBrush": "solid:50,0,0,0"
+      },
+      "Margins": {
+        "Left": 1,
+        "Right": 1,
+        "Top": 1,
+        "Bottom": 1
+      }
+    }
+  }
+}

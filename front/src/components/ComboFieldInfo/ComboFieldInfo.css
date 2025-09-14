@@ -1,0 +1,201 @@
+.ComboFieldInfo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    /*will-change: transform;*/
+}
+
+.ComboFieldInfo__container {
+    position: relative;
+    flex: 1;
+}
+
+.ComboFieldInfo__loading {
+    position: absolute;
+    top: 0.2rem;
+    left: 0.2rem;
+}
+
+.ComboFieldInfo__icon {
+    transition: transform 0.1s ease-in;
+    position: absolute;
+    top: 0.4rem;
+    left: 0.4rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    transform: rotate(-90deg);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.ComboFieldInfo__icon--open {
+    transform: rotate(90deg);
+}
+
+.ComboFieldInfo__icon__close {
+    right: 0.4rem;
+}
+
+.ComboFieldInfo__icon__close--hide {
+    /*display: none;*/
+    transition: all .15s ease-in-out;
+    transform: scale(0.01);
+}
+
+
+.ComboFieldInfo__icon:hover {
+    background: rgba(102, 102, 102, .13)
+}
+
+.ComboFieldInfo__input {
+    background: #ffffff80 !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+}
+
+.ComboFieldInfo__input:focus {
+    background: #fffffff0 !important;
+}
+
+.ComboFieldInfo__input--readonly {
+    background-color: #e9ecef !important;
+    cursor: pointer;
+}
+
+.ComboFieldInfo__dropdown-menu {
+    position: absolute;
+    top: calc(100%);
+    right: 0;
+    z-index: 1000;
+    float: left;
+    /*min-width: 10rem;*/
+    padding: 0.5rem 0;
+    margin: 0.125rem 0 0;
+    font-size: 1rem;
+    color: #212529;
+    text-align: right;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 0.25rem;
+    user-select: none;
+    transition: all 0.15s ease-in;
+    will-change: transform;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-width: 100%;
+    max-height: 200px;
+
+    /*visibility: hidden;*/
+    /*max-height: 0;*/
+    display: none;
+
+    transform: translate3d(0px, 0px, 0px);
+}
+
+.ComboFieldInfo__dropdown-menu--top {
+    top: auto;
+    bottom: 100%;
+}
+
+
+.ComboFieldInfo__dropdown-menu--open {
+    /*visibility: visible;*/
+    /*max-height: 250px;*/
+    display: block;
+}
+
+.ComboFieldInfo__dropdown-menu--with-error {
+    top: calc(100% - 1.2rem);
+}
+
+.ComboFieldInfo__dropdown-menu {
+    /*top: calc(100% - 1.2rem);*/
+}
+
+
+.ComboFieldInfo__divider {
+    height: 0;
+    margin: 0.5rem 0;
+    overflow: hidden;
+    border-top: 1px solid #e9ecef;
+}
+
+.ComboFieldInfo__item {
+    display: block;
+    width: 100%;
+    padding: 0.25rem 1.5rem;
+    clear: both;
+    font-weight: 400;
+    color: #212529;
+    text-align: inherit;
+    white-space: nowrap;
+    background-color: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+.ComboFieldInfo__item:first-child {
+    border-top-left-radius: calc(0.25rem - 1px);
+    border-top-right-radius: calc(0.25rem - 1px);
+}
+
+.ComboFieldInfo__item:last-child {
+    border-bottom-right-radius: calc(0.25rem - 1px);
+    border-bottom-left-radius: calc(0.25rem - 1px);
+}
+
+.ComboFieldInfo__item:hover, .ComboFieldInfo__item:focus {
+    color: #16181b;
+    text-decoration: none;
+    background-color: #f8f9fa;
+}
+
+.ComboFieldInfo__item.active, .ComboFieldInfo__item:active {
+    color: #fff;
+    text-decoration: none;
+    background-color: #007bff;
+}
+
+.ComboFieldInfo__item.disabled, .ComboFieldInfo__item:disabled {
+    color: #6c757d;
+    pointer-events: none;
+    background-color: transparent;
+}
+
+
+.ComboFieldInfo__container .invalid-feedback {
+    height: 1.2rem;
+}
+
+.ComboFieldInfo__container .form-control.is-invalid, .ComboFieldInfo__container .form-control.is-valid {
+    background: none;
+}
+
+
+.ComboFieldInfo__label {
+    flex: .5;
+    padding-top: calc(0.375rem + 1px);
+    padding-bottom: calc(0.375rem + 1px);
+}
+
+.comboFieldInfo__filter__field {
+    width : 100%;
+    border-width: 1px;
+    border-color: #bbb;
+    border-radius: 0.25rem;
+}
+
+.comboFieldInfo__filter__field:focus {
+    border-color: #bbb;
+    border-width: 1px;
+}
+
+/*region mobile*/
+@media only screen and (max-width: 768px) {
+    .ComboFieldInfo__label {
+        flex: .75;
+    }
+}

@@ -1,0 +1,9 @@
+.TextFieldInfo__input:-moz-placeholder {
+    text-align: right;
+}
+.TextFieldInfo__input:-ms-input-placeholder {
+    text-align: right;
+}
+.TextFieldInfo__input::-webkit-input-placeholder {
+    text-align: right;
+}

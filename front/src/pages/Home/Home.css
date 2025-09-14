@@ -1,0 +1,195 @@
+.h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    font-weight: bold;
+}
+
+.NavHeader {
+    padding: 1rem 1.5rem;
+    box-shadow: 1px 1px 8px 1px rgba(29, 106, 255, 0.4);
+}
+
+.NavHeader__container {
+    display: flex;
+    align-items: center;
+    color: #343a40 !important;
+    flex-wrap: wrap;
+    font-size: 1.4rem;
+}
+
+.NavHeader__logo {
+    margin-right: 1rem;
+}
+
+.NavHeader__linkContainer {
+    flex: 1;
+    text-align: right;
+
+}
+
+@media only screen and (max-width: 768px) {
+    .NavHeader__linkContainer {
+        margin-top: .75rem;
+        order: 1;
+        font-size: 1rem;
+    }
+}
+
+.NavHeader__linkUl {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.MyButton {
+    background-color: rgb(255, 117, 50);
+    padding: 0.5rem 1rem;
+    border-radius: .5rem;
+    color: #ffffff;
+    height: 3rem;
+    cursor: pointer;
+}
+
+.NavHeader__link {
+    color: #343a40;
+    padding: 0 1rem;
+}
+
+.View_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.View_textContainer {
+    padding: 0 1rem 0 4rem
+}
+
+@media only screen and (max-width: 768px) {
+    .View_container {
+        flex-direction: column-reverse;
+    }
+
+    .View_textContainer {
+        padding: 0 1rem 0 1rem
+    }
+}
+
+.View_img {
+    vertical-align: middle;
+    border-style: none;
+    width: 80%;
+}
+
+.View_imgButton {
+    vertical-align: middle;
+    border-style: none;
+    width: 12rem;
+    cursor: pointer;
+}
+
+@media only screen and (max-width: 768px) {
+    .View_imgButton {
+        width: 8.5rem;
+    }
+}
+
+.View_p {
+    font-size: 1.4rem;
+    padding: 1rem 0;
+    color: #212529;
+    text-align: justify;
+}
+
+.View_pList {
+    font-size: 1.3rem;
+    padding: 1rem 0;
+    color: #212529;
+    text-align: right;
+    margin-bottom: 0;
+}
+
+.View_imgContainer {
+    flex: 1;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.View_listDecor {
+    box-shadow: 3px 3px 10px 0 rgba(40, 40, 40, 0.73);
+    background-color: #ff600a;
+    border-radius: 30%;
+    min-height: 1.8rem;
+    min-width: 1.8rem;
+    height: 1.8rem;
+    width: 1.8rem;
+    margin: 1rem;
+}
+
+.Card {
+    box-shadow: 1px 1px 8px 1px rgba(29, 106, 255, 0.4);
+    display: flex;
+    flex-direction: row;
+
+    align-items: center;
+
+    padding: 1rem;
+    margin: 1rem 0;
+
+    width: 100%;
+
+    position: relative;
+}
+
+
+.Card_img {
+    vertical-align: middle;
+    border-style: none;
+    width: 4.5rem;
+    height: 100%;
+}
+
+.Card_more {
+    position: absolute;
+    left: 1rem;
+}
+
+.MyFooter {
+    background-color: rgb(60, 70, 106);
+    padding: 2rem;
+    font-size: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.MyFooter__phoneContainer {
+    color: rgb(255, 255, 255);
+    direction: ltr;
+    text-align: center;
+    /*flex: 1;*/
+    min-width: 16rem;
+    margin-top: 1rem;
+}
+
+.MyFooter__phone {
+
+}
+
+.NavHeader__link--footer {
+    color: #ffffff !important;
+    margin-top: 0.25rem;
+}
+
+.MyFooter__img {
+    vertical-align: middle;
+    border-style: none;
+    width: 3rem;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.MyFooter__imgContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

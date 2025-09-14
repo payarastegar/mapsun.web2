@@ -1,0 +1,21 @@
+#viewerBackdrop {
+  direction: ltr;
+}
+
+.ImageViewer__header {
+  display: flex;
+  align-items: center;
+}
+
+.ImageViewer__button {
+  margin-left: 0.2rem;
+}
+
+.ImageViewer__footer {
+  direction: rtl;
+}
+
+.ImageViewer__footerDetail {
+  display: flex;
+  justify-content: space-between;
+}

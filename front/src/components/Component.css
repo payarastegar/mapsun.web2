@@ -1,0 +1,11 @@
+.Form__container {
+  height: 100%;
+  padding: 0.5rem;
+}
+
+/*region mobile*/
+@media only screen and (max-width: 768px) {
+  /* .Form__container {
+        padding: .5rem;
+    } */
+}

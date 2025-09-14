@@ -1,0 +1,40 @@
+.txtViewContainer {
+    display: inline;
+    /*display-inside: ruby-text;*/
+}
+.txtNormal{
+    font-size: 24px;
+    /*text-align: justify;*/
+}
+.txtBold {
+    display: inline;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.container {
+    /*background-color: #ff600a;*/
+}
+
+.cardViewContainer {
+    /*background-color: darkcyan;*/
+}
+
+.colContainer {
+    /*background-color: darkgoldenrod;*/
+}
+
+.test{
+    background-color: brown;
+}
+
+.testRow{
+    background-color: brown;
+    /*justify-content: flex-end;*/
+}
+.test1{
+    background-color: darkolivegreen;
+}
+.test2{
+    background-color: mediumpurple;
+}

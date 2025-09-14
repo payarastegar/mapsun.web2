@@ -1,0 +1,20 @@
+/*************************************************************
+14010423- اصلاحات زیر جهت این که باکس تقویم فیلدهای تاریخ جای کمتری
+گرفته و در حالت معمول در پایین فیلد تاریخ نمایش داده شود انجام شد
+**************************************************************/
+
+.tether-element .calendarContainer .dayWrapper button {
+  height: 26px;
+}
+
+.tether-element .calendarContainer {
+  width: 260px;
+}
+
+.tether-element .calendarContainer .heading {
+  margin-bottom: 5px;
+}
+
+.tether-element .calendarContainer {
+  padding: 15px;
+}

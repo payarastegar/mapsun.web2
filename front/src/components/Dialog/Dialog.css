@@ -1,0 +1,75 @@
+.modal {
+  margin-top: 4rem;
+  /* text-align: right; */
+}
+
+.modal-header {
+  padding: 0.75rem 1rem !important;
+}
+
+.dialog__closeIcon.dialog {
+  font-family: inherit;
+}
+
+.dialog__body {
+  /*overflow: auto;*/
+}
+
+.dialog--loading {
+}
+
+.dialog__container {
+  max-width: 100%;
+  margin: 2rem;
+}
+
+.modal-title {
+  width: 100%;
+}
+
+.dialog__closeIcon {
+  /*position: absolute;*/
+  /*left: 1rem;*/
+  /*margin-left: 1rem;*/
+  color: #dc3545;
+  font-size: 1.5rem;
+}
+
+/*region mobile*/
+@media only screen and (max-width: 768px) {
+  .dialog__container {
+    margin: 0;
+  }
+}
+
+@media (max-width: 480px) {
+}
+
+/*@media (min-width: 992px) {*/
+/*.modal-lg,*/
+/*.modal-xl {*/
+/*max-width: 800px;*/
+/*}*/
+/*}*/
+
+/*@media (min-width: 1200px) {*/
+/*.modal-xl {*/
+/*max-width: 1140px;*/
+/*}*/
+/*}*/
+
+.dialog__container--report {
+  height: 100%;
+}
+
+.dialog__body--report {
+  padding: 0;
+}
+
+.dialog__container--expand {
+  min-width: auto !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  padding-right: 1rem;
+  padding-left: 1rem;
+}

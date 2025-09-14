@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "bootstrap-icons": "^1.11.2",
+    "moment-jalaali": "^0.9.6",
+    "react-tether": "^2.0.8",
+    "react-to-print": "^2.15.1"
+  }
+}
