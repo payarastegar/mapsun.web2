@@ -1,14 +1,10 @@
-import { toast, ToastContainer } from "react-toastify";
-import { createBrowserHistory } from "history";
+import { toast } from "react-toastify";
+// import { createBrowserHistory } from "history"; // تغییر ۱: این خط به طور کامل حذف شد
 import WebService from "./WebService";
-import FieldType from "./class/enums/FieldType";
-import FieldInfo from "./class/FieldInfo";
-import Utils from "./Utils";
-import React from "react";
 import SystemClass_Core from "./SystemClass_Core";
-import moment from "moment-jalaali";
-import DialogReportDesigner from "./components/Dialog/DialogReportDesigner";
 import UiSetting from "./UiSetting";
+import React from "react";
+import moment from "moment-jalaali";
 
 class SystemClass extends SystemClass_Core {
   //------------------------------------------------
@@ -42,7 +38,7 @@ class SystemClass extends SystemClass_Core {
     try {
       lastLogin = JSON.parse(window.localStorage._lastLogin);
       lastLoginExpire = window.localStorage._lastLoginExpire;
-    } catch (e) {}
+    } catch (e) { }
 
     //isBlock
     if (
@@ -140,7 +136,7 @@ class SystemClass extends SystemClass_Core {
   static loading;
   static loadingQueue = [];
   static setLoading = (loading) => {
-    let resolve = () => {};
+    let resolve = () => { };
     const promise = new Promise((r) => (resolve = r));
 
     if (SystemClass.loading && loading) {
@@ -180,7 +176,7 @@ class SystemClass extends SystemClass_Core {
       Form__container &&
         Form__container.classList[func]("Form__container--disable");
 
-      if(loading === false)  {
+      if (loading === false) {
         SystemClass.showCustomLoading(false);
       }
     });
@@ -243,38 +239,42 @@ class SystemClass extends SystemClass_Core {
   //------------------------------------------------
   //region web routing
   //------------------------------------------------
-  static browserHistory = createBrowserHistory();
-  static getBrowserHistory = () => {
-    return SystemClass.browserHistory;
-  };
 
-  static pushLink = (link, param) => {
-    return SystemClass.browserHistory.push(link.replace(/\/\//g, "/"), param);
+  // static browserHistory = createBrowserHistory(); 
+  // static getBrowserHistory = () => {
+  //   return SystemClass.browserHistory;
+  // };
+
+  static pushLink = (link, state) => {
+    // این متد باید در کامپوننت‌ها با استفاده از هوک useNavigate جایگزین شود
+    // اما برای حفظ سازگاری موقت، می‌توان از window.location استفاده کرد
+    // یا یک راه حل مبتنی بر event emitter پیاده‌سازی کرد.
+    // فعلاً ساده‌ترین راه برای جلوگیری از خطا، تغییر مسیر مستقیم است.
+    window.location.href = link;
+    console.error("SystemClass.pushLink is deprecated. Use useNavigate hook in components.");
+
   };
 
   static setFormParam = (formName, params) => {
-    window.localStorage["Form__" + formName] = JSON.stringify(params);
+    window.localStorage.setItem("Form__" + formName, JSON.stringify(params));
   };
+
   static getFormParam = (formName) => {
-    return JSON.parse(window.localStorage["Form__" + formName] || "{}");
+    return JSON.parse(window.localStorage.getItem("Form__" + formName) || "{}");
   };
+
   static openForm = (formName, params) => {
     SystemClass.setFormParam(formName, params);
-    return SystemClass.pushLink("/form/" + formName, { reload: true });
+    SystemClass.pushLink("/form/" + formName);
   };
+
   static openFrame = (frameUrl) => {
-    return SystemClass.pushLink("/frame/" + frameUrl);
+    SystemClass.pushLink("/frame/" + frameUrl);
   };
 
   static handleUnauthorizeError(error) {
-    SystemClass.DialogComponent &&
-      SystemClass.DialogComponent.cancelAllDialogs();
-
-    //!redirect to Auth pages if not in there
-    //if(SystemClass.browserHistory.location.pathname.startsWith('/auth')){
+    SystemClass.DialogComponent?.cancelAllDialogs();
     SystemClass.pushLink("/auth/login");
-    //}
-
     SystemClass.showErrorMsg(
       UiSetting.GetSetting("language") === "fa"
         ? "ابتدا به سیستم وارد شوید"

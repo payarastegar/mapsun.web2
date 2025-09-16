@@ -1,4 +1,3 @@
-import { indexOf } from "@amcharts/amcharts4/.internal/core/utils/Array";
 import moment from "moment-jalaali";
 import UiSetting from "./UiSetting";
 
@@ -554,14 +553,14 @@ class Utils {
    * @param comma
    * @return String
    */
-  static findReactElement(node) {
-    for (let key in node) {
-      if (key && key.startsWith && key.startsWith("__reactInternalInstance$")) {
-        return node[key]._debugOwner.stateNode;
-      }
-    }
-    return null;
-  }
+  // static findReactElement(node) {
+  //   for (let key in node) {
+  //     if (key && key.startsWith && key.startsWith("__reactInternalInstance$")) {
+  //       return node[key]._debugOwner.stateNode;
+  //     }
+  //   }
+  //   return null;
+  // }
 
   static arrayEqual(a1, a2) {
     return a1.length === a2.length && a1.every((i) => a2.includes(i));

@@ -340,9 +340,7 @@ class LoginContainer extends BaseComponent {
       currentPage: "LoginPage",
     };
 
-    if (this.isDemoUser() || this.data.isLocalIntranet) {
-      login.oneTimePassword = "1234567";
-    }
+    const oneTimePassword = this.isDemoUser() || this.data.isLocalIntranet ? "1234567" : login.oneTimePassword;
 
     if (!this.data.pemKey) {
       SystemClass.showErrorMsg(
@@ -353,7 +351,7 @@ class LoginContainer extends BaseComponent {
 
     const pemKey = CryptoUtils.AESDecrypt(
       this.data.pemKey,
-      login.oneTimePassword
+      oneTimePassword
     );
     login.passwordText = CryptoUtils.RSAEncrypt(this.state.password, pemKey);
 

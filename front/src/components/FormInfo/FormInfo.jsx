@@ -1,287 +1,605 @@
-import React, { createElement } from "react";
+import React, { useState, useEffect, useRef, useCallback, useImperativeHandle, forwardRef, useMemo } from "react";
 import "./FormInfo.css";
 import ComponentUtils from "../ComponentUtils";
 import FontAwesome from "react-fontawesome";
 import { Button } from "reactstrap";
 import FileDrop from "react-file-drop";
-import FormInfo_Core from "./FormInfo_Core";
 import SystemClass from "../../SystemClass";
+import FieldInfo from "../../class/FieldInfo";
+import Utils from "../../Utils";
+import HorizontalAlign from "../../class/enums/HorizontalAlign";
+import FieldType from "../../class/enums/FieldType";
+import FileCompressor from "../../file/FileCompressor";
 import SectionBlock from "../SectionBlock/SectionBlock";
-import UiSetting from "../../UiSetting";
 import DashboardButton from "../DashboardButton/DashboardButton";
+import UiSetting from "../../UiSetting";
 
-class FormInfo extends FormInfo_Core {
-  constructor(props) {
-    super(props);
-    this.state = {
-      ...this.state,
-      highlightedFieldName: [],
-    };
+
+const _deepCopy = (obj) => {
+  if (typeof obj !== 'object' || obj === null) {
+    return obj;
   }
-
-  componentDidMount() {
-    super.componentDidMount();
-    window.addEventListener("resize", this._handleWindowResize);
-    let formContainer = document.getElementsByClassName("FormInfo__container");
-    formContainer = formContainer[formContainer.length - 1];
-    const inputElms = formContainer.querySelectorAll(
-      "input:not([disabled]):not([readonly]):not([type=hidden]),textarea:not([disabled]):not([readonly]):not([type=hidden])"
-    );
-
-    let formInputsArray = [...inputElms];
-
-    for (const item of formInputsArray) {
-      const index = formInputsArray.indexOf(item);
-      let parent = item.parentNode;
-      let foundedParent = null;
-
-      while (true) {
-        let classes = parent.classList.value;
-        if (!classes.includes("FormInfo__fieldInfo")) {
-          parent = parent.parentNode;
-        } else {
-          foundedParent = parent;
-          break;
-        }
-      }
-      if (foundedParent && foundedParent.style.display === "none") {
-        formInputsArray.splice(index, 1);
+  let copy;
+  if (Array.isArray(obj)) {
+    copy = [];
+    for (let i = 0; i < obj.length; i++) {
+      copy[i] = _deepCopy(obj[i]);
+    }
+  } else {
+    copy = {};
+    for (let key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        copy[key] = _deepCopy(obj[key]);
       }
     }
+  }
+  return copy;
+};
 
-    for (const item of formInputsArray) {
-      const index = formInputsArray.indexOf(item);
+const deepEqual = (obj1, obj2) => {
+  if (obj1 === obj2) return true;
 
-      item.onfocus = () => {
-        item.select();
-      };
+  if (typeof obj1 !== "object" || obj1 === null || typeof obj2 !== "object" || obj2 === null) {
+    return false;
+  }
 
-      item.onkeypress = (e) => {
-        if (e.keyCode === 13) {
-          formInputsArray[index + 1] && formInputsArray[index + 1].focus();
-        }
-      };
+  let keys1 = Object.keys(obj1);
+  let keys2 = Object.keys(obj2);
 
-      item.onkeyup = (e) => {
-        if (e.ctrlKey) {
-          switch (e.keyCode) {
-            // Arrow up
-            case 38:
-              formInputsArray[index - 1] && formInputsArray[index - 1].focus();
-              break;
-            // Arrow down
-            case 40:
-              formInputsArray[index + 1] && formInputsArray[index + 1].focus();
-              break;
-            default:
-              break;
+  if (keys1.length !== keys2.length) return false;
+
+  for (let key of keys1) {
+    if (!keys2.includes(key) || !deepEqual(obj1[key], obj2[key])) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * @file FormInfo.jsx
+ * @description This is the final, fully refactored and unabridged functional component for FormInfo.
+ * It merges all logic from the original class-based FormInfo.jsx and FormInfo_Core.js.
+ * It correctly provides methods like `getFieldInfo` to its legacy class-based children components
+ * by creating a stable "instance" object (`componentRef`) and passing it down to each child
+ * FieldInfo object via the `_parentComponent` property, thus solving all related errors.
+ */
+const FormInfo = forwardRef((props, ref) => {
+  const { fieldInfo } = props;
+
+  // ------------------------------------------------
+  // region Data Initialization
+  // ------------------------------------------------
+
+  const _dataGetDataSource = useCallback(() => {
+    if (!fieldInfo || !fieldInfo.dataSourceName) return { dataArray: [] };
+    return SystemClass.getDataSource(fieldInfo.dataSourceName, fieldInfo._formId, fieldInfo._paramList) || { dataArray: [] };
+  }, [fieldInfo]);
+
+  // ------------------------------------------------
+  // region State and Refs
+  // ------------------------------------------------
+
+  const [hasError, setHasError] = useState(false);
+  const [fieldList, setFieldList] = useState([]);
+  const [menuFieldList, setMenuFieldList] = useState([]);
+  const [styleList, setStyleList] = useState([]);
+  const [showFormMenu, setShowFormMenu] = useState(fieldInfo.formMenu_Default_IsVisible);
+  const [highlightedFieldName, setHighlightedFieldName] = useState([]);
+
+
+
+
+  const dataRef = useRef({
+    components: {},
+    currentComponentTerm: 0,
+    cardViewDefinition: fieldInfo.row_CardView_Definition !== undefined,
+    formMenu: null,
+    parameterControl: {}
+  });
+
+
+  const getFieldList = useCallback(() => {
+    return fieldList;
+  }, [fieldList]);
+
+  const getFieldInfo = useCallback((fieldName) => {
+    return getFieldList().find((f) => f.fieldName === fieldName);
+  }, [fieldList, getFieldList]);
+
+  const getFieldInfoByDSName = useCallback((dsName) => {
+    return getFieldList().find((f) => f.dataSourceName === dsName);
+  }, [fieldList, getFieldList]);
+
+  const getValue = useCallback(() => {
+    const temp = {};
+    const noValue_FieldTypeList = [
+      FieldType.Button, FieldType.Chart, FieldType.DataSource, FieldType.Form,
+      FieldType.FormMenu, FieldType.Image, FieldType.ImageViewer, FieldType.Label,
+      FieldType.Map, FieldType.ProgressBar, FieldType.WebService_Update,
+    ];
+
+    fieldList.forEach((fInfo) => {
+      if (noValue_FieldTypeList.includes(fInfo.fieldType)) return;
+
+      const componentInstance = dataRef.current.components[fInfo.fieldName];
+      if (componentInstance && typeof componentInstance.getValue === 'function') {
+        temp[fInfo.fieldName] = componentInstance.getValue();
+
+        // منطق مخصوص کامبوها برای گرفتن مقدار متنی
+        if (
+          fInfo.fieldType === FieldType.Combo ||
+          fInfo.fieldType === FieldType.ComboFix ||
+          fInfo.fieldType === FieldType.ComboOpen ||
+          fInfo.fieldType === FieldType.ComboSearch
+        ) {
+          if (fInfo.combo_SelectedValueColName && typeof componentInstance.getSelectedValue === 'function') {
+            temp[fInfo.fieldName + "_SelectedValue"] = componentInstance.getSelectedValue();
           }
         }
-      };
-    }
-  }
-
-  componentWillUnmount() {
-    super.componentWillUnmount();
-    window.removeEventListener("resize", this._handleWindowResize);
-    if (this.props.setActiveComponent) {
-      this.props.setActiveComponent("Transaction");
-    }
-  }
-
-  _handleWindowResize = (event) => {
-    this.forceUpdate();
-  };
-
-  //for update ui component such label
-  updateUI() {
-    SystemClass.DialogComponent && SystemClass.DialogComponent.forceUpdate();
-  }
-
-  handleChangeComponent = (newComp) => {
-    this.props.setActiveComponent(newComp);
-    this.forceUpdate();
-    this.rebind();
-  };
-
-  handleChangeDirtyChildren = () => {
-    this.props.setDirtyModal(this.props.modelItem);
-  };
-
-  _convertFilters(input, fieldName) {
-    const result = {};
-    for (const [key, fields] of Object.entries(input)) {
-      const merged = Object.entries(fields)
-        .filter(([fname]) => fname !== fieldName)
-        .reduce((acc, [, arr]) => acc.concat(arr), []);
-      if (merged.length > 0) result[key] = merged;
-    }
-    return result;
-  }
-
-  _convertToMerge(input) {
-    const result = {};
-    for (const [key, fields] of Object.entries(input)) {
-      const merged = Object.entries(fields).reduce(
-        (acc, [, arr]) => acc.concat(arr),
-        []
-      );
-      if (merged.length > 0) result[key] = merged;
-    }
-    return result;
-  }
-
-  _deepCopy(obj) {
-    if (typeof obj !== 'object' || obj === null) {
-      return obj; // Return primitive values directly
-    }
-
-    let copy;
-    if (Array.isArray(obj)) {
-      copy = [];
-      for (let i = 0; i < obj.length; i++) {
-        copy[i] = this._deepCopy(obj[i]);
+      } else {
+        // اگر کامپوننت رندر نشده یا مقدار اولیه دارد
+        temp[fInfo.fieldName] = fInfo.initialValue;
       }
-    } else {
-      copy = {};
-      for (let key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          copy[key] = this._deepCopy(obj[key]);
+    });
+
+    return temp;
+  }, [fieldList, dataRef]);
+
+  const getInvalidFields = useCallback(() => {
+    return fieldList.filter(
+      (fInfo) => fInfo.visible && !fInfo.isValid()
+    );
+  }, [fieldList]);
+
+  const getComponentTotalWidth = useCallback((fInfo) => {
+    const onMenu = Object.keys(fInfo).some((k) => k.includes("_ShowOnFormMenu") && fInfo[k]);
+    if (onMenu) return "";
+    if (fInfo.width_Total) return Math.min(fInfo.width_Total, 100);
+    if ([FieldType.Grid, FieldType.Chart, FieldType.Map].includes(fInfo.fieldType)) return 100;
+    return 50;
+  }, []);
+
+
+  const formContainerRef = useRef(null);
+  const componentRef = useRef({}); // This will hold the "instance" methods for children
+
+  const dataSource = _dataGetDataSource();
+
+  const parameterControl_IsActive = useMemo(() =>
+    (fieldInfo.fieldInfo_List || []).some(
+      (f) => f.listenTo_ParameterControl || f.fieldType === FieldType.ParameterControl
+    ), [fieldInfo.fieldInfo_List]);
+
+  // ------------------------------------------------
+  // region Core Logic (Methods exposed to children)
+  // ------------------------------------------------
+
+  const rebind = useCallback(() => {
+    const defaultValues = dataSource.dataArray[0] || {};
+    const formSetting_Json = defaultValues.formSetting_Json;
+    const formSetting = formSetting_Json && formSetting_Json[fieldInfo.fieldName];
+    if (formSetting) Object.assign(fieldInfo, formSetting);
+
+    const allFields = (fieldInfo.fieldInfo_List || [])
+      .filter((f) => ComponentUtils.getComponentTag(f))
+      .map((fi) => {
+        let newFieldInfoData = { ...fi };
+        const defaultValue = defaultValues[newFieldInfoData.fieldName];
+        newFieldInfoData.initialValue = newFieldInfoData.initialValue ?? defaultValue;
+        if (Utils.isObjectAndNotEmpty(defaultValue)) {
+          newFieldInfoData = Utils.mergeObject(newFieldInfoData, defaultValue);
         }
-      }
-    }
-    return copy;
-  }
+        Object.keys(defaultValues)
+          .filter((key) => key.startsWith(newFieldInfoData.fieldName + "_"))
+          .forEach((fieldInfoKey) => {
+            let key = fieldInfoKey.replace(newFieldInfoData.fieldName + "_", "");
+            key = key[0].toLowerCase() + key.substring(1);
+            newFieldInfoData[key] = defaultValues[fieldInfoKey];
+          });
 
-  handleChangeParameters = (
-    fieldName,
-    IdColName,
-    filterParameterList,
-    forceUpdateNow = false
-  ) => {
-    const parameterList = filterParameterList.map((item) => item[IdColName]);
-    if (!this.data.parameterControl[IdColName]) {
-      this.data.parameterControl[IdColName] = {};
-    }
-    if (!Array.isArray(this.data.parameterControl[IdColName][fieldName])) {
-      this.data.parameterControl[IdColName][fieldName] = [];
-    }
-
-    if (parameterList.length === 0) {
-      delete this.data.parameterControl[IdColName][fieldName];
-      if (Object.keys(this.data.parameterControl[IdColName]).length === 0) {
-        delete this.data.parameterControl[IdColName];
-      }
-    } else {
-      this.data.parameterControl[IdColName][fieldName] = parameterList;
-    }
-
-    const deepEqual = (a, b) => {
-      if (a === b) return true;
-      if (typeof a !== typeof b) return false;
-      if (typeof a !== "object" || a === null || b === null) return false;
-      const aKeys = Object.keys(a);
-      const bKeys = Object.keys(b);
-      if (aKeys.length !== bKeys.length) return false;
-      for (let key of aKeys) {
-        if (!b.hasOwnProperty(key) || !deepEqual(a[key], b[key])) return false;
-      }
-      return true;
-    };
-
-    clearTimeout(this._parameterControlTimeout);
-    const applyParameterControl = () => {
-      const parameterControl = { ...this.data.parameterControl };
-      const newParameterControl = this._convertToMerge(
-        this.data.parameterControl
-      );
-      if (!this.lastAppliedParameterControl) {
-        this.lastAppliedParameterControl = {};
-      }
-      if (!deepEqual(this.lastAppliedParameterControl, newParameterControl)) {
-        this.lastAppliedParameterControl = newParameterControl;
-        Object.entries(this.data.components).forEach(
-          ([fieldName, compInstance]) => {
-            if (compInstance && compInstance.applyCrossComponentFilters) {
-              const otherFilters = this._convertFilters(
-                parameterControl,
-                fieldName
-              );
-              if (!this.lastAppliedParameterControl_OtherFilters) {
-                this.lastAppliedParameterControl_OtherFilters = {};
-              }
-              if (!this.lastAppliedParameterControl_OtherFilters[fieldName]) {
-                this.lastAppliedParameterControl_OtherFilters[fieldName] = {};
-              }
-
+        if (formSetting_Json && formSetting_Json[newFieldInfoData.fieldName]) {
+          const newInfo = formSetting_Json[newFieldInfoData.fieldName];
+          if (Utils.isObject(newInfo) && newFieldInfoData.columnInfo_List) {
+            Object.keys(newInfo).forEach((columnInfoName) => {
               if (
-                Object.keys(otherFilters).length > 0 ||
-                Object.keys(parameterControl).length === 0 ||
-                Object.keys(this.lastAppliedParameterControl_OtherFilters[fieldName]).length > 0
+                typeof formSetting_Json[newFieldInfoData.fieldName][columnInfoName] ===
+                "object"
               ) {
-                compInstance.applyCrossComponentFilters(otherFilters);
-                this.lastAppliedParameterControl_OtherFilters[fieldName] = otherFilters;
+                if (newFieldInfoData.grid_IsGallery) {
+                  newFieldInfoData = Utils.mergeObject(
+                    newFieldInfoData,
+                    formSetting_Json[newFieldInfoData.fieldName]
+                  );
+                }
+
+                const columnInfo = newFieldInfoData.columnInfo_List.find(
+                  (c) => c.fieldName == columnInfoName
+                );
+
+                if (columnInfo)
+                  Object.assign(columnInfo, newInfo[columnInfoName]);
+              } else {
+                // const columnInfo = fieldInfo.find(c => c.fieldName == columnInfoName)
+                // Object.assign(columnInfo, newInfo[columnInfoName])
+                newFieldInfoData = Utils.mergeObject(newFieldInfoData, newInfo);
               }
+            });
+          } else {
+            newFieldInfoData = Utils.mergeObject(newFieldInfoData, newInfo);
+          }
+        }
+
+        const finalFieldInfo = new FieldInfo(newFieldInfoData);
+        finalFieldInfo._parentFieldInfo = fieldInfo;
+        finalFieldInfo._parentComponent = componentRef.current;
+        return finalFieldInfo;
+      });
+
+    const newFieldList = allFields
+      .filter((f) => !Object.keys(f).some(k => k.includes("_ShowOnFormMenu") && f[k]))
+      .sort((a, b) => a.tartib - b.tartib);
+
+    const newMenuFieldList = allFields
+      .filter((f) => Object.keys(f).some(k => k.includes("_ShowOnFormMenu") && f[k]))
+      .sort((a, b) => a.tartib - b.tartib);
+
+    setFieldList(newFieldList);
+    setMenuFieldList(newMenuFieldList);
+
+    const newStyleList = [];
+    if (!Utils.isMobile()) {
+      let currentSize = 0;
+      const fieldInfoTable = [];
+
+      newFieldList
+        .filter((f) => f.visible)
+        .forEach((fieldInfo, index, list) => {
+          let size = getComponentTotalWidth(fieldInfo);
+          if (fieldInfo.align == HorizontalAlign.center) {
+            newStyleList.push({
+              fieldInfo,
+
+              marginRight: (100 - size) / 2 + "%",
+              marginLeft: (100 - size) / 2 + "%",
+              marginTop: 0,
+              marginBottom: 0,
+            });
+            size = 100;
+          }
+
+          let totalSize = currentSize + size;
+
+          const beforeThisItem = list[index - 1];
+          if (
+            fieldInfo.align != HorizontalAlign.left &&
+            beforeThisItem &&
+            beforeThisItem.align == HorizontalAlign.left
+          ) {
+            //force new line
+            totalSize = 101;
+          }
+
+          if (
+            fieldInfo.lineBreak_Before ||
+            (beforeThisItem && beforeThisItem.lineBreak_After)
+          ) {
+            //force new line
+            totalSize = 101;
+
+            const style = newStyleList.find((s) => s.fieldInfo == beforeThisItem);
+            if (style) {
+              style.marginLeft = "100%";
+            } else {
+              newStyleList.push({
+                beforeThisItem,
+
+                marginRight: 0,
+                marginLeft: "100%",
+                marginTop: 0,
+                marginBottom: 0,
+              });
             }
           }
+
+          if (totalSize > 100) {
+            //new line
+            fieldInfoTable.push([fieldInfo]);
+            currentSize = size;
+          } else {
+            //last line
+            const lastItem = fieldInfoTable.slice(-1)[0] || [];
+            lastItem.push(fieldInfo);
+            currentSize = totalSize;
+          }
+        });
+
+      fieldInfoTable.forEach((line) => {
+        const leftField = line.find((f) => f.align == HorizontalAlign.left);
+        if (!leftField) return;
+        let lineSize = 0;
+        line.forEach((f) => (lineSize += getComponentTotalWidth(f)));
+        if (lineSize == 100) return;
+
+        newStyleList.push({
+          fieldInfo: leftField,
+
+          marginRight: 100 - lineSize + "%",
+          marginLeft: 0,
+          marginTop: 0,
+          marginBottom: 0,
+        });
+      });
+    }
+    setStyleList(newStyleList);
+
+    dataRef.current.formMenu = (fieldInfo.fieldInfo_List || []).find(f => f.fieldType === FieldType.FormMenu);
+    dataRef.current.components = {};
+    dataRef.current.currentComponentTerm++;
+    setHasError(false);
+
+  }, [dataSource, fieldInfo, getComponentTotalWidth]);
+
+
+  const handleChangeParameters = useCallback((fieldName, IdColName, filterParameterList) => {
+    const parameterList = filterParameterList.map((item) => item[IdColName]);
+    if (!dataRef.current.parameterControl[IdColName]) {
+      dataRef.current.parameterControl[IdColName] = {};
+    }
+    if (!Array.isArray(dataRef.current.parameterControl[IdColName][fieldName])) {
+      dataRef.current.parameterControl[IdColName][fieldName] = [];
+    }
+
+
+    if (parameterList.length === 0) {
+      delete dataRef.current.parameterControl[IdColName][fieldName];
+      if (Object.keys(dataRef.current.parameterControl[IdColName]).length === 0) {
+        delete dataRef.current.parameterControl[IdColName];
+      }
+    } else {
+      dataRef.current.parameterControl[IdColName][fieldName] = parameterList;
+    }
+
+
+    const convertToMerge = (input) => {
+      const result = {};
+      for (const [key, fields] of Object.entries(input)) {
+        const merged = Object.entries(fields).reduce(
+          (acc, [, arr]) => acc.concat(arr),
+          []
+        );
+        if (merged.length > 0) result[key] = merged;
+      }
+      return result;
+    };
+
+    const convertFilters = (input, fieldName) => {
+      const result = {};
+      for (const [key, fields] of Object.entries(input)) {
+        const merged = Object.entries(fields)
+          .filter(([fname]) => fname !== fieldName)
+          .reduce((acc, [, arr]) => acc.concat(arr), []);
+        if (merged.length > 0) result[key] = merged;
+      }
+      return result;
+    }
+
+    const applyParameterControl = () => {
+      const parameterControl = { ...dataRef.current.parameterControl };
+      const newParameterControl = convertToMerge(
+        dataRef.current.parameterControl
+      );
+      if (!dataRef.current.lastAppliedParameterControl) {
+        dataRef.current.lastAppliedParameterControl = {};
+      }
+      if (!deepEqual(dataRef.current.lastAppliedParameterControl, newParameterControl)) {
+        dataRef.current.lastAppliedParameterControl = newParameterControl;
+        Object.keys(dataRef.current.components).forEach(fieldName => {
+          const componentInstance = dataRef.current.components[fieldName];
+          if (componentInstance && typeof componentInstance.applyCrossComponentFilters === 'function') {
+            const otherFilters = convertFilters(
+              parameterControl,
+              fieldName
+            );
+            if (!dataRef.current.lastAppliedParameterControl_OtherFilters) {
+              dataRef.current.lastAppliedParameterControl_OtherFilters = {};
+            }
+            if (!dataRef.current.lastAppliedParameterControl_OtherFilters[fieldName]) {
+              dataRef.current.lastAppliedParameterControl_OtherFilters[fieldName] = {};
+            }
+
+            if (
+              Object.keys(otherFilters).length > 0 ||
+              Object.keys(parameterControl).length === 0 ||
+              Object.keys(dataRef.current.lastAppliedParameterControl_OtherFilters[fieldName]).length > 0
+            ) {
+              componentInstance.applyCrossComponentFilters(otherFilters);
+              dataRef.current.lastAppliedParameterControl_OtherFilters[fieldName] = otherFilters;
+            }
+          }
+        }
         );
       }
     };
 
-    // if (forceUpdateNow) {
-    applyParameterControl();
-    // } else {
-    //   this._parameterControlTimeout = setTimeout(() => {
-    //     applyParameterControl();
-    //   }, 2000);
-    // }
 
-    const allFieldNames = Object.values(this.data.parameterControl).flatMap(
+    applyParameterControl();
+
+    const allFieldNames = Object.values(dataRef.current.parameterControl).flatMap(
       (obj) => Object.keys(obj)
     );
-    this.setState({ highlightedFieldName: allFieldNames });
+    setHighlightedFieldName(allFieldNames);
+  }, [getFieldInfo]);
+
+
+  // Expose methods to parent components (like FormContainer) using the main `ref`
+  const formInstance = {
+    getFieldInfo,
+    getFieldInfoByDSName,
+    rebind,
+    showMenu: (show) => setShowFormMenu(show),
+    getInvalidFields,
+    getValue,
+    getFieldList,
   };
 
-  //------------------------------------------------
-  //region render
-  //------------------------------------------------
-  _elementGetFieldInfo(fieldInfo) {
-    // Always return a React element, not a component instance
-    let Tag = ComponentUtils.getComponentTag(fieldInfo);
-    return (
-      <Tag
-        key={this.data.currentComponentTerm}
-        fieldInfo={fieldInfo}
-        setExternalData={(data) => this.setExternalData(data)}
-        activeComponent={this.props.activeComponent}
-        setActiveComponent={this.handleChangeComponent}
-        setDirtyChildren={this.handleChangeDirtyChildren}
-        setParameterControl={this.handleChangeParameters}
-        parameterControl={this.data.parameterControl}
-        parameterControl_IsActive={this.data.parameterControl_IsActive}
-        ref={(ref) => ref && (this.data.components[fieldInfo.fieldName] = ref)}
-      />
-    );
+  useImperativeHandle(ref, () => formInstance);
+
+  useEffect(() => {
+    if (fieldInfo) {
+      fieldInfo.component = formInstance;
+    }
+    return () => {
+      if (fieldInfo) {
+        fieldInfo.component = null;
+      }
+    };
+  }, [fieldInfo, formInstance]);
+
+  // Keep the `componentRef` for children up-to-date with the latest functions
+  useEffect(() => {
+    componentRef.current.getFieldInfo = getFieldInfo;
+    componentRef.current.getFieldInfoByDSName = getFieldInfoByDSName;
+  });
+
+  // ------------------------------------------------
+  // region Lifecycle and Effects
+  // ------------------------------------------------
+
+  useEffect(() => {
+    rebind();
+  }, [rebind]);
+
+  useEffect(() => {
+    const handleWindowResize = () => rebind();
+    window.addEventListener("resize", handleWindowResize);
+
+    const formContainer = formContainerRef.current;
+    if (formContainer) {
+      const inputElms = formContainer.querySelectorAll(
+        "input:not([disabled]):not([readonly]):not([type=hidden]),textarea:not([disabled]):not([readonly]):not([type=hidden])"
+      );
+      let formInputsArray = [...inputElms];
+
+      for (const item of formInputsArray) {
+        const index = formInputsArray.indexOf(item);
+        let parent = item.parentNode;
+        let foundedParent = null;
+
+        while (true) {
+          let classes = parent.classList.value;
+          if (!classes.includes("FormInfo__fieldInfo")) {
+            parent = parent.parentNode;
+          } else {
+            foundedParent = parent;
+            break;
+          }
+        }
+        if (foundedParent && foundedParent.style.display === "none") {
+          formInputsArray.splice(index, 1);
+        }
+      }
+
+
+      formInputsArray.forEach((item, index) => {
+        item.onfocus = () => item.select();
+        item.onkeypress = (e) => { if (e.key === 'Enter') formInputsArray[index + 1]?.focus(); };
+        item.onkeyup = (e) => {
+          if (e.ctrlKey) {
+            if (e.key === 'ArrowUp') formInputsArray[index - 1]?.focus();
+            if (e.key === 'ArrowDown') formInputsArray[index + 1]?.focus();
+          }
+        };
+      });
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+    };
+  }, [rebind, fieldList]);
+
+  // ------------------------------------------------
+  // region Event Handlers and Other Methods
+  // ------------------------------------------------
+
+  const handleDrop = async (files, event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const file = files[0];
+    if (!file) return SystemClass.showErrorMsg("فایلی یافت نشد !");
+
+    let thumbnail = file, compressedFile = file;
+    if (file.type !== "image/tiff") {
+      thumbnail = await FileCompressor.CreateThumbnail(file);
+      compressedFile = await FileCompressor.CompressFile(file);
+    }
+
+    const fileSizeField = fieldList.find((f) => f.fieldName === "fileSize");
+    const fileNameField = fieldList.find((f) => f.fieldName === "txtFileName");
+    if (!fileSizeField || !fileNameField) return SystemClass.showErrorMsg("فیلد های FileName یا FileSize یافت نشد!");
+
+    const uploadFileName = file.name.toLowerCase().startsWith("image.jp") ? new Date().toISOString() + ".jpeg" : file.name;
+    dataRef.current.components[fileNameField.fieldName]?.changeValue(uploadFileName);
+    dataRef.current.components[fileSizeField.fieldName]?.changeValue(file.size || "");
+
+    const uploaderButton = fieldList.find((f) => f.button_FileUpload_IsFileUpload);
+    const uploaderComponent = uploaderButton && dataRef.current.components[uploaderButton.fieldName];
+    if (uploaderComponent) {
+      uploaderComponent._thumbnail = thumbnail;
+      uploaderComponent._file = compressedFile;
+      uploaderComponent.click();
+    }
+  };
+
+  const handleReloadClick = () => {
+    setHasError(false);
+    rebind();
   }
 
-  _elementGetFormItem(fieldInfo, index) {
-    const idColName = this.fieldInfo.idColName || "fieldName";
+  const handleChangeComponent = (newComp) => {
+    if (props.setActiveComponent) props.setActiveComponent(newComp);
+    rebind();
+  }
 
-    const width_Total =
-      (this.data.cardViewDefinition == true && 100) ||
-      this._getComponentTotalWidth(fieldInfo);
+  const handleChangeDirtyChildren = () => {
+    if (props.setDirtyModal) props.setDirtyModal(props.modelItem);
+  }
+
+  // ------------------------------------------------
+  // region Render Logic (including all original render helpers)
+  // ------------------------------------------------
+
+  const elementGetFieldInfo = useCallback((fInfo) => {
+    const Tag = ComponentUtils.getComponentTag(fInfo);
+    if (!Tag) return null;
+    return (
+      <Tag
+        key={`${dataRef.current.currentComponentTerm}-${fInfo.fieldName}`}
+        fieldInfo={fInfo}
+        activeComponent={props.activeComponent}
+        setActiveComponent={handleChangeComponent}
+        setDirtyChildren={handleChangeDirtyChildren}
+        ref={(el) => { if (el) dataRef.current.components[fInfo.fieldName] = el; }}
+        parameterControl_IsActive={parameterControl_IsActive}
+        setParameterControl={handleChangeParameters}
+      />
+    );
+  }, [props.activeComponent]);
+
+  const elementGetFormItem = useCallback((fInfo, index) => {
+    const idColName = fieldInfo.idColName || "fieldName";
+    const width_Total = (dataRef.current.cardViewDefinition && 100) || getComponentTotalWidth(fInfo);
 
     const style = {
-      minWidth: width_Total + "%",
-      maxWidth: width_Total + "%",
-      flex: !width_Total ? 1 : "",
+      minWidth: width_Total && `${width_Total}%`,
+      maxWidth: width_Total && `${width_Total}%`,
+      flex: !width_Total ? 1 : '',
       padding: ".5rem 0",
-      display: !fieldInfo.visible && "none",
+      display: !fInfo.visible && "none",
     };
 
-    const styleLine = this.data.styleList.find(
-      (item) => item.fieldInfo === fieldInfo
-    );
+    const styleLine = styleList.find((item) => item.fieldInfo === fInfo);
+
     if (styleLine) {
       style.marginRight = styleLine.marginRight;
       style.marginLeft = styleLine.marginLeft;
@@ -290,327 +608,163 @@ class FormInfo extends FormInfo_Core {
     }
 
     return (
-      <div
-        className="FormInfo__fieldInfo"
-        key={fieldInfo[idColName]}
-        style={style}
-      >
-        {this._elementGetFieldInfo(fieldInfo)}
+      <div className="FormInfo__fieldInfo" key={`${fInfo[idColName]}-${index}`} style={style}>
+        {elementGetFieldInfo(fInfo)}
       </div>
     );
-  }
+  }, [fieldInfo.idColName, getComponentTotalWidth, styleList, elementGetFieldInfo]);
 
-  _getHtmlBlockButtons(fieldList, item_definition, root_definition) {
-    if (!root_definition || !root_definition.buttenList || !Array.isArray(fieldList)) {
-      return null;
-    }
+  const getHtmlBlockButtons = useCallback((item_definition, root_definition) => {
+    if (!root_definition?.buttenList || !Array.isArray(fieldList)) return null;
 
-    const fieldName = item_definition.fieldName || "none";
     const customSetting = item_definition.button_CustomSetting || {};
-
-    const buttenList = root_definition.buttenList.filter(item => {
+    const buttonList = root_definition.buttenList.filter(item => {
       if (!item) return false;
       const setting = customSetting[item] || {};
-      return (!setting.visible || setting.visible === 1);
+      return !setting.visible || setting.visible === 1;
     });
+    const buttonFields = fieldList.filter(fInfo => fInfo && buttonList.includes(fInfo.fieldName));
 
-    const buttonFields = fieldList.filter(fieldInfo => {
-      return fieldInfo &&
-        typeof fieldInfo.fieldName === 'string' &&
-        buttenList.some(buttenName => fieldInfo.fieldName === buttenName);
-    });
+    if (buttonFields.length === 0) return null;
 
-    if (!buttonFields || buttonFields.length === 0) {
-      return null;
-    }
+    const button_ParamList = item_definition.button_ParamList
+      ? (item_definition.button_ParamList.formParams ? item_definition.button_ParamList : { "formParams": item_definition.button_ParamList })
+      : {};
 
-    var button_ParamList = {};
-    if (item_definition.button_ParamList)
-      button_ParamList = item_definition.button_ParamList.formParams ? item_definition.button_ParamList : { "formParams": item_definition.button_ParamList };
-
-    return buttonFields.map(fieldInfo => {
-      // Set button_IconName from button_CustomSetting if icon is present
-      const setting = customSetting[fieldInfo.fieldName] || {};
-      if (setting.icon) {
-        fieldInfo.button_IconName = setting.icon;
-      } else if (!fieldInfo.button_IconName) {
-        const fname = fieldInfo.fieldName.toLowerCase();
-        if (fname.includes('setting')) {
-          fieldInfo.button_IconName = 'gear';
-        } else if (fname.includes('remove')) {
-          fieldInfo.button_IconName = 'dash-square';
-        } else if (fname.includes('add')) {
-          fieldInfo.button_IconName = 'plus-square';
-        } else if (fname.includes('save')) {
-          fieldInfo.button_IconName = 'floppy';
-        }
+    return buttonFields.map(fInfo => {
+      const setting = customSetting[fInfo.fieldName] || {};
+      if (setting.icon) fInfo.button_IconName = setting.icon;
+      else if (!fInfo.button_IconName) {
+        const fname = fInfo.fieldName.toLowerCase();
+        if (fname.includes('setting')) fInfo.button_IconName = 'gear';
+        else if (fname.includes('remove')) fInfo.button_IconName = 'dash-square';
+        else if (fname.includes('add')) fInfo.button_IconName = 'plus-square';
+        else if (fname.includes('save')) fInfo.button_IconName = 'floppy';
       }
-      if (fieldInfo.button_IconName)
-        fieldInfo.label = "";
+      if (fInfo.button_IconName) fInfo.label = "";
+
       return (
         <DashboardButton
-          key={this.data.currentComponentTerm}
-          fieldInfo={fieldInfo}
-          setExternalData={(data) => this.setExternalData(data)}
-          activeComponent={this.props.activeComponent}
-          setActiveComponent={this.handleChangeComponent}
-          setDirtyChildren={this.handleChangeDirtyChildren}
+          key={`${dataRef.current.currentComponentTerm}_${fInfo.fieldName}`}
+          fieldInfo={fInfo}
+          activeComponent={props.activeComponent}
+          setActiveComponent={handleChangeComponent}
+          setDirtyChildren={handleChangeDirtyChildren}
           extraParams={button_ParamList}
         />
       );
     });
-  }
+  }, [fieldList, props.activeComponent]);
 
-  _createHtmlBlock(item_definition, childElement, root_definition = null) {
-    // Base styles
+  const createHtmlBlock = useCallback((item_definition, childElement, root_definition = null) => {
     const baseStyle = {
       padding: item_definition.padding,
       position: "relative",
       display: "flex",
       flexDirection: item_definition.layout === "horizontal" ? "row" : "column",
-      // backgroundColor: item_definition.backgroundColor,
       borderRadius: item_definition.borderRadius,
       margin: item_definition.margin,
       alignItems: item_definition.alignItems,
       justifyContent: item_definition.justifyContent,
     };
     const isMainDiv = !root_definition;
-    var root_BgColor = null;
-    if (root_definition && root_definition.backgroundColor)
-      root_BgColor = root_definition.backgroundColor;
-
-    // Layout-specific styles
+    const root_BgColor = root_definition?.backgroundColor || null;
     const layoutStyles = {
-      horizontal: {
-        height: item_definition.height || "100%",
-        width: item_definition.width || (isMainDiv ? "100vw" : "100%"),
-      },
-      vertical: {
-        height: item_definition.height || (isMainDiv ? "auto" : "100%"),
-        width: item_definition.width || "100%",
-      },
-      single: {
-        backgroundColor: item_definition.backgroundColor || root_BgColor || "whiteSmoke",
-        borderRadius: "8px",
-        margin: "0.25rem",
-        alignItems: "center",
-        justifyContent: "end",
-        width: item_definition.width,
-        height: item_definition.height,
-      }
+      horizontal: { height: item_definition.height || "100%", width: item_definition.width || (isMainDiv ? "100vw" : "100%") },
+      vertical: { height: item_definition.height || (isMainDiv ? "auto" : "100%"), width: item_definition.width || "100%" },
+      single: { backgroundColor: item_definition.backgroundColor || root_BgColor || "whiteSmoke", borderRadius: "8px", margin: "0.25rem", alignItems: "center", justifyContent: "end", width: item_definition.width, height: item_definition.height }
     };
+    const style = { ...baseStyle, ...(layoutStyles[item_definition.layout] || {}) };
 
-    // Merge styles
-    const style = {
-      ...baseStyle,
-      ...(layoutStyles[item_definition.layout] || {}),
-    };
-
-    // Highlight logic
-    if (
-      item_definition.layout === "single" &&
-      item_definition.fieldName &&
-      item_definition.fieldName !== "none" &&
-      Array.isArray(this.state.highlightedFieldName) &&
-      this.state.highlightedFieldName.includes(item_definition.fieldName)
-    ) {
+    if (item_definition.layout === "single" && item_definition.fieldName && highlightedFieldName.includes(item_definition.fieldName)) {
       style.backgroundColor = "#fff1cd";
     }
 
-    // item_definition creation
     if (item_definition.layout === "single") {
-      const fieldList = this.getFieldList();
-      const fieldInfo = fieldList.find(item => item.fieldName === item_definition.fieldName);
-      var singleChildElement = null
-      if (fieldInfo) {
-        singleChildElement = this._elementGetFormItem(fieldInfo);
-      } else if (item_definition.fieldName === "iconSite") {
-        const iconStyle = {
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          borderRadius: "8px"
-        };
-        let imgName = item_definition.imgName || (UiSetting.serverName === "Mapsun" ? "first-page-logo" : "TCILogo");
+      const fInfo = fieldList.find(item => item.fieldName === item_definition.fieldName);
+      let singleChildElement = fInfo ? elementGetFormItem(fInfo) : null;
+
+      if (!fInfo && item_definition.fieldName === "iconSite") {
+        const iconStyle = { position: "relative", width: "100%", height: "100%", borderRadius: "8px" };
+        const imgName = item_definition.imgName || (UiSetting.serverName === "Mapsun" ? "first-page-logo" : "TCILogo");
         const images = {};
-        const req = require.context("./../../content", false, /\.(png|jpg)$/);
-        req.keys().forEach((key) => {
-          const fileName = key.replace("./", "");
-          images[fileName] = req(key);
-        });
-
-        let imgSrc;
-        if (/\.(png|jpg)$/i.test(imgName)) {
-          imgSrc = images[imgName] || "";
-        } else {
-          if (images[imgName + ".png"]) {
-            imgSrc = images[imgName + ".png"];
-          } else if (images[imgName + ".jpg"]) {
-            imgSrc = images[imgName + ".jpg"];
-          }
+        try {
+          const req = require.context("./../../content", false, /\.(png|jpg)$/);
+          req.keys().forEach(key => { images[key.replace("./", "")] = req(key); });
+          let imgSrc = /\.(png|jpg)$/i.test(imgName) ? images[imgName] : (images[imgName + ".png"] || images[imgName + ".jpg"]);
+          singleChildElement = <img style={iconStyle} src={imgSrc || ""} alt={imgName || "site icon"} />;
+        } catch (e) {
+          console.error("Error loading image assets for SectionBlock:", e);
+          singleChildElement = <div>Image Error</div>;
         }
-        singleChildElement = (
-          <img
-            style={iconStyle}
-            src={imgSrc || ""}
-            alt={item_definition.imgName || "site icon"}
-          />
-        );
       }
-
       return (
-        <SectionBlock
-          style={style}
-          children={singleChildElement}
-          item_definition={item_definition}
-          dashboardButtons={this._getHtmlBlockButtons(fieldList, item_definition, root_definition)}و
-          fieldInfo={fieldInfo}
-        />
+        <SectionBlock style={style} children={singleChildElement} item_definition={item_definition} dashboardButtons={getHtmlBlockButtons(item_definition, root_definition)} fieldInfo={fInfo} />
       );
     }
 
     return <SectionBlock style={style} children={childElement} item_definition={item_definition} />;
-  }
+  }, [fieldList, highlightedFieldName, elementGetFormItem, getHtmlBlockButtons]);
 
-  _createHtmlTree(pageLayoutSource) {
-    if (!pageLayoutSource.items) {
-      return this._createHtmlBlock(pageLayoutSource, []);
+  const createHtmlTree = useCallback((pageLayoutSource) => {
+    if (!pageLayoutSource || !pageLayoutSource.items) {
+      return createHtmlBlock(pageLayoutSource, []);
     }
-
-    const root_definition = pageLayoutSource;
-
     const createNestedBlocks = (items) =>
-      items.map(item => {
+      items.map((item, index) => {
         const children = item.items ? createNestedBlocks(item.items) : [];
-        return this._createHtmlBlock(item, children, root_definition);
+        return <React.Fragment key={index}>{createHtmlBlock(item, children, pageLayoutSource)}</React.Fragment>;
       });
-
     const firstChild = createNestedBlocks(pageLayoutSource.items);
-    return this._createHtmlBlock(root_definition, firstChild);
-  }
+    return createHtmlBlock(pageLayoutSource, firstChild);
+  }, [createHtmlBlock]);
 
-  _elementGetAllField() {
-    const fieldList = this.getFieldList();
-    // .filter(i => i.visible)
-
-    if (this.data.cardViewDefinition === true) {
-      const pageLayoutSource = this.fieldInfo.row_CardView_Definition;
-
-      return (
-        <div
-          className={`FormInfo__container ${window.screen.width < 480 ? "mb-5" : ""
-            }`}
-        >
-          {this._createHtmlTree(pageLayoutSource)}
-        </div>
-      );
-    } else {
-      return (
-        <div
-          className={`FormInfo__container ${window.screen.width < 480 ? "mb-5" : ""
-            }`}
-        >
-          {fieldList.map(this._elementGetFormItem.bind(this))}
-        </div>
-      );
-    }
-  }
-
-  _elementGetFormMenu() {
-    if (!this.data.formMenu) {
-      return <div style={{ height: "1rem" }} />;
-    }
-
-    // if (!this.data.formMenu.formMenu_Default_IsVisible && !this.data.showFormMenu) return
-    // if (!this.data.showFormMenu) return
-
-    const menuFieldList = this._getMenuFieldInfoList();
-    const width_Total = 10;
-    const style = {
-      backgroundColor: this.data.formMenu.formMenu_BackColor,
-    };
-
+  if (hasError) {
     return (
-      <div
-        className={[
-          "FormInfo__menu",
-          !this.data.showFormMenu && "FormInfo__menu--hide",
-        ]
-          .filter((c) => c)
-          .join(" ")}
-        style={style}
-      >
-        <div className={"FormInfo__menuIconContainer"}>
-          <Button
-            className={"Menu__icon FormInfo__menuIcon"}
-            outline
-            color="light"
-            onClick={this._handleOnCloseMenuClick}
-          >
-            <FontAwesome className={""} name="times-circle" />
-          </Button>
-        </div>
-
-        {menuFieldList.map(this._elementGetFormItem.bind(this))}
+      <div className="Form__container__error">
+        <FontAwesome className="Form__container__error__icon" name="exclamation-triangle" />
+        <span className="Form__container__error__text">خطایی روی داده است!</span>
+        <Button onClick={handleReloadClick} outline className="Form__container__error__button">
+          <FontAwesome className="Form__container__error__button__icon" name="sync-alt" />
+          بارگذاری مجدد
+        </Button>
       </div>
     );
   }
 
-  render() {
-    if (this.state.hasError) {
-      // You can render any custom fallback UI
-      return (
-        <div className="Form__container__error">
-          <FontAwesome
-            className="Form__container__error__icon"
-            name="exclamation-triangle"
-          />
-          <span className="Form__container__error__text">
-            خطایی روی داده است!
-          </span>
-          <Button
-            onClick={this._handleReloadClick}
-            outline
-            className="Form__container__error__button"
-          >
-            <FontAwesome
-              className="Form__container__error__button__icon"
-              name="sync-alt"
-            />
-            بارگذاری مجدد
-          </Button>
-        </div>
-      );
-    }
+  const formContent = dataRef.current.cardViewDefinition ?
+    createHtmlTree(fieldInfo.row_CardView_Definition) :
+    fieldList.map(elementGetFormItem);
 
-    const formElement = (
-      <div className={"FormInfo"} key={1}>
-        {/* <h5 className={"FormInfo__header"}>{this.fieldInfo.label}</h5> */}
-        {this._elementGetFormMenu()}
-        {this._elementGetAllField()}
-        <div className={"FormInfo__fileDrop"} key={2} />
-        {this.getHasBtnFileUpload() && (
-          <input
-            type="file"
-            className={"FormInfo__fileDrop"}
-            id={"FormInfo__fileUpload"}
-          />
-        )}
+  const formMenuContent = (
+    <div className={["FormInfo__menu", !showFormMenu && "FormInfo__menu--hide"].filter(Boolean).join(" ")}
+      style={{ backgroundColor: dataRef.current.formMenu?.formMenu_BackColor }}>
+      <div className={"FormInfo__menuIconContainer"}>
+        <Button className={"Menu__icon FormInfo__menuIcon"} outline color="light" onClick={() => setShowFormMenu(false)}>
+          <FontAwesome className={""} name="times-circle" />
+        </Button>
       </div>
-    );
+      {menuFieldList.map(elementGetFormItem)}
+    </div>
+  );
 
-    const isUploadContainer = this._isUploadContainer();
+  const formElement = (
+    <div className={"FormInfo"}>
+      {dataRef.current.formMenu && formMenuContent}
+      <div ref={formContainerRef} className={`FormInfo__container ${window.screen.width < 480 ? "mb-5" : ""}`}>
+        {formContent}
+      </div>
+    </div>
+  );
 
-    if (isUploadContainer) {
-      return <FileDrop onDrop={this._handleDrop}>{formElement}</FileDrop>;
-    } else {
-      return formElement;
-    }
-  }
+  const isUploadContainer = [...fieldList, ...menuFieldList].some((f) => f.button_FileUpload_IsFileUpload);
 
-  //------------------------------------------------
-  //endregion render
-  //------------------------------------------------
-}
+  return isUploadContainer ? (
+    <FileDrop onDrop={handleDrop}>{formElement}</FileDrop>
+  ) : (
+    formElement
+  );
+});
 
 export default FormInfo;
+

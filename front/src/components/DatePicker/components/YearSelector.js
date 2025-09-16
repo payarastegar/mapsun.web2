@@ -21,13 +21,11 @@ export default class YearSelector extends Component {
     styles: PropTypes.object,
     selectedYear: PropTypes.object.isRequired,
     selectedMonth: PropTypes.object.isRequired,
-    isGregorian: PropTypes.bool
+    isGregorian: PropTypes.bool,
+    setMonth: PropTypes.func.isRequired,
+    setCalendarMode: PropTypes.func.isRequired,
   };
 
-  static contextTypes = {
-    setCalendarMode: PropTypes.func.isRequired,
-    setMonth: PropTypes.func.isRequired
-  };
 
   state = {
     year: this.props.selectedYear,
@@ -67,15 +65,15 @@ export default class YearSelector extends Component {
       year: this.state.year.clone().subtract(1, 'year')
     });
   }
-
+  
   handleClick(key) {
-    const { setMonth, setCalendarMode } = this.context;
+    const { setMonth, setCalendarMode } = this.props;
     const { isGregorian } = this.props;
     const monthYearFormat = isGregorian ? 'M-YYYY' : 'jM-jYYYY';
     setMonth(momentJalaali(key, monthYearFormat));
     setCalendarMode('days');
   }
-
+  
   render() {
     const { year, month } = this.state;
     const { styles, isGregorian } = this.props;
@@ -91,6 +89,7 @@ export default class YearSelector extends Component {
           year={year}
           onNextYear={this.nextYear.bind(this)}
           onPrevYear={this.prevYear.bind(this)}
+          setCalendarMode={this.props.setCalendarMode}
         />
         <div ref={this.yearsContainerRef} className={styles.yearsList}>
           {years.map((yearItem, key) => {
@@ -106,7 +105,7 @@ export default class YearSelector extends Component {
             return (
               <div key={key} className={currentYearClass}>
                 <button
-                  ref={isCurrentYearPosition && this.currentYearPositionRef}
+                  ref={isCurrentYearPosition ? this.currentYearPositionRef : null}
                   onClick={this.handleClick.bind(this, buttonFingerprint)}
                 >
                   {yearItem}

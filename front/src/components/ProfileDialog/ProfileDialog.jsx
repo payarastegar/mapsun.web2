@@ -1,5 +1,5 @@
-import React, {Component} from 'react';
-import {Button, Modal, ModalHeader, ModalBody, ModalFooter} from 'reactstrap';
+import React, { Component } from 'react';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 import './ProfileDialog.css';
 import BaseComponent from "../BaseComponent";
@@ -8,7 +8,7 @@ import SystemClass from "../../SystemClass";
 import Utils from "../../Utils";
 import FormInfo from "../FormInfo/FormInfo";
 import FieldInfo from "../../class/FieldInfo";
-import {conditionallyUpdateScrollbar, setScrollbarWidth} from "reactstrap/es/utils";
+import { conditionallyUpdateScrollbar, setScrollbarWidth } from "reactstrap";
 import FontAwesome from 'react-fontawesome';
 import FileCompressor from "../../file/FileCompressor";
 import WebService from "../../WebService";
@@ -62,7 +62,7 @@ class ProfileDialog extends BaseComponent {
 
         if (show !== this.state.isShow) {
             this.state.isShow = show
-            this.setState({isShow: show})
+            this.setState({ isShow: show })
         }
     }
 
@@ -93,7 +93,7 @@ class ProfileDialog extends BaseComponent {
 
     _handleOnTabClick = (tab) => {
         this.state.tab = tab
-        this.setState({tab: tab})
+        this.setState({ tab: tab })
     }
 
     _setLastLoginInfo = (newUserInfo) => {
@@ -168,16 +168,16 @@ class ProfileDialog extends BaseComponent {
             return
         }
 
-
-        pemKey = CryptoUtils.AESDecrypt(pemKey, login.oneTimePassword)
+        const oneTimePassword = this.isDemoUser() || this.data.isLocalIntranet ? "1234567" : login.oneTimePassword;
+        pemKey = CryptoUtils.AESDecrypt(pemKey, oneTimePassword)
 
         login.passwordText_New = CryptoUtils.RSAEncrypt(this.state.newPassword, pemKey)
         login.passwordText = CryptoUtils.RSAEncrypt(this.state.password, pemKey)
 
         await SystemClass.setLoading(true)
-        return new WebService(WebService.URL.webService_ChangePassword, {}, {}, {login}).then(json => {
+        return new WebService(WebService.URL.webService_ChangePassword, {}, {}, { login }).then(json => {
             if (json.successMsg) {
-                this._setLastLoginInfo({login})
+                this._setLastLoginInfo({ login })
                 SystemClass.showMsg(json.successMsg)
 
                 this.showDialog(false)
@@ -199,22 +199,22 @@ class ProfileDialog extends BaseComponent {
 
     _handleOTPChange = (event) => {
         let value = event.target.value
-        this.setState({otp: value})
+        this.setState({ otp: value })
     }
 
     _handlePasswordChange = (event) => {
         let value = event.target.value
-        this.setState({password: value})
+        this.setState({ password: value })
     }
 
     _handleRepeatPasswordChange = (event) => {
         let value = event.target.value
-        this.setState({repeatPassword: value})
+        this.setState({ repeatPassword: value })
     }
 
     _handleNewPasswordChange = (event) => {
         let value = event.target.value
-        this.setState({newPassword: value})
+        this.setState({ newPassword: value })
     }
 
 
@@ -278,12 +278,12 @@ class ProfileDialog extends BaseComponent {
 
         return (
             <div id="DialogContainer" className={["dialog"].filter(c => c).join(' ')}
-                 onKeyDown={this._handleOnDialogKeyPress}>
+                onKeyDown={this._handleOnDialogKeyPress}>
 
                 <Modal size="sm" isOpen={this.state.isShow} modalClassName={"scroll__container"}
-                       className={["scroll__container", "dialog__container", 'ProfileDialog'].filter(c => c).join(' ')}
-                       onClosed={this._handleOnDialogClose.bind(this)}
-                       centered={true} style={{}}
+                    className={["scroll__container", "dialog__container", 'ProfileDialog'].filter(c => c).join(' ')}
+                    onClosed={this._handleOnDialogClose.bind(this)}
+                    centered={true} style={{}}
                 >
                     {/*<ModalHeader>*/}
                     {/**/}
@@ -304,9 +304,9 @@ class ProfileDialog extends BaseComponent {
                                 onClick={() => {
                                     this.showDialog(false)
                                 }}>
-                                <FontAwesome className={''} name="times"/>
+                                <FontAwesome className={''} name="times" />
                             </Button>
-                            <div style={{flex: '1'}}></div>
+                            <div style={{ flex: '1' }}></div>
                             {/*<Button*/}
                             {/*className={['Menu__icon', 'Menu__search-icon'].filter(c => c).join(' ')}*/}
                             {/*outline color="light"*/}
@@ -323,12 +323,12 @@ class ProfileDialog extends BaseComponent {
                             <div className="ProfileDialog__imageContainer">
                                 <div className="ProfileDialog__imageUploadContainer">
                                     {/*<input className="ProfileDialog__inputFile" type="file" accept="image/*"*/}
-                                           {/*onChange={this._handleImageUpload}/>*/}
+                                    {/*onChange={this._handleImageUpload}/>*/}
                                     <img className="ProfileDialog__avatar"
-                                         src={this._getUserImage() || defaultUserImage}
+                                        src={this._getUserImage() || defaultUserImage}
                                     />
                                     {/*<div className="ProfileDialog__avatarHover">*/}
-                                        {/*<FontAwesome className={'ProfileDialog__uploadIcon'} name="camera"/>*/}
+                                    {/*<FontAwesome className={'ProfileDialog__uploadIcon'} name="camera"/>*/}
                                     {/*</div>*/}
                                 </div>
                                 <div
@@ -343,9 +343,9 @@ class ProfileDialog extends BaseComponent {
                             {/*پروفایل*/}
                             {/*</Button>*/}
                             <Button outline
-                                    className={["ProfileDialog__tabButton", tab === 'passEdit' && "ProfileDialog__tabButton--active"].filter(c => c).join(' ')}
-                                    onClick={this._handleOnTabClick.bind(this, 'passEdit')}>
-                                <FontAwesome className={'ml-2'} name="user-lock"/>
+                                className={["ProfileDialog__tabButton", tab === 'passEdit' && "ProfileDialog__tabButton--active"].filter(c => c).join(' ')}
+                                onClick={this._handleOnTabClick.bind(this, 'passEdit')}>
+                                <FontAwesome className={'ml-2'} name="user-lock" />
                                 تغییر رمز
                             </Button>
                         </div>
@@ -357,16 +357,16 @@ class ProfileDialog extends BaseComponent {
                                 <div
                                     className={["ProfileDialog__tabBody", tab !== 'userEdit' && "ProfileDialog__tabBody--hide"].filter(c => c).join(' ')}>
                                     <div className={"LoginContainer__inputContainer "}
-                                         data-validate="رمز ورود صحیح نمی باشد">
+                                        data-validate="رمز ورود صحیح نمی باشد">
                                         <input className="LoginContainer__input" type="text" name="pass"
-                                               placeholder="نام و نام خانوادگی"
+                                            placeholder="نام و نام خانوادگی"
 
 
-                                               onChange={this._handlePasswordChange}/>
+                                            onChange={this._handlePasswordChange} />
                                         <span className="LoginContainer__inputFocus"></span>
                                         <span className="LoginContainer__inputSymbol">
-							<i className="fa fa-file-signature" aria-hidden="true"></i>
-						</span>
+                                            <i className="fa fa-file-signature" aria-hidden="true"></i>
+                                        </span>
                                     </div>
 
                                 </div>
@@ -376,16 +376,16 @@ class ProfileDialog extends BaseComponent {
 
 
                                     <div className={"LoginContainer__inputContainer " + inputPasswordErrorClass}
-                                         data-validate="یکبار رمز صحیح نمی باشد رمز پیامک شده به موبایلتان را وارد نمایید">
+                                        data-validate="یکبار رمز صحیح نمی باشد رمز پیامک شده به موبایلتان را وارد نمایید">
                                         <input className="LoginContainer__input" type="tel" name="otp"
-                                               placeholder="(OTP) یکبار رمز"
+                                            placeholder="(OTP) یکبار رمز"
 
-                                               style={{paddingRight: '5rem'}}
-                                               onChange={this._handleOTPChange}/>
+                                            style={{ paddingRight: '5rem' }}
+                                            onChange={this._handleOTPChange} />
                                         <span className="LoginContainer__inputFocus"></span>
                                         <span className="LoginContainer__inputSymbol">
-							<i className="fa fa-lock" aria-hidden="true"></i>
-						</span>
+                                            <i className="fa fa-lock" aria-hidden="true"></i>
+                                        </span>
 
                                         <div
                                             className={'LoginContainer__refreshIcon ' + (!this.state.otpSend && 'LoginContainer__refreshIcon--text')}
@@ -393,7 +393,7 @@ class ProfileDialog extends BaseComponent {
                                             {
                                                 this.state.otpSend ?
                                                     (!this.state.otpTimer ?
-                                                        <i className="fa fa-redo" aria-hidden="true"/>
+                                                        <i className="fa fa-redo" aria-hidden="true" />
                                                         : this.state.otpTimer)
                                                     :
                                                     ' ارسال پیامک '
@@ -403,52 +403,52 @@ class ProfileDialog extends BaseComponent {
                                     </div>
 
                                     <div className={"LoginContainer__inputContainer "}
-                                         data-validate="رمز ورود فعلی صحیح نمی باشد">
+                                        data-validate="رمز ورود فعلی صحیح نمی باشد">
                                         <input className="LoginContainer__input" type="password" name="pass"
-                                               placeholder="رمز ورود فعلی"
+                                            placeholder="رمز ورود فعلی"
 
-                                               autocomplete="new-password"
-                                               autoComplete="new-password"
+                                            autocomplete="new-password"
+                                            autoComplete="new-password"
 
-                                               onKeyPress={this._handlePasswordKeyPress}
+                                            onKeyPress={this._handlePasswordKeyPress}
 
-                                               onChange={this._handlePasswordChange}/>
+                                            onChange={this._handlePasswordChange} />
                                         <span className="LoginContainer__inputFocus"></span>
                                         <span className="LoginContainer__inputSymbol">
-							<i className="fa fa-lock" aria-hidden="true"></i>
-						</span>
+                                            <i className="fa fa-lock" aria-hidden="true"></i>
+                                        </span>
                                     </div>
                                     <div className={"LoginContainer__inputContainer "}
-                                         data-validate="رمز ورود جدید صحیح نمی باشد">
+                                        data-validate="رمز ورود جدید صحیح نمی باشد">
                                         <input className="LoginContainer__input" type="password" name="pass1"
-                                               placeholder="رمز ورود جدید"
+                                            placeholder="رمز ورود جدید"
 
-                                               autocomplete="new-password"
-                                               autoComplete="new-password"
+                                            autocomplete="new-password"
+                                            autoComplete="new-password"
 
-                                               onKeyPress={this._handlePasswordKeyPress}
+                                            onKeyPress={this._handlePasswordKeyPress}
 
-                                               onChange={this._handleNewPasswordChange}/>
+                                            onChange={this._handleNewPasswordChange} />
                                         <span className="LoginContainer__inputFocus"></span>
                                         <span className="LoginContainer__inputSymbol">
-							<i className="fa fa-lock" aria-hidden="true"></i>
-						</span>
+                                            <i className="fa fa-lock" aria-hidden="true"></i>
+                                        </span>
                                     </div>
                                     <div className={"LoginContainer__inputContainer "}
-                                         data-validate="تکرار رمز ورود جدید صحیح نمی باشد">
+                                        data-validate="تکرار رمز ورود جدید صحیح نمی باشد">
                                         <input className="LoginContainer__input" type="password" name="pass2"
-                                               placeholder="تکرار رمز ورود جدید"
+                                            placeholder="تکرار رمز ورود جدید"
 
-                                               autocomplete="new-password"
-                                               autoComplete="new-password"
+                                            autocomplete="new-password"
+                                            autoComplete="new-password"
 
-                                               onKeyPress={this._handlePasswordKeyPress}
+                                            onKeyPress={this._handlePasswordKeyPress}
 
-                                               onChange={this._handleRepeatPasswordChange}/>
+                                            onChange={this._handleRepeatPasswordChange} />
                                         <span className="LoginContainer__inputFocus"></span>
                                         <span className="LoginContainer__inputSymbol">
-							<i className="fa fa-lock" aria-hidden="true"></i>
-						</span>
+                                            <i className="fa fa-lock" aria-hidden="true"></i>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -461,8 +461,8 @@ class ProfileDialog extends BaseComponent {
 
                                 <div className="mt-4">
                                     <Button outline onClick={this._handleOnSave}
-                                            disabled={!this.isValid()}>
-                                        <FontAwesome className={'ml-2'} name="save"/>
+                                        disabled={!this.isValid()}>
+                                        <FontAwesome className={'ml-2'} name="save" />
                                         تغییر رمزعبور
                                     </Button>
                                 </div>

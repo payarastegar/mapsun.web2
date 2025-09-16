@@ -10,23 +10,20 @@ export default class MonthsViewHeading extends Component {
     onPrevYear: PropTypes.func.isRequired,
     isGregorian: PropTypes.bool,
     disableYearSelector: PropTypes.bool,
+    styles: PropTypes.object,
+    setCalendarMode: PropTypes.func.isRequired,
   };
 
-  static contextTypes = {
-    styles: PropTypes.object,
-    type: PropTypes.number,
-    setCalendarMode: PropTypes.func.isRequired
-  };
+
 
   handleYearClick(event) {
-    const { setCalendarMode } = this.context;
+    const { setCalendarMode } = this.props;
     event.preventDefault();
     setCalendarMode('yearSelector');
   }
 
   render() {
-    const { year, styles, type, isGregorian, disableYearSelector } = this.props;
-
+    const { year, styles, isGregorian, disableYearSelector } = this.props;
     const yearFormat = isGregorian ? 'YYYY' : 'jYYYY';
 
     return (

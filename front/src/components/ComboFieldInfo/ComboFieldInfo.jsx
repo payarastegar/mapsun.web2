@@ -2,8 +2,8 @@ import "./ComboFieldInfo.css";
 import React from "react";
 import CheckBoxFieldInfo from "../CheckBoxFieldInfo/CheckBoxFieldInfo";
 import Utils from "../../Utils";
-import * as ReactDOM from "react-dom";
-import Spinner from "reactstrap/es/Spinner";
+// import Spinner from "reactstrap/es/Spinner";
+import { Spinner } from "reactstrap";
 import FieldInfo from "../../class/FieldInfo";
 import FieldType from "../../class/enums/FieldType";
 import LabelPosition from "../../class/enums/LabelPosition";
@@ -11,15 +11,20 @@ import { UncontrolledTooltip } from "reactstrap";
 import ComboFieldInfo_Core from "./ComboFieldInfo_Core";
 import UiSetting from "../../UiSetting";
 
-//https://codepen.io/MoorLex/pen/XeNzoK
 class ComboFieldInfo extends ComboFieldInfo_Core {
+  constructor(props) {
+    super(props);
+    this.rootNodeRef = React.createRef();
+    this.inputRef = React.createRef();
+  }
+
   //------------------------------------------------
   //region component public method
   //------------------------------------------------
 
   componentDidMount() {
     this.changeValue(this.fieldInfo.initialValue);
-    this.data.node = ReactDOM.findDOMNode(this);
+    this.data.node = this.rootNodeRef.current;
   }
 
   componentWillUnmount() {
@@ -41,9 +46,7 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
 
     if ((open == "") != (this.state.classShowMenu == "")) {
       if (open) {
-        ReactDOM.findDOMNode(this)
-          .querySelector("input")
-          .focus();
+        this.inputRef.current?.focus();
       }
 
       // در هنگام بسته شدن باید مقدار فیلد فیلتر مربوط به مالتی سلکت خالی شود
@@ -77,21 +80,21 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
           text =
             this.data.selectedDataRow.length +
               "  " +
-              UiSetting.GetSetting("language") ===
-              "fa"
-              ? " آیتم انتخاب شده"
-              : "Items were selected";
-        } else {
-          const input = ReactDOM.findDOMNode(this).querySelector("input");
-          input.value = text;
-
-          if (input.clientWidth < input.scrollWidth) {
-            text =
-              this.data.selectedDataRow.length +
-                UiSetting.GetSetting("language") ===
-                "fa"
+              (UiSetting.GetSetting("language") === "fa"
                 ? " آیتم انتخاب شده"
-                : "Items were selected";
+                : "Items were selected");
+        } else {
+          // تغییر ۵: استفاده از ref برای دسترسی به input
+          const input = this.inputRef.current;
+          if (input) {
+            input.value = text;
+            if (input.clientWidth < input.scrollWidth) {
+              text =
+                this.data.selectedDataRow.length +
+                (UiSetting.GetSetting("language") === "fa"
+                  ? " آیتم انتخاب شده"
+                  : "Items were selected");
+            }
           }
         }
       }
@@ -111,21 +114,18 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
 
   _handleInputKeyDown = (event) => {
     if (event.keyCode === 40) {
-      // Pass this way: input->div.invalid-feedback->svg.ComboFieldInfo__icon->div.ComboFieldInfo__dropdown-menu->div.ComboFieldInfo__dropdown-menu`s first child(button)
       event.target.nextElementSibling.nextElementSibling.nextElementSibling.firstChild.focus();
     }
   };
 
-  // Used to move the focus to the input element after selection done.
   _handleComboItemsKeyPress = (event) => {
-    // If enter key pressed.
     if (event.key === "Enter") {
       event.target.parentNode.previousElementSibling.previousElementSibling.previousElementSibling.focus();
     }
   };
 
   _handleInputBlur(event) {
-    if (!ReactDOM.findDOMNode(this).contains(event.relatedTarget)) {
+    if (!this.rootNodeRef.current?.contains(event.relatedTarget)) {
       this._openDropdownMenu(false);
     }
 
@@ -151,7 +151,6 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
       this.fieldInfo.combo_IdColName || this.dataSource.combo_IdColName;
 
     if (isChecked) {
-      //if was not in list then push...
       !list.find((i) => i[idColName] == dataRow[idColName]) &&
         list.push(dataRow);
     } else {
@@ -181,20 +180,23 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
 
     function setTextAsValueNumber() {
       text =
-        "  " + list.length + UiSetting.GetSetting("language") === "fa"
+        "  " +
+        list.length +
+        (UiSetting.GetSetting("language") === "fa"
           ? " آیتم انتخاب شده"
-          : "Items were selected";
+          : "Items were selected");
     }
 
     if (list.length > 1) {
       if (list.length > 3) {
         setTextAsValueNumber();
       } else {
-        const input = ReactDOM.findDOMNode(this).querySelector("input");
-        input.value = text;
-
-        if (input.clientWidth < input.scrollWidth) {
-          setTextAsValueNumber();
+        const input = this.inputRef.current;
+        if (input) {
+          input.value = text;
+          if (input.clientWidth < input.scrollWidth) {
+            setTextAsValueNumber();
+          }
         }
       }
     }
@@ -206,13 +208,11 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
   _handleKeyDown(event) {
     if (event.key === "ArrowUp") {
       event.preventDefault();
-      event.target.previousElementSibling &&
-        event.target.previousElementSibling.focus();
+      event.target.previousElementSibling?.focus();
     }
     if (event.key === "ArrowDown") {
       event.preventDefault();
-      event.target.nextElementSibling &&
-        event.target.nextElementSibling.focus();
+      event.target.nextElementSibling?.focus();
     }
   }
 
@@ -412,13 +412,14 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
     };
 
     const canEdit = this.fieldInfo.canEdit || "";
-
     const hideLabel = this.fieldInfo.label_HideLabel;
-
     const fontColor = this.fieldInfo.fontColor;
+    const elementId = `combo_${this.fieldInfo.fieldName}_${this.fieldInfo.formId}`;
 
     return (
       <div
+        ref={this.rootNodeRef}
+        id={elementId}
         className={["ComboFieldInfo", labelPositionClass]
           .filter((c) => c)
           .join(" ")}
@@ -452,6 +453,7 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
           )}
 
           <input
+            ref={this.inputRef}
             className={[
               "form-control",
               "ComboFieldInfo__input",
@@ -501,9 +503,8 @@ class ComboFieldInfo extends ComboFieldInfo_Core {
             {!hideLabel && this.fieldInfo.label_After}
           </label>
         )}
-
-        {this.data.node && this.fieldInfo.tooltip && (
-          <UncontrolledTooltip target={this.data.node}>
+        {this.fieldInfo.tooltip && (
+          <UncontrolledTooltip target={elementId}>
             {this._getTooltip()}
           </UncontrolledTooltip>
         )}

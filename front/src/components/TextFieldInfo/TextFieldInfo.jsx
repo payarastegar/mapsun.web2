@@ -1,28 +1,26 @@
 import React, { Component } from "react";
 import "./TextFieldInfo.css";
-import Utils from "../../Utils";
-import * as ReactDOM from "react-dom";
 import { UncontrolledTooltip } from "reactstrap";
 import LabelPosition from "../../class/enums/LabelPosition";
-import LabelFieldInfo from "../LabelFieldInfo/LabelFieldInfo";
 import FontAwesome from "react-fontawesome";
-
-import Slider, { Range } from "rc-slider";
-import Tooltip from "rc-tooltip";
-
+import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "rc-tooltip/assets/bootstrap.css";
 import SystemClass from "../../SystemClass";
 import TextFieldInfo_Core from "./TextFieldInfo_core";
 import UiSetting from "../../UiSetting";
-// import Utils from '.././Utils.js';
+import Utils from "../../Utils";
 
 class TextFieldInfo extends TextFieldInfo_Core {
+  constructor(props) {
+    super(props);
+    this.inputContainerRef = React.createRef();
+  }
+
   //------------------------------------------------
   //region public methods
   //------------------------------------------------
   componentDidMount() {
-    this.data.inputNode = ReactDOM.findDOMNode(this).querySelector("input");
     const initialValue =
       this.fieldInfo.initialValue === undefined
         ? ""
@@ -122,9 +120,7 @@ class TextFieldInfo extends TextFieldInfo_Core {
       minWidth: sliceWidths.slice1,
       maxWidth: sliceWidths.slice1,
       textAlign:
-        UiSetting.GetSetting("DefaultPageDirection") === "ltr"
-          ? "left"
-          : "right",
+        UiSetting.GetSetting("DefaultPageDirection") === "ltr" ? "left" : "right",
     };
     const styleInput = {
       flexBasis: sliceWidths.slice2,
@@ -139,33 +135,23 @@ class TextFieldInfo extends TextFieldInfo_Core {
 
     const icon = this.fieldInfo.iconName;
     const inputClass = icon && "TextFieldInfo__input--icon";
-
     const readOnly = !this.fieldInfo.canEdit;
-
     const hideLabel = this.fieldInfo.label_HideLabel;
-
-    const Tag = this.fieldInfo.text_MultiLine_IsMultiLine
-      ? "textarea"
-      : "input";
-    const text_MultiLine_NumberOfLines = this.fieldInfo
-      .text_MultiLine_NumberOfLines;
+    const Tag = this.fieldInfo.text_MultiLine_IsMultiLine ? "textarea" : "input";
+    const text_MultiLine_NumberOfLines = this.fieldInfo.text_MultiLine_NumberOfLines;
     if (this.fieldInfo.fontColor) {
       styleInput.color = this.fieldInfo.fontColor;
     }
-
     const styleTag = {};
-
     if (this.fieldInfo.field_BackColor_Normal)
       styleTag.background = this.fieldInfo.field_BackColor_Normal;
     if (this.fieldInfo.field_BackColor_ReadOnly)
       styleTag.background = this.fieldInfo.field_BackColor_ReadOnly;
 
+    const elementId = `textfield_${this.fieldInfo.fieldName}`;
+
     return (
-      <div
-        className={["TextFieldInfo", labelPositionClass]
-          .filter((c) => c)
-          .join(" ")}
-      >
+      <div className={["TextFieldInfo", labelPositionClass].filter((c) => c).join(" ")}>
         {this.fieldInfo.label && (
           <label style={styleLabel} className={"TextFieldInfo__label"}>
             {!hideLabel && this.fieldInfo.label}
@@ -173,6 +159,8 @@ class TextFieldInfo extends TextFieldInfo_Core {
         )}
 
         <div
+          ref={this.inputContainerRef}
+          id={elementId}
           style={styleInput}
           className={["TextFieldInfo__container"].filter((c) => c).join(" ")}
         >
@@ -186,7 +174,6 @@ class TextFieldInfo extends TextFieldInfo_Core {
             ]
               .filter((c) => c)
               .join(" ")}
-            // dir={this.state.inputType === "tel" ? "ltr" : "rtl"}
             dir={
               this.state.inputType === "tel"
                 ? "ltr"
@@ -208,18 +195,14 @@ class TextFieldInfo extends TextFieldInfo_Core {
             rows={text_MultiLine_NumberOfLines}
             ref={(node) => {
               if (node && styleTag.background)
-                node.style.setProperty(
-                  "background",
-                  styleTag.background,
-                  "important"
-                );
+                node.style.setProperty("background", styleTag.background, "important");
             }}
           />
 
           {icon && <FontAwesome className="TextFieldInfo__icon" name={icon} />}
-
-          {this.data.inputNode && this.fieldInfo.tooltip && (
-            <UncontrolledTooltip target={this.data.inputNode}>
+          
+          {this.fieldInfo.tooltip && (
+            <UncontrolledTooltip target={elementId}>
               {this._getTooltip()}
             </UncontrolledTooltip>
           )}

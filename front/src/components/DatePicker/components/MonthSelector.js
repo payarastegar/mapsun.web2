@@ -41,17 +41,14 @@ export default class MonthSelector extends Component {
     selectedMonth: PropTypes.object.isRequired,
     isGregorian: PropTypes.bool,
     disableYearSelector: PropTypes.bool,
-  };
-
-  static contextTypes = {
+    setMonth: PropTypes.func.isRequired,
     setCalendarMode: PropTypes.func.isRequired,
-    setMonth: PropTypes.func.isRequired
   };
 
   state = {
     year: this.props.selectedMonth
   };
-
+  
   nextYear() {
     this.setState({
       year: this.state.year.clone().add(1, 'year')
@@ -65,7 +62,7 @@ export default class MonthSelector extends Component {
   }
 
   handleClick(key) {
-    const { setMonth, setCalendarMode } = this.context;
+    const { setMonth, setCalendarMode } = this.props;
     const { isGregorian } = this.props;
     const monthYearFormat = isGregorian ? 'M-YYYY' : 'jM-jYYYY';
     setMonth(momentJalaali(key, monthYearFormat));
@@ -88,6 +85,7 @@ export default class MonthSelector extends Component {
           onNextYear={this.nextYear.bind(this)}
           onPrevYear={this.prevYear.bind(this)}
           disableYearSelector={disableYearSelector}
+          setCalendarMode={this.props.setCalendarMode}
         />
         <div className={styles.monthsList}>
           {months.map((name, key) => {

@@ -110,6 +110,8 @@ class GridInfo_Core extends TextFieldInfo {
       )
     );
 
+    this._setColumnComponents(this.dataSource.dataArray);
+
     //set for recreate component in Render
     this.data.needUpdate = true;
 
@@ -206,7 +208,7 @@ class GridInfo_Core extends TextFieldInfo {
   _dataGetRowList() {
     let dataArray = this.dataSource.dataArray;
     //set component for all row
-    this._setColumnComponents(dataArray);
+    // this._setColumnComponents(dataArray);
 
     const idColName = this.dataSource.idColName;
 
@@ -956,7 +958,7 @@ class GridInfo_Core extends TextFieldInfo {
    */
   _getRowKey(rowId, level) {
     let key = rowId;
-    if (level) {
+    if (typeof level === 'number') {
       key += "_" + level;
     }
     return key;

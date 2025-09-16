@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./ChartFieldInfo.css";
-import * as ReactDOM from "react-dom";
 import LabelPosition from "../../class/enums/LabelPosition";
 import SystemClass from "../../SystemClass";
 import ChartFieldInfo_Core from "./ChartFieldInfo_Core";
@@ -14,14 +13,15 @@ class ChartFieldInfo extends ChartFieldInfo_Core {
 
   constructor(props) {
     super(props);
-    // حذف selectedPieIds و جایگزینی با selectedRowIds
-    this.selectedRowIds = []; // برای گرید و چارت
+    this.chartContainerRef = React.createRef();
+
+    this.selectedRowIds = []; 
     this._mainChartClicked = false;
     this.isGrid = this.props.isGrid || false;
   }
 
   componentDidMount() {
-    this.data.node = ReactDOM.findDOMNode(this);
+    this.data.node = this.chartContainerRef.current;
 
     this.dataSource = this._dataGetDataSource();
     this.chart_Text = this.fieldInfo.chart_TextColName_1 || this.fieldInfo.chart_DateColName_1;
@@ -102,6 +102,9 @@ class ChartFieldInfo extends ChartFieldInfo_Core {
   }
 
   componentWillUnmount() {
+    if (this.chart) {
+      this.chart.dispose();
+    }
     this.data.node = null;
   }
 
@@ -790,7 +793,12 @@ class ChartFieldInfo extends ChartFieldInfo_Core {
     };
 
     return (
-      <div className="ChartFieldInfo__gridMain" style={gridMainStyle} onClick={this.handleDivClick}>
+      <div
+        ref={this.chartContainerRef}
+        className="ChartFieldInfo__gridMain"
+        style={gridMainStyle}
+        onClick={this.handleDivClick}
+      >
         <div className="ChartFieldInfo__grid" style={{ ...gridStyle, position: "relative" }}>
           {showClearIcon && (
             <span
@@ -1350,9 +1358,10 @@ class ChartFieldInfo extends ChartFieldInfo_Core {
 
     return (
       <div
+        ref={this.chartContainerRef}
         className={"ChartFieldInfo"}
         style={style}
-        onClick={!this.isCategoryChart && this.handleDivClick}
+        onClick={!this.isCategoryChart ? this.handleDivClick : null}
       >
         {showClearIcon && (
           <span

@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import "./DateFieldInfo.css";
-import * as ReactDOM from "react-dom";
 import { UncontrolledTooltip } from "reactstrap";
 import LabelPosition from "../../class/enums/LabelPosition";
 import DatePicker from "../DatePicker";
@@ -12,12 +11,14 @@ import "./DateFieldInfo.css";
 import UiSetting from "../../UiSetting";
 
 class DateFieldInfo extends DateFieldInfo_Core {
-  //------------------------------------------------
-  //region component private method
-  //------------------------------------------------
+  constructor(props) {
+    super(props);
+    this.rootNodeRef = React.createRef(); 
+    this.inputNodeRef = React.createRef(); 
+  }
 
   _validationEffect() {
-    let errorInput = ReactDOM.findDOMNode(this).querySelector(".is-invalid");
+    let errorInput = this.rootNodeRef.current?.querySelector(".is-invalid");
 
     const delay = 600; // .6 second
     if (errorInput) {
@@ -32,7 +33,7 @@ class DateFieldInfo extends DateFieldInfo_Core {
   }
 
   componentDidMount() {
-    this.data.inputNode = ReactDOM.findDOMNode(this).querySelector("input");
+    this.data.inputNode = this.rootNodeRef.current?.querySelector("input");
     const initialValue =
       this.fieldInfo.initialValue === undefined
         ? ""
@@ -59,9 +60,6 @@ class DateFieldInfo extends DateFieldInfo_Core {
   //------------------------------------------------
 
   render() {
-    // if (this.props.fieldInfo.fieldName === "startDate_Min")
-    //   console.log(this.state.value);
-
     const labelPositionClass =
       this.fieldInfo.labelPosition === LabelPosition.LabelOnTop &&
       "TextFieldInfo--column";
@@ -71,9 +69,7 @@ class DateFieldInfo extends DateFieldInfo_Core {
       minWidth: sliceWidths.slice1,
       dir: UiSetting.GetSetting("DefaultPageDirection"),
       textAlign:
-        UiSetting.GetSetting("DefaultPageDirection") === "ltr"
-          ? "left"
-          : "right",
+        UiSetting.GetSetting("DefaultPageDirection") === "ltr" ? "left" : "right",
     };
     const styleInput = {
       maxWidth: sliceWidths.slice2,
@@ -89,12 +85,12 @@ class DateFieldInfo extends DateFieldInfo_Core {
     const inputColorStyle = {
       color: this.fieldInfo.fontColor,
     };
+    const elementId = `datefield_${this.fieldInfo.fieldName}`;
 
     return (
       <div
-        className={["TextFieldInfo", labelPositionClass]
-          .filter((c) => c)
-          .join(" ")}
+        ref={this.rootNodeRef}
+        className={["TextFieldInfo", labelPositionClass].filter((c) => c).join(" ")}
       >
         {this.fieldInfo.label && (
           <label style={styleLabel} className={"TextFieldInfo__label"}>
@@ -103,6 +99,7 @@ class DateFieldInfo extends DateFieldInfo_Core {
         )}
 
         <div
+          id={elementId}
           style={styleInput}
           className={["TextFieldInfo__container"].filter((c) => c).join(" ")}
         >
@@ -131,11 +128,8 @@ class DateFieldInfo extends DateFieldInfo_Core {
             />
           ) : (
             <input
-              class="form-control"
-              id="formGroupExampleInput"
-              type={
-                this.props.fieldInfo.date_ShowTime ? "datetime-local" : "date"
-              }
+              className="form-control"
+              type={this.props.fieldInfo.date_ShowTime ? "datetime-local" : "date"}
               name={"dateAndTimeOfTransaction_Text"}
               value={this.state.value}
               onChange={(e) => {
@@ -150,8 +144,8 @@ class DateFieldInfo extends DateFieldInfo_Core {
             />
           )}
 
-          {this.data.inputNode && this.fieldInfo.tooltip && (
-            <UncontrolledTooltip target={this.data.inputNode}>
+          {this.fieldInfo.tooltip && (
+            <UncontrolledTooltip target={elementId}>
               {this._getTooltip()}
             </UncontrolledTooltip>
           )}

@@ -2,20 +2,19 @@ import "./CheckBoxFieldInfo.css";
 import React from "react";
 import LabelPosition from "../../class/enums/LabelPosition";
 import { UncontrolledTooltip } from "reactstrap";
-import * as ReactDOM from "react-dom";
 import Utils from "../../Utils";
 import CheckBoxFieldInfo_Core from "./CheckBoxFieldInfo_Core";
-import UiSetting from "../../UiSetting";
 
-//https://codepen.io/MoorLex/pen/XeNzoK
 class CheckBoxFieldInfo extends CheckBoxFieldInfo_Core {
+  constructor(props) {
+    super(props);
+    this.containerNodeRef = React.createRef();
+  }
   //------------------------------------------------
   //region component public methods
   //-----------------------------------------------
   componentDidMount() {
-    this.data.containerNode = ReactDOM.findDOMNode(this).querySelector(
-      "input"
-    ).parentElement;
+    this.data.containerNode = this.containerNodeRef.current;
     this.state.isChecked = false;
     this.changeValue(Utils.getBoolean(this.fieldInfo.initialValue), true);
     this.forceUpdate();
@@ -74,14 +73,10 @@ class CheckBoxFieldInfo extends CheckBoxFieldInfo_Core {
       classList.check += " CheckBoxFieldInfo__check--hide";
     }
 
-    // console.log(this.fieldInfo.a, this.state.isChecked, this.fieldInfo.initialValue, this.fieldInfo)
     const readOnly = !this.fieldInfo.canEdit;
-
     const hideLabel = this.fieldInfo.label_HideLabel;
-
-    // console.log(readOnly, this.fieldInfo)
-
     const fontColor = this.fieldInfo.fontColor;
+    const elementId = `checkbox_${this.fieldInfo.fieldName}_${this.fieldInfo.formId}`;
 
     return (
       <div
@@ -95,14 +90,12 @@ class CheckBoxFieldInfo extends CheckBoxFieldInfo_Core {
           .join(" ")}
         onClick={(event) => event.stopPropagation()}
       >
-        {/*{*/}
-        {/*this.fieldInfo.label &&*/}
-        {/*<label style={styleLabel} className={''}>*/}
-        {/*{this.fieldInfo.label}*/}
-        {/*</label>*/}
-        {/*}*/}
-
-        <label className={"CheckBoxFieldInfo__container"} style={styleInput}>
+        <label
+          ref={this.containerNodeRef}
+          id={elementId}
+          className={"CheckBoxFieldInfo__container"}
+          style={styleInput}
+        >
           <span
             className={classList.label}
             style={{
@@ -134,8 +127,8 @@ class CheckBoxFieldInfo extends CheckBoxFieldInfo_Core {
           <span className={classList.background} />
           <span className={classList.check} />
 
-          {this.data.containerNode && this.fieldInfo.tooltip && (
-            <UncontrolledTooltip target={this.data.containerNode}>
+          {this.fieldInfo.tooltip && (
+            <UncontrolledTooltip target={elementId}>
               {this._getTooltip()}
             </UncontrolledTooltip>
           )}

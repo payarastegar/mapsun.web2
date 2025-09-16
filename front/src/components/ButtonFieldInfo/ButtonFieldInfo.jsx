@@ -1,29 +1,25 @@
 import React, { Component } from "react";
 import "./ButtonFieldInfo.css";
-import Utils from "../../Utils";
-import * as ReactDOM from "react-dom";
-import Tooltip from "reactstrap/es/Tooltip";
 import { UncontrolledTooltip } from "reactstrap";
-import TextFieldInfo from "../TextFieldInfo/TextFieldInfo";
-import defaultImage from "../../content/divider.png";
-import Button from "reactstrap/es/Button";
 import LabelPosition from "../../class/enums/LabelPosition";
-import ButtonActionTypes from "../../class/enums/ButtonActionTypes";
-import SystemClass from "../../SystemClass";
-import WebService from "../../WebService";
-import FieldType from "../../class/enums/FieldType";
 import FontAwesome from "react-fontawesome";
-import FileUtils from "../../file/FileUtils";
 import ButtonFieldInfo_Core from "./ButtonFieldInfo_Core";
+// import Button from "reactstrap/es/Button";
+import { Button } from "reactstrap";
 
 class ButtonFieldInfo extends ButtonFieldInfo_Core {
+  constructor(props) {
+    super(props);
+    this.nodeRef = React.createRef();
+  }
+
   //------------------------------------------------
   //region component public method
   //------------------------------------------------
 
   componentDidMount() {
     this.data.getDataFromExternal = this.props.getDataFromExternal;
-    this.data.node = ReactDOM.findDOMNode(this); //get node of button
+    this.data.node = this.nodeRef.current;
     this.forceUpdate();
   }
 
@@ -73,21 +69,23 @@ class ButtonFieldInfo extends ButtonFieldInfo_Core {
     const number =
       this.fieldInfo._row && this.fieldInfo._row[button_ShowNumber_FieldName];
 
-    //number exit and not Zero
     const numberElement = !number ? (
       ""
     ) : (
       <span className={"ButtonFieldInfo__number"}>{number}</span>
     );
 
-    // if (this.fieldInfo._row && this.fieldInfo._row.fieldName === 'fileNameAndPath') console.log(this.fieldInfo)
-
     if (this.fieldInfo.fontColor) {
       styleInput.color = this.fieldInfo.fontColor;
     }
 
+    // A unique ID for the tooltip to target
+    const elementId = `button_${this.fieldInfo.fieldName}_${this.fieldInfo.formId}`;
+
     return (
       <div
+        ref={this.nodeRef}
+        id={elementId} // An ID is needed for UncontrolledTooltip
         style2={{ display: "inline" }}
         className={[
           "TextFieldInfo",
@@ -97,13 +95,6 @@ class ButtonFieldInfo extends ButtonFieldInfo_Core {
           .filter((c) => c)
           .join(" ")}
       >
-        {/*{*/}
-        {/*this.fieldInfo.label &&*/}
-        {/*<label style={styleLabel} className={'TextFieldInfo__label'}>*/}
-        {/*{this.fieldInfo.label}*/}
-        {/*</label>*/}
-        {/*}*/}
-
         <Button
           outline={hideText}
           style={styleInput}
@@ -133,8 +124,8 @@ class ButtonFieldInfo extends ButtonFieldInfo_Core {
             {!hideLabel && this.fieldInfo.label_After}
           </label>
         )}
-        {this.data.node && this.fieldInfo.tooltip && (
-          <UncontrolledTooltip target={this.data.node}>
+        {this.fieldInfo.tooltip && (
+          <UncontrolledTooltip target={elementId}>
             {this._getTooltip()}
           </UncontrolledTooltip>
         )}

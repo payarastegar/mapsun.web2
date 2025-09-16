@@ -1,7 +1,6 @@
 import TextFieldInfo from "../TextFieldInfo/TextFieldInfo";
 import Utils from "../../Utils";
 import FilterCondition from "../../class/enums/FilterCondition";
-import FormInfo_Core from "../FormInfo/FormInfo_Core";
 import UiSetting from "../../UiSetting";
 
 //https://codepen.io/MoorLex/pen/XeNzoK

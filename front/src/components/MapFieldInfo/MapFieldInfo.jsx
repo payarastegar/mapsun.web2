@@ -4,7 +4,7 @@ import Utils from "../../Utils";
 import MapFieldInfo_Core from "./MapFieldInfo_Core";
 
 import NeshanMap from "./NeshanMap";
-import UiSetting from "../../UiSetting";
+import { isLocalInternet_Front } from "../../UiSetting";
 
 class MapFieldInfo extends MapFieldInfo_Core {
   //------------------------------------------------
@@ -26,7 +26,6 @@ class MapFieldInfo extends MapFieldInfo_Core {
   //------------------------------------------------
   //region render
   //------------------------------------------------
-  serverName = UiSetting.serverName;
 
   neshanMap_Init(L, myMap) {
     this.dataSource = this._dataGetDataSource();
@@ -108,22 +107,23 @@ class MapFieldInfo extends MapFieldInfo_Core {
     });
   }
   render() {
-    if (this.serverName !== "Mapsun") return null;
-    else {
-      return (
-        <NeshanMap
-          options={{
-            key: "web.186e181efbfa42398a3c7f8e193608a6",
-            maptype: "dreamy-gold",
-            poi: true,
-            traffic: false,
-            center: [36.321772187906426, 59.56196717673425],
-            zoom: 12,
-          }}
-          onInit={this.neshanMap_Init.bind(this)}
-        />
-      );
+    if (isLocalInternet_Front) {
+      return null;
     }
+
+    return (
+      <NeshanMap
+        options={{
+          key: "web.186e181efbfa42398a3c7f8e193608a6",
+          maptype: "dreamy-gold",
+          poi: true,
+          traffic: false,
+          center: [36.321772187906426, 59.56196717673425],
+          zoom: 12,
+        }}
+        onInit={this.neshanMap_Init.bind(this)}
+      />
+    );
   }
 
   //------------------------------------------------

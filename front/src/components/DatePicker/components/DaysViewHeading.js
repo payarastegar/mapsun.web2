@@ -6,25 +6,23 @@ import { leftArrow, rightArrow } from '../utils/assets';
 export default class Heading extends Component {
   static propTypes = {
     month: PropTypes.object.isRequired,
-    isGregorian: PropTypes.bool
-  };
-
-  static contextTypes = {
-    styles: PropTypes.object,
+    isGregorian: PropTypes.bool,
+    styles: PropTypes.object.isRequired,
+    setCalendarMode: PropTypes.func.isRequired,
     nextMonth: PropTypes.func.isRequired,
     prevMonth: PropTypes.func.isRequired,
-    setCalendarMode: PropTypes.func.isRequired
+    timePicker: PropTypes.any,
   };
 
+
   handleMonthClick(event) {
-    const { setCalendarMode } = this.context;
+    const { setCalendarMode } = this.props;
     event.preventDefault();
     setCalendarMode('monthSelector');
   }
 
   render() {
-    const { nextMonth, prevMonth } = this.context;
-    const { month, styles } = this.props;
+    const { month, styles, nextMonth, prevMonth } = this.props;
 
     return (
       <div className={styles.heading}>

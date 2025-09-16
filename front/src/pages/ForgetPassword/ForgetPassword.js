@@ -202,7 +202,9 @@ class ForgetPassword extends BaseComponent {
             return
         }
 
-        const pemKey = CryptoUtils.AESDecrypt(this.data.pemKey, login.oneTimePassword)
+        const oneTimePassword = this.isDemoUser() || this.data.isLocalIntranet ? "1234567" : login.oneTimePassword;
+
+        const pemKey = CryptoUtils.AESDecrypt(this.data.pemKey, oneTimePassword)
         login.passwordText_New = CryptoUtils.RSAEncrypt(this.state.newPassword, pemKey)
 
         await SystemClass.setLoading(true)
