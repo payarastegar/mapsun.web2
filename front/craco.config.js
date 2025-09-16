@@ -2,7 +2,7 @@ const webpack = require('webpack');
 
 module.exports = {
   webpack: {
-    configure: (webpackConfig) => {
+    configure: (webpackConfig, { env, paths }) => {
       webpackConfig.resolve.fallback = {
         ...webpackConfig.resolve.fallback,
         "assert": require.resolve("assert/"),
@@ -14,6 +14,9 @@ module.exports = {
         "process": require.resolve("process/browser"),
         "stream": require.resolve("stream-browserify"),
         "url": require.resolve("url/"),
+        "http": require.resolve("stream-http"),
+        "https": require.resolve("https-browserify"),
+        "vm": require.resolve("vm-browserify"),
       };
       
       webpackConfig.plugins = (webpackConfig.plugins || []).concat([
