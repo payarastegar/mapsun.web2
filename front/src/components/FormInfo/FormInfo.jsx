@@ -3,7 +3,7 @@ import "./FormInfo.css";
 import ComponentUtils from "../ComponentUtils";
 import FontAwesome from "react-fontawesome";
 import { Button } from "reactstrap";
-import FileDrop from "react-file-drop";
+import { useDropzone } from 'react-dropzone';
 import SystemClass from "../../SystemClass";
 import FieldInfo from "../../class/FieldInfo";
 import Utils from "../../Utils";
@@ -13,7 +13,6 @@ import FileCompressor from "../../file/FileCompressor";
 import SectionBlock from "../SectionBlock/SectionBlock";
 import DashboardButton from "../DashboardButton/DashboardButton";
 import UiSetting from "../../UiSetting";
-
 
 const _deepCopy = (obj) => {
   if (typeof obj !== 'object' || obj === null) {
@@ -82,10 +81,12 @@ const FormInfo = forwardRef((props, ref) => {
 
   const [hasError, setHasError] = useState(false);
   const [fieldList, setFieldList] = useState([]);
+  const [isReady, setIsReady] = useState(false);
   const [menuFieldList, setMenuFieldList] = useState([]);
   const [styleList, setStyleList] = useState([]);
   const [showFormMenu, setShowFormMenu] = useState(fieldInfo.formMenu_Default_IsVisible);
   const [highlightedFieldName, setHighlightedFieldName] = useState([]);
+  const [componentKeys, setComponentKeys] = useState({});
 
 
 
@@ -95,7 +96,9 @@ const FormInfo = forwardRef((props, ref) => {
     currentComponentTerm: 0,
     cardViewDefinition: fieldInfo.row_CardView_Definition !== undefined,
     formMenu: null,
-    parameterControl: {}
+    parameterControl: {},
+    _thumbnail: null,
+    _file: null,
   });
 
 
@@ -337,6 +340,7 @@ const FormInfo = forwardRef((props, ref) => {
     dataRef.current.components = {};
     dataRef.current.currentComponentTerm++;
     setHasError(false);
+    setIsReady(true);
 
   }, [dataSource, fieldInfo, getComponentTotalWidth]);
 
@@ -431,9 +435,76 @@ const FormInfo = forwardRef((props, ref) => {
     setHighlightedFieldName(allFieldNames);
   }, [getFieldInfo]);
 
+  const getFiles = useCallback(() => {
+    return {
+      file: dataRef.current._file,
+      thumbnail: dataRef.current._thumbnail,
+    };
+  }, []);
+
+  const clearFiles = useCallback(() => {
+    dataRef.current._thumbnail = null;
+    dataRef.current._file = null;
+
+    const fileSizeField = fieldList.find((f) => f.fieldName === "fileSize");
+    const fileNameField = fieldList.find((f) => f.fieldName === "txtFileName");
+
+    if (fileNameField) {
+      dataRef.current.components[fileNameField.fieldName]?.changeValue("");
+    }
+    if (fileSizeField) {
+      dataRef.current.components[fileSizeField.fieldName]?.changeValue("");
+    }
+  }, [fieldList]);
+
+  const _insertFile = useCallback((file) => {
+    const fileSizeField = fieldList.find((f) => f.fieldName === "fileSize");
+    const fileNameField = fieldList.find((f) => f.fieldName === "txtFileName");
+
+    if (!fileSizeField || !fileNameField) {
+      return SystemClass.showErrorMsg("فیلد های FileName یا FileSize یافت نشد!");
+    }
+
+    const uploadFile = file || {};
+    const uploadFileName = uploadFile.name.toLowerCase().startsWith("image.jp") ? new Date().toISOString() + ".jpeg" : uploadFile.name;
+
+    dataRef.current.components[fileNameField.fieldName]?.changeValue(uploadFileName || "");
+    dataRef.current.components[fileSizeField.fieldName]?.changeValue(uploadFile.size || "");
+
+    if (!file) return;
+
+    const buttonFileUpload = fieldList.find((f) => f.button_FileUpload_IsFileUpload);
+    if (buttonFileUpload) {
+      dataRef.current.components[buttonFileUpload.fieldName]?.click();
+    }
+  }, [fieldList]);
+
+  const selectFile = useCallback(async (file) => {
+    if (!file) {
+      return SystemClass.showErrorMsg("فایلی یافت نشد !");
+    }
+
+    if (file.type !== "image/tiff") {
+      dataRef.current._thumbnail = await FileCompressor.CreateThumbnail(file);
+      dataRef.current._file = await FileCompressor.CompressFile(file);
+    } else {
+      dataRef.current._thumbnail = file;
+      dataRef.current._file = file;
+    }
+
+    _insertFile(file);
+  }, [_insertFile]);
+
+  const refreshComponent = useCallback((fieldName) => {
+        setComponentKeys(keys => ({
+            ...keys,
+            [fieldName]: (keys[fieldName] || 0) + 1,
+        }));
+    }, []);
+
 
   // Expose methods to parent components (like FormContainer) using the main `ref`
-  const formInstance = {
+  const formInstance = useMemo(() => ({
     getFieldInfo,
     getFieldInfoByDSName,
     rebind,
@@ -441,7 +512,14 @@ const FormInfo = forwardRef((props, ref) => {
     getInvalidFields,
     getValue,
     getFieldList,
-  };
+    selectFile,
+    clearFiles,
+    getFiles,
+    refreshComponent
+  }), [
+    getFieldInfo, getFieldInfoByDSName, rebind, getInvalidFields, getValue, getFieldList,
+    dataRef.current._file, dataRef.current._thumbnail, selectFile, clearFiles, getFiles
+  ]);
 
   useImperativeHandle(ref, () => formInstance);
 
@@ -522,33 +600,8 @@ const FormInfo = forwardRef((props, ref) => {
   // region Event Handlers and Other Methods
   // ------------------------------------------------
 
-  const handleDrop = async (files, event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    const file = files[0];
-    if (!file) return SystemClass.showErrorMsg("فایلی یافت نشد !");
-
-    let thumbnail = file, compressedFile = file;
-    if (file.type !== "image/tiff") {
-      thumbnail = await FileCompressor.CreateThumbnail(file);
-      compressedFile = await FileCompressor.CompressFile(file);
-    }
-
-    const fileSizeField = fieldList.find((f) => f.fieldName === "fileSize");
-    const fileNameField = fieldList.find((f) => f.fieldName === "txtFileName");
-    if (!fileSizeField || !fileNameField) return SystemClass.showErrorMsg("فیلد های FileName یا FileSize یافت نشد!");
-
-    const uploadFileName = file.name.toLowerCase().startsWith("image.jp") ? new Date().toISOString() + ".jpeg" : file.name;
-    dataRef.current.components[fileNameField.fieldName]?.changeValue(uploadFileName);
-    dataRef.current.components[fileSizeField.fieldName]?.changeValue(file.size || "");
-
-    const uploaderButton = fieldList.find((f) => f.button_FileUpload_IsFileUpload);
-    const uploaderComponent = uploaderButton && dataRef.current.components[uploaderButton.fieldName];
-    if (uploaderComponent) {
-      uploaderComponent._thumbnail = thumbnail;
-      uploaderComponent._file = compressedFile;
-      uploaderComponent.click();
-    }
+  const handleDrop = async (files) => {
+    selectFile(files[0]);
   };
 
   const handleReloadClick = () => {
@@ -571,20 +624,28 @@ const FormInfo = forwardRef((props, ref) => {
 
   const elementGetFieldInfo = useCallback((fInfo) => {
     const Tag = ComponentUtils.getComponentTag(fInfo);
+    if (!Tag) {
+      console.error("Error: Component type not found for this fieldInfo object:", fInfo);
+    }
     if (!Tag) return null;
     return (
       <Tag
-        key={`${dataRef.current.currentComponentTerm}-${fInfo.fieldName}`}
+        key={`${fInfo.fieldName}-${componentKeys[fInfo.fieldName] || 0}`}
         fieldInfo={fInfo}
         activeComponent={props.activeComponent}
         setActiveComponent={handleChangeComponent}
         setDirtyChildren={handleChangeDirtyChildren}
-        ref={(el) => { if (el) dataRef.current.components[fInfo.fieldName] = el; }}
         parameterControl_IsActive={parameterControl_IsActive}
         setParameterControl={handleChangeParameters}
+        ref={(el) => {
+          if (el) {
+            dataRef.current.components[fInfo.fieldName] = el;
+            fInfo.component = el;
+          }
+        }}
       />
     );
-  }, [props.activeComponent]);
+  }, [props.activeComponent,componentKeys]);
 
   const elementGetFormItem = useCallback((fInfo, index) => {
     const idColName = fieldInfo.idColName || "fieldName";
@@ -719,6 +780,16 @@ const FormInfo = forwardRef((props, ref) => {
     return createHtmlBlock(pageLayoutSource, firstChild);
   }, [createHtmlBlock]);
 
+  const onDrop = useCallback((acceptedFiles) => {
+    handleDrop(acceptedFiles);
+  }, [handleDrop]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    noClick: true,
+    noKeyboard: true,
+  });
+
   if (hasError) {
     return (
       <div className="Form__container__error">
@@ -730,6 +801,10 @@ const FormInfo = forwardRef((props, ref) => {
         </Button>
       </div>
     );
+  }
+
+  if (!isReady) {
+    return null;
   }
 
   const formContent = dataRef.current.cardViewDefinition ?
@@ -749,7 +824,7 @@ const FormInfo = forwardRef((props, ref) => {
   );
 
   const formElement = (
-    <div className={"FormInfo"}>
+    <div className={"FormInfo"} key={1}>
       {dataRef.current.formMenu && formMenuContent}
       <div ref={formContainerRef} className={`FormInfo__container ${window.screen.width < 480 ? "mb-5" : ""}`}>
         {formContent}
@@ -759,11 +834,31 @@ const FormInfo = forwardRef((props, ref) => {
 
   const isUploadContainer = [...fieldList, ...menuFieldList].some((f) => f.button_FileUpload_IsFileUpload);
 
-  return isUploadContainer ? (
-    <FileDrop onDrop={handleDrop}>{formElement}</FileDrop>
-  ) : (
-    formElement
-  );
+  const BtnFileUpload = (fieldInfo.fieldInfo_List || []).find((f) => f.fieldName === "btnFileUpload");
+  let acceptFile = dataSource?.dataArray[0]?.acceptFileExtension ? dataSource?.dataArray[0]?.acceptFileExtension : "";
+
+  if (BtnFileUpload?.acceptFileExtension_Default && acceptFile === "") {
+    acceptFile = BtnFileUpload?.acceptFileExtension_Default;
+  }
+
+
+  if (isUploadContainer) {
+    return (
+      <div {...getRootProps()} className="file-drop-container">
+        <input {...getInputProps()} id={"FormInfo__fileUpload"} style={{ display: 'none' }} accept={acceptFile} />
+        {isDragActive ? <p className="file-drop-active-overlay">فایل را اینجا رها کنید...</p> : null}
+        {formElement}
+      </div>
+    );
+  } else {
+    if (BtnFileUpload) {
+      return <>
+        {formElement}
+        <input type="file" id={"FormInfo__fileUpload"} style={{ display: 'none' }} accept={acceptFile} />
+      </>
+    }
+    return formElement;
+  }
 });
 
 export default FormInfo;

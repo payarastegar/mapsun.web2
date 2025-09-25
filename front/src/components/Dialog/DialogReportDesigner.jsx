@@ -28,7 +28,6 @@ import B_Kamran from "../../content/fonts/report/B Kamran.TTF";
 import B_Nazanin from "../../content/fonts/report/B Nazanin.TTF";
 
 const DialogReportDesigner = forwardRef((props, ref) => {
-    // State management with hooks
     const [isShow, setIsShow] = useState(false);
     const [loading, setLoading] = useState(true);
     const [scriptsLoaded, setScriptsLoaded] = useState({
@@ -36,30 +35,50 @@ const DialogReportDesigner = forwardRef((props, ref) => {
         viewer: false,
         designer: false,
     });
-
-    // Use a ref to store data that doesn't trigger re-renders
     const dataRef = useRef({ mrtFileUrl: null, formModel: null });
-
     const allScriptsLoaded = Object.values(scriptsLoaded).every(Boolean);
 
-    // Expose methods to be called from outside (e.g., from SystemClass)
-    useImperativeHandle(ref, () => ({
+    const dialogInstance = {
         showDialog: (mrtFileUrl, formModel) => {
             dataRef.current = { mrtFileUrl, formModel };
             setIsShow(true);
-            setLoading(true); // Show loader when dialog opens
+            setLoading(true);
         },
         hideDialog: () => {
             setIsShow(false);
         },
-    }));
+    };
 
-    // Callback for when a script is loaded
+    useImperativeHandle(ref, () => dialogInstance, []);
+
+    useEffect(() => {
+        SystemClass.DialogReportDesignerContainer = dialogInstance;
+        return () => {
+            SystemClass.DialogReportDesignerContainer = null;
+        };
+    }, [dialogInstance]);
+
+
+    const handleKeyPress = useCallback((event) => {
+        if (event.keyCode === 27 && !SystemClass.loading) {
+            dialogInstance.hideDialog();
+        }
+    }, [dialogInstance]);
+
+    useEffect(() => {
+        if (isShow) {
+            document.addEventListener("keydown", handleKeyPress);
+        }
+        return () => {
+            document.removeEventListener("keydown", handleKeyPress);
+        };
+    }, [isShow, handleKeyPress]);
+    // <<<=======================================================================>>>
+
     const handleScriptLoad = (scriptName) => {
         setScriptsLoaded((prev) => ({ ...prev, [scriptName]: true }));
     };
-
-    // This function contains the logic to initialize the Stimulsoft Designer
+    
     const initializeDesigner = useCallback(() => {
         const { mrtFileUrl, formModel } = dataRef.current;
         if (!allScriptsLoaded || !mrtFileUrl || !formModel || !window.Stimulsoft) {
@@ -69,7 +88,6 @@ const DialogReportDesigner = forwardRef((props, ref) => {
         const Stimulsoft = window.Stimulsoft;
         Stimulsoft.Base.StiLicense.key = "6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHkcgIvwL0jnpsDqRpWg5FI5kt2G7A0tYIcUygBh1sPs7plofUOqPB1a4HBIXJB621mau2oiAIj+ysU7gKUXfjn/D5BocmduNB+ZMiDGPxFrAp3PoD0nYNkkWh8r7gBZ1v/JZSXGE3bQDrCQCNSy6mgby+iFAMV8/PuZ1z77U+Xz3fkpbm6MYQXYp3cQooLGLUti7k1TFWrnawT0iEEDJ2iRcU9wLqn2g9UiWesEZtKwI/UmEI2T7nv5NbgV+CHguu6QU4WWzFpIgW+3LUnKCT/vCDY+ymzgycw9A9+HFSzARiPzgOaAuQYrFDpzhXV+ZeX31AxWlnzjDWqpfluygSNPtGul5gyNt2CEoJD1Yom0VN9fvRonYsMsimkFFx2AwyVpPcs+JfVBtpPbTcZscnzUdmiIvxv8Gcin6sNSibM6in/uUKFt3bVgW/XeMYa7MLGF53kvBSwi78poUDigA2n12SmghLR0AHxyEDIgZGOTbNI33GWu7ZsPBeUdGu55R8w=";
 
-        // Load fonts
         const fonts = [Vazir, Nahid, IRANSansWeb, B_Titr, B_Traffic, B_Homa, B_Koodak, B_Roya, B_Yekan, B_Zar, B_Kamran, B_Nazanin];
         fonts.forEach((font, index) => {
             const fontName = ['Vazir-FD', 'Nahid-FD', 'IRANSansWeb(FaNum)'][index];
@@ -79,11 +97,10 @@ const DialogReportDesigner = forwardRef((props, ref) => {
         const report = new Stimulsoft.Report.StiReport();
         report.loadFile(mrtFileUrl);
 
-        // Prepare and register data sources
         const dataSourceForDesigner = {};
         Object.keys(formModel.dataSources).forEach((dataSourceName) => {
             const ds = formModel.dataSources[dataSourceName].dataArray;
-            const designerDataSource = JSON.parse(JSON.stringify(ds)).map((row) => {
+            dataSourceForDesigner[dataSourceName] = JSON.parse(JSON.stringify(ds)).map((row) => {
                 Object.keys(row).forEach((key) => {
                     if (typeof row[key] === "string") {
                         row[key] = row[key].replace(/!@#/g, "\n").replace(/\(\(.*?\)\)/g, "");
@@ -94,7 +111,6 @@ const DialogReportDesigner = forwardRef((props, ref) => {
                 });
                 return row;
             });
-            dataSourceForDesigner[dataSourceName] = designerDataSource;
         });
 
         const dataSet = new Stimulsoft.System.Data.DataSet("jsonDataSource");
@@ -102,24 +118,21 @@ const DialogReportDesigner = forwardRef((props, ref) => {
         report.regData(dataSet.dataSetName, "", dataSet);
         report.dictionary.synchronize();
 
-        // Configure and render the designer
         const options = new Stimulsoft.Designer.StiDesignerOptions();
         options.appearance.fullScreenMode = false;
         options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
 
         const designer = new Stimulsoft.Designer.StiDesigner(options, "StiDesigner", false);
-        designer.onExit = () => setIsShow(false);
-        designer.onClose = () => setIsShow(false);
+        designer.onExit = () => dialogInstance.hideDialog();
+        designer.onClose = () => dialogInstance.hideDialog();
         designer.report = report;
         designer.renderHtml("reportDesigner");
 
-        setLoading(false); // Hide loader after designer is rendered
-    }, [allScriptsLoaded]);
+        setLoading(false);
+    }, [allScriptsLoaded, dialogInstance]);
 
-    // Effect to initialize the designer when modal is shown and scripts are loaded
     useEffect(() => {
         if (isShow && allScriptsLoaded) {
-            // A small delay can help ensure the DOM element is ready
             setTimeout(initializeDesigner, 100);
         }
     }, [isShow, allScriptsLoaded, initializeDesigner]);
@@ -129,50 +142,27 @@ const DialogReportDesigner = forwardRef((props, ref) => {
             {isShow && (
                 <>
                     <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.reports.js`} onLoad={() => handleScriptLoad("report")} />
-                    {scriptsLoaded.report && (
-                        <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.viewer.js?v=3`} onLoad={() => handleScriptLoad("viewer")} />
-                    )}
-                    {scriptsLoaded.viewer && (
-                        <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.designer.js`} onLoad={() => handleScriptLoad("designer")} />
-                    )}
+                    {scriptsLoaded.report && <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.viewer.js?v=3`} onLoad={() => handleScriptLoad("viewer")} />}
+                    {scriptsLoaded.viewer && <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.designer.js`} onLoad={() => handleScriptLoad("designer")} />}
                 </>
             )}
-            <Modal
-                size="xl"
-                isOpen={isShow}
-                modalClassName="scroll__container"
-                className="dialog__container dialog__container--report"
-            >
+            <Modal size="xl" isOpen={isShow} modalClassName="scroll__container" className="dialog__container dialog__container--report">
                 <ModalHeader>
                     <div style={{ display: "flex", width: "100%" }}>
                         <div style={{ flex: "1" }} />
-                        <Button
-                            className="Menu__icon dialog__closeIcon"
-                            outline
-                            color="light"
-                            onClick={() => setIsShow(false)}
-                        >
+                        <Button className="Menu__icon dialog__closeIcon" outline color="light" onClick={() => dialogInstance.hideDialog()}>
                             <FontAwesome name="times-circle" />
                         </Button>
                     </div>
                 </ModalHeader>
-                <ModalBody
-                    style={{ padding: "0" }}
-                    className="dialog__body dialog__body--report"
-                >
+                <ModalBody style={{ padding: "0" }} className="dialog__body dialog__body--report">
                     {loading && (
                         <div>
                             <ProgressBar />
-                            <h5 style={{ textAlign: "center", padding: "2rem" }}>
-                                در حال بارگذاری محیط طراحی گزارش
-                            </h5>
+                            <h5 style={{ textAlign: "center", padding: "2rem" }}>در حال بارگذاری محیط طراحی گزارش</h5>
                         </div>
                     )}
-                    {/* The designer will be rendered inside this div */}
-                    <div
-                        style={{ direction: "ltr", textAlign: "left", display: loading ? 'none' : 'block' }}
-                        id="reportDesigner"
-                    />
+                    <div style={{ direction: "ltr", textAlign: "left", display: loading ? 'none' : 'block' }} id="reportDesigner" />
                 </ModalBody>
             </Modal>
         </div>

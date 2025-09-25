@@ -46,13 +46,15 @@ class SystemClass_Core {
     Object.values(SystemClass.Forms.data).forEach((formId) =>
       formId.forEach((formModel) => {
         const formComponent = formModel.formFieldInfo.component;
-        formComponent.data.fieldList.forEach((fieldInfo) => {
-          const ds = fieldInfo.component && fieldInfo.component.dataSource;
-          if (!ds || ds.idColName !== "documentCid") return;
-          if (!ds.dataArray.find((row) => row.documentCid == documentCid))
-            return;
-          fieldInfo.update();
-        });
+        if (formComponent && typeof formComponent.getFieldList === 'function') {
+          formComponent.getFieldList().forEach((fieldInfo) => {
+            const ds = fieldInfo.component && fieldInfo.component.dataSource;
+            if (!ds || ds.idColName !== "documentCid") return;
+            if (!ds.dataArray.find((row) => row.documentCid == documentCid))
+              return;
+            fieldInfo.update();
+          });
+        }
       })
     );
   }
@@ -339,14 +341,26 @@ class SystemClass_Core {
           //     formModelToUpdate.formFieldInfo.component.rebindOnlyComponentsThatNotHaveDatasource()
           // }
 
-          formModelToUpdate.formFieldInfo.component
+          const fieldsToRefresh = formModelToUpdate.formFieldInfo.component
             .getFieldList()
             .filter(
               (fieldInfo) => fieldInfo.dataSourceName == updateItem.fieldName
-            )
-            .forEach((fieldInfo) => {
-              fieldInfo.update();
+            );
+
+          if (fieldsToRefresh.length > 0) {
+            fieldsToRefresh.forEach(fieldInfo => {
+              formModelToUpdate.formFieldInfo.component.refreshComponent(fieldInfo.fieldName);
             });
+          }
+
+          // formModelToUpdate.formFieldInfo.component
+          //   .getFieldList()
+          //   .filter(
+          //     (fieldInfo) => fieldInfo.dataSourceName == updateItem.fieldName
+          //   )
+          //   .forEach((fieldInfo) => {
+          //     fieldInfo.update();
+          //   });
         });
         // setTimeout(() => SystemClass.getFieldInfo(formModelToUpdate.jsFormInfo.fieldName).rebind())
       });
@@ -371,16 +385,15 @@ class SystemClass_Core {
 
           let v = row[key];
 
-          if (typeof v === "string") {
+          if (typeof v === "string" && (v.includes('/') || v.includes('-'))) {
             try {
-              v = moment(v);
+              const mom = moment(v);
 
-              if (v && v.isValid()) {
-                v = v.format("jYYYY/jMM/jDD");
+              if (mom && mom.isValid()) {
                 //shamsi date
-                row[key + "_Shamsi"] = v;
+                row[key + "_Shamsi"] = mom.format("jYYYY/jMM/jDD");
               }
-            } catch (e) {}
+            } catch (e) { }
           }
         });
 

@@ -30,7 +30,7 @@ function Menu() {
   const [openMoreMenu, setOpenMoreMenu] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [mainMenu, setMainMenu] = useState({ menuItem_Array: [] });
-  const [userImage, setUserImage] = useState(SystemClass.getLastUserImage());
+  const [userImage, setUserImage] = useState(null);
   const [maxMenuItemInMenuBar, setMaxMenuItemInMenuBar] = useState(-1);
   const [activeMenuItems, setActiveMenuItems] = useState([]);
   const [showSearchBar, setShowSearchBar] = useState(false);
@@ -41,6 +41,8 @@ function Menu() {
   // معادل getInitialDataSources و بخشی از componentDidMount
   useEffect(() => {
     SystemClass.MenuComponent = { update, updateImage }; // اتصال متدهای مورد نیاز به SystemClass
+
+    fetchUserImage();
 
     const fetchInitialData = async () => {
       setLoaded(false);
@@ -55,7 +57,11 @@ function Menu() {
         if (menuDataSource && menuDataSource.menuItem_Array) {
           menuDataSource.menuItem_Array.sort((a, b) => a.menuItem_Tartib - b.menuItem_Tartib);
           SystemClass.MainMenuData = menuDataSource;
-          setMainMenu(menuDataSource);
+          const uniqeMenuDataSource = {...menuDataSource}
+          uniqeMenuDataSource.menuItem_Array .forEach(menuItem => {
+            menuItem["tblMenuItemIdUniq"] =  `uid_${Math.random().toString(36).substr(2, 9)}` + menuItem.tblMenuItemId 
+          });
+          setMainMenu(uniqeMenuDataSource);
         }
       } catch (error) {
         console.error("Failed to load menu data:", error);
@@ -125,12 +131,14 @@ function Menu() {
 
     if (menuItems && menuItems.length > 1 && SystemClass.tblMenuItemId_Opened) {
       const selectedMenuItem = menuItems.find(
-        (item) => item.tblMenuItemId == SystemClass.tblMenuItemId_Opened
+        (item) => item.tblMenuItemIdUniq == SystemClass.tblMenuItemId_Opened
       );
       if (selectedMenuItem) {
         menuItem = selectedMenuItem;
       }
-    } else if (menuItems && menuItems.length === 1) {
+    } 
+    
+    if (!menuItem && menuItems && menuItems.length > 0) {
       menuItem = menuItems[0];
     }
 
@@ -138,7 +146,7 @@ function Menu() {
     if (menuItem) {
       const addMenuItem = (item) => {
         if (!item) return;
-        newActiveItems.push(item.tblMenuItemId);
+        newActiveItems.push(item.tblMenuItemIdUniq);
         if (item.menuItem_ParentId) {
           addMenuItem(
             mainMenu.menuItem_Array.find((i) => item.menuItem_ParentId == i.tblMenuItemId)
@@ -149,7 +157,7 @@ function Menu() {
     }
     setActiveMenuItems(newActiveItems);
 
-  }, [window.location.pathname, mainMenu.menuItem_Array, SystemClass.FormId]);
+  }, [window.location.pathname, mainMenu.menuItem_Array, SystemClass.FormId,SystemClass.tblMenuItemId_Opened]);
 
 
   const update = () => {
@@ -158,8 +166,13 @@ function Menu() {
     setOpenMenus({});
   };
 
+  const fetchUserImage = async () => {
+    const imageUrl = await SystemClass.getLastUserImage();
+    setUserImage(imageUrl);
+  };
+
   const updateImage = () => {
-    setUserImage(SystemClass.getLastUserImage());
+    fetchUserImage();
   };
 
   const _openDialog = async (menuItem) => {
@@ -188,7 +201,7 @@ function Menu() {
   const _handleOnItemSelect = (menuItem) => {
 
     const isDashboard = menuItem.show_PageIsLoading;
-    SystemClass.tblMenuItemId_Selected = menuItem.tblMenuItemId;
+    SystemClass.tblMenuItemId_Selected = menuItem.tblMenuItemIdUniq;
     SystemClass.showCustomLoading(isDashboard);
     
     if (menuItem.menuItem_ParentId)
@@ -274,7 +287,7 @@ function Menu() {
       align === "left" && "MenuItem__dropdown-menu--en",
     ].filter(Boolean).join(" ");
 
-    const activeClass = activeMenuItems.includes(menuItem.tblMenuItemId) ? "MenuItem__button--active" : "";
+    const activeClass = activeMenuItems.includes(menuItem.tblMenuItemIdUniq) ? "MenuItem__button--active" : "";
     const menuItem_DisplayName = menuItem.menuItem_DisplayName !== "تنظیمات" ? menuItem.menuItem_DisplayName : "";
     return (
       <div
@@ -434,10 +447,10 @@ function Menu() {
           </div>
         )}
 
-        <UncontrolledDropdown nav inNavbar>
+        <UncontrolledDropdown nav inNavbar id="Menu_avatar_id">
           <DropdownToggle nav className="p-0">
             <div className="Menu__avatar-container">
-              <img className="Menu__avatar" alt="User Avatar" src={userImage || _getDefaultImage()} />
+              <img className="Menu__avatar" alt="User Avatar" src={userImage  || _getDefaultImage()} />
             </div>
           </DropdownToggle>
           <DropdownMenu className="popup">

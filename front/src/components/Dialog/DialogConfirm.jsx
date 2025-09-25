@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef, useCallback } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef, useCallback, useEffect } from "react";
 import { Button, Modal, ModalBody, ModalFooter, Input, Label, FormGroup } from "reactstrap";
 import "./Dialog.css";
 import SystemClass from "../../SystemClass";
@@ -15,7 +15,7 @@ const DialogConfirm = forwardRef((props, ref) => {
 
     const promiseRef = useRef({ resolve: null, reject: null });
 
-    useImperativeHandle(ref, () => ({
+    const dialogInstance = {
         openDialog: (message, canPostponeFlag, cid) => {
             setDontShowAgain(false);
             setCanPostpone(canPostponeFlag);
@@ -42,7 +42,16 @@ const DialogConfirm = forwardRef((props, ref) => {
                 promiseRef.current = { resolve, reject };
             });
         }
-    }));
+    };
+
+    useImperativeHandle(ref, () => dialogInstance, []);
+
+    useEffect(() => {
+        SystemClass.confirmDialogComponent = dialogInstance;
+        return () => {
+            SystemClass.confirmDialogComponent = null;
+        };
+    }, [dialogInstance]);
 
     const closeDialog = (resolveValue) => {
         if (!isShow) return;

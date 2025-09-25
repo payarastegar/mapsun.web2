@@ -30,6 +30,7 @@ class LoginContainer extends BaseComponent {
       otp: "",
       otpSend: false,
       otpTimer: 0,
+      userImage: null,
     };
 
     this.data = {
@@ -63,6 +64,7 @@ class LoginContainer extends BaseComponent {
 
     if (SystemClass.lastLoginName || this.isUsernameValid()) {
       this.state.username = SystemClass.lastLoginName || this.state.username;
+      this._loadUserImage();
       this._handleLoginClick();
     }
   }
@@ -99,7 +101,7 @@ class LoginContainer extends BaseComponent {
     let lastLogin;
     try {
       lastLogin = JSON.parse(SystemClass.getLastLogin(loginName));
-    } catch (e) {}
+    } catch (e) { }
 
     const lastOtp = SystemClass.getLastOtp(loginName);
     const lastPemKey = SystemClass.getLastPemKey(loginName);
@@ -123,7 +125,10 @@ class LoginContainer extends BaseComponent {
     )
       .then((json) => {
         if (json.captcha) this.data.captchaBase64 = json.captcha;
-        if (json.pemKey) this.data.pemKey = json.pemKey;
+        if (json.pemKey) {
+          // SystemClass.setPemKey(json.pemKey);
+          this.data.pemKey = json.pemKey;
+        }
 
         //user can not change password in some databases
         if (json.userCanChangePassword !== undefined)
@@ -257,20 +262,15 @@ class LoginContainer extends BaseComponent {
       });
   };
 
+
   _setUserImage = (loginName, documentCid_UserImage) => {
-    fetch(WebService.getFileUrl("/files/" + documentCid_UserImage)).then(
-      async (res) => {
-        const blob = await res.blob();
+    fetch(WebService.getFileUrl("/files/" + documentCid_UserImage))
+      .then(res => res.blob())
+      .then(blob => {
         if (blob) {
-          const fileReader = new FileReader();
-          fileReader.readAsDataURL(blob);
-          fileReader.onloadend = function() {
-            // console.log(fileReader.result)
-            SystemClass.setLastUserImage(loginName, fileReader.result);
-          };
+          SystemClass.setLastUserImage(loginName, blob);
         }
-      }
-    );
+      });
   };
 
   _setLastLoginInfo = (newUserInfo, json) => {
@@ -320,6 +320,8 @@ class LoginContainer extends BaseComponent {
 
         clearInterval(this.data.otpIntervalId);
       }
+
+      this._loadUserImage();
 
       this.getLoginPage().then((i) => {
         SystemClass.lastLoginName = this.state.username;
@@ -482,23 +484,17 @@ class LoginContainer extends BaseComponent {
       !this.state.loading
     );
   };
-
-  _getUserImage = (loginName) => {
+  
+  _loadUserImage = async (loginName) => {
     loginName = loginName || this.state.username;
     if (!loginName) return;
 
-    const userImage = SystemClass.getLastUserImage(loginName);
-    if (!userImage) return;
-
-    return userImage;
-
-    return (
-      WebService.URL.webService_baseAddress +
-      "api/files/" +
-      userImage +
-      "/?userInfo=" +
-      encodeURIComponent(SystemClass.getLastLogin(loginName))
-    );
+    try {
+      const imageUrl = await SystemClass.getLastUserImage(loginName);
+      this.setState({ userImage: imageUrl });
+    } catch (error) {
+      console.error("Failed to load user image:", error);
+    }
   };
 
   _getDefaultImage = () => {
@@ -559,7 +555,7 @@ class LoginContainer extends BaseComponent {
           >
             <img
               className="LoginContainer__userImage LoginContainer__image"
-              src={this._getUserImage() || this._getDefaultImage()}
+              src={this.state.userImage || this._getDefaultImage()}
               alt=""
             />
           </div>

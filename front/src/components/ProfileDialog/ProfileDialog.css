@@ -2,14 +2,15 @@
     max-width: 400px;
     width: 400px;
     overflow: hidden;
-    margin: auto;
+    margin: 0 auto !important;
 }
+
 
 .ProfileDialog__header {
     clip-path: ellipse(100% 168% at 50% -70%);
     min-height: 6rem;
     color: rgb(255, 255, 255);
-    background: #424242 !important;
+    background: #4285f4 !important;
 }
 
 .ProfileDialog__headerBar {
@@ -58,6 +59,7 @@
     width: 100%;
     height: 100%;
     border-radius: 50%;
+    background-color: aliceblue;
 }
 
 .ProfileDialog__avatarHover {

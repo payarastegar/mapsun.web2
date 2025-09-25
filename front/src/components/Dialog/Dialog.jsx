@@ -1,4 +1,4 @@
-import React, { useState, useRef, useImperativeHandle, forwardRef, useCallback } from "react";
+import React, { useState, useRef, useImperativeHandle, forwardRef, useCallback , useEffect} from "react";
 import { Button, Modal, ModalHeader, ModalBody } from "reactstrap";
 import "./Dialog.css";
 import SystemClass from "../../SystemClass";
@@ -35,8 +35,12 @@ const Dialog = forwardRef((props, ref) => {
         top: 0,
     });
 
-    const createModalItem = (formId, paramList, formFieldInfo, closeDialogCallback) => {
+    const createModalItem = useCallback((formId, paramList, formFieldInfo, closeDialogCallback) => {
         const formModel = SystemClass.getFormModel(formId, paramList);
+        if (!formModel) {
+            console.error(`FormModel not found for formId: ${formId}`);
+            return null; 
+        }
         const jsFieldInfo = formModel.jsFormInfo;
 
         const newFormFieldInfo = SystemClass.createFormInfo(
@@ -55,11 +59,12 @@ const Dialog = forwardRef((props, ref) => {
             formFieldInfo: newFormFieldInfo,
             closeDialogCallback,
         };
-    };
+    }, []); 
 
-    useImperativeHandle(ref, () => ({
+    const dialogInstance = {
         openDialog: (formId, paramList, formFieldInfo, closeDialogCallback) => {
             const modalItem = createModalItem(formId, paramList, formFieldInfo, closeDialogCallback);
+            if (!modalItem) return; 
             
             setModalList(currentList => {
                 const filteredList = currentList.filter(item => 
@@ -83,7 +88,16 @@ const Dialog = forwardRef((props, ref) => {
         anyDialogOpen: () => {
             return modalList.some(item => item.isShow);
         }
-    }));
+    }
+
+    useImperativeHandle(ref, () => dialogInstance, [createModalItem,modalList]);
+
+    useEffect(() => {
+        SystemClass.DialogComponent = dialogInstance;
+        return () => {
+            SystemClass.DialogComponent = null;
+        };
+    }, [dialogInstance]); 
 
     const setDirtyModal = (modalItem) => {
         setModalList(currentList => 

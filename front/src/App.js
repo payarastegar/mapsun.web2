@@ -1,5 +1,5 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 
 import CSSImporter from "./CSSImporter";
@@ -7,6 +7,7 @@ import SystemClass from "./SystemClass";
 import Logger from "./Logger";
 import WebService from "./WebService";
 import UiSetting, { isLocalInternet_Front } from "./UiSetting";
+import { navigationService } from "./NavigationService";
 
 // Import components
 import Menu from "./components/Menu/Menu";
@@ -42,6 +43,44 @@ import cryptoJs from "crypto-js";
 // Initialize system-wide settings
 CSSImporter.init();
 
+const NavigationHandler = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    navigationService.navigate = navigate;
+  }, [navigate]);
+
+  return null;
+};
+
+const ConditionalLoadingContainer = ({ loadingContainerRef }) => {
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith('/auth');
+  return <LoadingContainer ref={loadingContainerRef} showFullLoading={isAuthPage}/>;
+};
+
+const ConditionalToastContainer = ({ isLtr }) => {
+  const location = useLocation();
+  const isAuthPage = location.pathname.startsWith('/auth');
+
+  const toastStyle = isAuthPage ? { top: "1em" } : {};
+  const toastBodyClasses = `toast-scroll ${!isLtr ? "toast-rtl" : ""}`;
+
+  return (
+    <ToastContainer
+      style={toastStyle}
+      closeButton={false}
+      rtl={!isLtr}
+      autoClose={3000}
+      pauseOnHover={true}
+      hideProgressBar={false}
+      closeOnClick
+      bodyClassName={toastBodyClasses}
+    />
+  );
+};
+
+
 function App() {
   // State management using useState hook
   const [isLtr, setIsLtr] = useState(false);
@@ -51,8 +90,7 @@ function App() {
   const dialogConfirmRef = useRef(null);
   const dialogReportDesignerRef = useRef(null);
   const dialogReportViewerRef = useRef(null);
-  const profileDialogRef = useRef(null); // Ref for ProfileDialog as well
-  // const formContainerRef = useRef(null);
+  const profileDialogRef = useRef(null);
   const loadingContainerRef = useRef(null);
 
   // This effect runs once after the initial render, similar to componentDidMount
@@ -63,15 +101,7 @@ function App() {
     window.nodeRsa = nodeRsa;
     window.cryptoJs = cryptoJs;
 
-    // Connect refs to SystemClass so other parts of the app can call their methods
-    SystemClass.DialogComponent = dialogRef.current;
-    SystemClass.confirmDialogComponent = dialogConfirmRef.current;
-    SystemClass.DialogReportDesignerContainer = dialogReportDesignerRef.current;
-    SystemClass.DialogReportViewerContainer = dialogReportViewerRef.current;
     SystemClass.ProfileDialog = profileDialogRef.current;
-    // SystemClass.FormContainer = formContainerRef.current;
-
-    // Provide a way for SystemClass to interact with the App component's state
     SystemClass.AppComponent = loadingContainerRef.current;
 
     // Set initial language and direction
@@ -84,12 +114,12 @@ function App() {
     if (!isLocalInternet_Front) {
       if (!document.getElementById('pushe-web-script')) {
         const script = document.createElement("script");
-        script.id = 'pushe-web-script'; 
+        script.id = 'pushe-web-script';
         script.src = "https://static.pushe.co/pusheweb.js";
-        script.async = true; 
+        script.async = true;
         document.body.appendChild(script);
       }
-    } 
+    }
 
   }, []); // Empty dependency array ensures this runs only once
 
@@ -126,12 +156,13 @@ function App() {
     </Fragment>
   );
 
-  const toastBodyClasses = `toast-scroll ${!isLtr ? "toast-rtl" : ""}`;
-
   return (
     <div className="App">
       <BrowserRouter>
+        <NavigationHandler />
         <RouteChangeListener />
+        <ConditionalToastContainer isLtr={isLtr} />
+        <ConditionalLoadingContainer loadingContainerRef={loadingContainerRef} />
         <ErrorBoundary>
           <Routes>
             {/* Public Routes */}
@@ -163,7 +194,6 @@ function App() {
               path="/form/:formId/:dialogFormId?"
               element={
                 <LayoutWithMenu>
-                  {/* Ensure FormContainer is rendered */}
                   <FormContainer />
                 </LayoutWithMenu>
               }
@@ -189,18 +219,6 @@ function App() {
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>
-
-      <ToastContainer
-        // style={{ top: "1em" }}
-        closeButton={false}
-        rtl={!isLtr}
-        autoClose={3000}
-        pauseOnHover={true}
-        hideProgressBar={false}
-        closeOnClick
-        bodyClassName={toastBodyClasses}
-      />
-      <LoadingContainer ref={loadingContainerRef} />
     </div>
   );
 }

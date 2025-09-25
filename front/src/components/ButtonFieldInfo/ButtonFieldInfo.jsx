@@ -79,13 +79,35 @@ class ButtonFieldInfo extends ButtonFieldInfo_Core {
       styleInput.color = this.fieldInfo.fontColor;
     }
 
-    // A unique ID for the tooltip to target
-    const elementId = `button_${this.fieldInfo.fieldName}_${this.fieldInfo.formId}`;
+    const row = this.fieldInfo._row;
+    const idColName = this.fieldInfo._grid?.dataSource?.idColName;
+
+    let uniqueRowId;
+    if (row && idColName && row[idColName]) {
+      uniqueRowId = row[idColName];
+    } else {
+      uniqueRowId = `uid_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    let parentFieldInfo = this.fieldInfo?._parentFieldInfo;
+    let formCid_parent = parentFieldInfo?.formCid;
+    if (!formCid_parent) {
+      for (let index = 0; index < 100; index++) {
+        formCid_parent = parentFieldInfo?._parentFieldInfo?.formCid;
+        if (formCid_parent)
+          break;
+        parentFieldInfo = parentFieldInfo?._parentFieldInfo;
+        if (!parentFieldInfo)
+          break;
+      }
+    }
+
+    const elementId = `button_${this.fieldInfo.fieldCid}_${formCid_parent}_${uniqueRowId}`;
 
     return (
       <div
         ref={this.nodeRef}
-        id={elementId} // An ID is needed for UncontrolledTooltip
+        id={elementId}
         style2={{ display: "inline" }}
         className={[
           "TextFieldInfo",

@@ -2,9 +2,13 @@ import { toast } from "react-toastify";
 // import { createBrowserHistory } from "history"; // تغییر ۱: این خط به طور کامل حذف شد
 import WebService from "./WebService";
 import SystemClass_Core from "./SystemClass_Core";
+import DBUtils from "./DBUtils";
 import UiSetting from "./UiSetting";
 import React from "react";
 import moment from "moment-jalaali";
+import { navigationService } from "./NavigationService";
+
+let currentPemKey = null;
 
 class SystemClass extends SystemClass_Core {
   //------------------------------------------------
@@ -67,26 +71,34 @@ class SystemClass extends SystemClass_Core {
 
     window.localStorage._lastLogin = "";
     window.localStorage._lastLoginExpire = "";
+    SystemClass.clearPemKey();
   }
 
   static setLastOtp(loginName, otp) {
     return (window.localStorage["_otp_" + loginName] = otp);
   }
 
-  static getLastUserImage(loginName) {
+
+  static async getLastUserImage(loginName) {
     if (!loginName) {
-      loginName = WebService.getUserInfo();
-      loginName = loginName.login && loginName.login.loginName;
+      const userInfo = WebService.getUserInfo();
+      loginName = userInfo.login && userInfo.login.loginName;
     }
-    return window.localStorage["_userImage_" + loginName];
+    if (!loginName) return null;
+
+    const imageBlob = await DBUtils.get(`_userImage_${loginName}`);
+    if (imageBlob) {
+      return URL.createObjectURL(imageBlob);
+    }
+    return null;
   }
 
-  static setLastUserImage(loginName, documentCid_UserImage) {
-    SystemClass.MenuComponent && SystemClass.MenuComponent.updateImage();
+  static async setLastUserImage(loginName, imageBlob) {
+    await DBUtils.set(`_userImage_${loginName}`, imageBlob);
 
-    return (window.localStorage[
-      "_userImage_" + loginName
-    ] = documentCid_UserImage);
+    if (SystemClass.MenuComponent && typeof SystemClass.MenuComponent.updateImage === 'function') {
+      SystemClass.MenuComponent.updateImage();
+    }
   }
 
   static setLastPemKey(loginName, pemKey) {
@@ -122,6 +134,46 @@ class SystemClass extends SystemClass_Core {
   //------------------------------------------------
   //endregion
   //------------------------------------------------
+
+  //------------------------------------------------
+  //region Pem Key
+  //------------------------------------------------
+  static setPemKey(key) {
+    currentPemKey = key;
+  }
+
+  static getPemKey() {
+    return currentPemKey;
+  }
+
+  static clearPemKey() {
+    currentPemKey = null;
+  }
+
+  static async ensurePemKey() {
+    if (currentPemKey) {
+      return true;
+    }
+
+    const userInfo = WebService.getUserInfo();
+    if (userInfo && userInfo.login) {
+      console.log("pemKey not found, fetching from server for current session...");
+      try {
+        const json = await new WebService(WebService.URL.webService_GetSessionPemKey, {});
+        if (json && json.pemKey) {
+          SystemClass.setPemKey(json.pemKey);
+          return true;
+        } else {
+          SystemClass.showErrorMsg("خطا در دریافت کلید امنیتی جلسه.");
+          return false;
+        }
+      } catch (error) {
+        SystemClass.showErrorMsg("خطا در ارتباط برای دریافت کلید امنیتی.");
+        return false;
+      }
+    }
+    return false;
+  }
 
   //------------------------------------------------
   //region loading
@@ -246,13 +298,12 @@ class SystemClass extends SystemClass_Core {
   // };
 
   static pushLink = (link, state) => {
-    // این متد باید در کامپوننت‌ها با استفاده از هوک useNavigate جایگزین شود
-    // اما برای حفظ سازگاری موقت، می‌توان از window.location استفاده کرد
-    // یا یک راه حل مبتنی بر event emitter پیاده‌سازی کرد.
-    // فعلاً ساده‌ترین راه برای جلوگیری از خطا، تغییر مسیر مستقیم است.
-    window.location.href = link;
-    console.error("SystemClass.pushLink is deprecated. Use useNavigate hook in components.");
-
+    if (navigationService.navigate) {
+      navigationService.navigate(link, { state });
+    } else {
+      console.error("Navigation service has not been initialized yet.");
+      window.location.href = link;
+    }
   };
 
   static setFormParam = (formName, params) => {
@@ -273,7 +324,8 @@ class SystemClass extends SystemClass_Core {
   };
 
   static handleUnauthorizeError(error) {
-    SystemClass.DialogComponent?.cancelAllDialogs();
+    if (SystemClass.anyDialogOpen())
+      SystemClass.DialogComponent?.cancelAllDialogs();
     SystemClass.pushLink("/auth/login");
     SystemClass.showErrorMsg(
       UiSetting.GetSetting("language") === "fa"
@@ -303,12 +355,17 @@ class SystemClass extends SystemClass_Core {
   static DialogComponent;
 
   static openDialog(formId, formParams, formFieldInfo, closeDialogCallback) {
-    SystemClass.DialogComponent.openDialog(
-      formId,
-      formParams,
-      formFieldInfo,
-      closeDialogCallback
-    );
+    if (SystemClass.DialogComponent && typeof SystemClass.DialogComponent.openDialog === 'function') {
+      SystemClass.DialogComponent.openDialog(
+        formId,
+        formParams,
+        formFieldInfo,
+        closeDialogCallback
+      );
+    }
+    else {
+      console.error("DialogComponent is not ready. Cannot open dialog.");
+    }
   }
 
   static cancelDialog(formId, formParams) {
@@ -329,25 +386,6 @@ class SystemClass extends SystemClass_Core {
   //region Dialog Report
   //------------------------------------------------
   static DialogReportComponent;
-
-  static openDialog(formId, formParams, formFieldInfo, closeDialogCallback) {
-    SystemClass.DialogComponent.openDialog(
-      formId,
-      formParams,
-      formFieldInfo,
-      closeDialogCallback
-    );
-  }
-
-  static cancelDialog(formId, formParams) {
-    SystemClass.DialogComponent.cancelDialog(formId, formParams);
-  }
-
-  static anyDialogOpen() {
-    return (
-      SystemClass.DialogComponent && SystemClass.DialogComponent.anyDialogOpen()
-    );
-  }
 
   //------------------------------------------------
   //endregion Dialog

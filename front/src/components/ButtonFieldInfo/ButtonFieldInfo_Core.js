@@ -173,11 +173,13 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
     }
 
     if (notSendGrid) {
-      formFieldInfo.component.data.fieldList
-        .filter((fieldInfo) => fieldInfo.fieldType == FieldType.Grid)
-        .forEach((fieldInfo) => {
-          formValue[fieldInfo.fieldName] = undefined;
-        });
+      if (formFieldInfo.component && typeof formFieldInfo.component.getFieldList === 'function') {
+        formFieldInfo.component.getFieldList()
+          .filter((fieldInfo) => fieldInfo.fieldType == FieldType.Grid)
+          .forEach((fieldInfo) => {
+            formValue[fieldInfo.fieldName] = undefined;
+          });
+      }
     }
 
     fieldValues = Utils.mergeObject(fieldValues, formValue || {});
@@ -346,7 +348,7 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
         ];
         const mrtFileUrlForView = WebService.getFileUrl(
           this.fieldInfo._row[
-            this.fieldInfo.dataSource_Link_FieldName || "documentHyperLink"
+          this.fieldInfo.dataSource_Link_FieldName || "documentHyperLink"
           ]
         );
         //download file with name and url
@@ -385,7 +387,7 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
         ];
         const mrtFileUrl = WebService.getFileUrl(
           this.fieldInfo._row[
-            this.fieldInfo.dataSource_Link_FieldName || "documentHyperLink"
+          this.fieldInfo.dataSource_Link_FieldName || "documentHyperLink"
           ]
         );
         //download file with name and url
@@ -473,7 +475,7 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
 
         //refresh form after close next dialog
         //callback to pass to dialog to run when closed
-        let closeDialogCallback = () => {};
+        let closeDialogCallback = () => { };
 
         if (this.fieldInfo.button_DataSourceName_ToUpdate_After_FormClose) {
           //to check after this time call update webservice then update form
@@ -537,12 +539,17 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
         )
           .then((jsFormFieldInfo) => {
             if (!jsFormFieldInfo) return;
-            SystemClass.openDialog(
-              buttonFormId,
-              openDialogParams,
-              formFieldInfo,
-              closeDialogCallback
-            );
+            if(SystemClass.openDialog && typeof SystemClass.openDialog === 'function'){
+              SystemClass.openDialog(
+                buttonFormId,
+                openDialogParams,
+                formFieldInfo,
+                closeDialogCallback
+              );
+            }
+            else {
+              console.error("SystemClass.openDialog not found!")
+            }
           })
           .finally(() => SystemClass.setLoading(false));
         break;
@@ -565,7 +572,7 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
               )
               return
             })
-            console.log(otherInfo)
+          console.log(otherInfo)
         }
         //get value of form to update
         fieldValues = this._getIdListValue(formFieldInfo);
@@ -641,12 +648,14 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
         let thumbnail;
         let file;
         if (isFileUpload) {
-          thumbnail = formFieldInfo.component._thumbnail;
-          file = formFieldInfo.component._file;
+          const formComponent = this.getFormInfo().component;
+          const files = formComponent.getFiles();
+          thumbnail = files.thumbnail;
+          file = files.file;
 
           const handleGetFile = (files) => {
             if (files[0]) {
-              formFieldInfo.component.selectFile(files[0]);
+              formComponent.selectFile(files[0]);
             }
           };
 
@@ -753,14 +762,12 @@ class ButtonFieldInfo_Core extends TextFieldInfo {
                 { binary_1: file },
                 true
               ).then((js) => {
-                formFieldInfo.component._thumbnail = null;
-                formFieldInfo.component._file = null;
-                formFieldInfo.component._insertFile();
+                formFieldInfo.component.clearFiles();
                 //ignore
               });
             }
           })
-          .catch((error) => {})
+          .catch((error) => { })
           .finally(() => SystemClass.setLoading(false));
 
         if (

@@ -43,8 +43,7 @@
   fill: #d0d0d0d0;
 }
 
-.Menu__logo [featurekey="symbol1"] {
-}
+.Menu__logo [featurekey="symbol1"] {}
 
 .Menu__container {
   display: flex;
@@ -57,7 +56,7 @@
   /* padding: .125rem 0; */
 }
 
-.MenuItem > button {
+.MenuItem>button {
   border-radius: 0;
 }
 
@@ -65,10 +64,14 @@
   background-color: #6db6ff;
 }
 
-.popup > .MenuItem__item > span {
+.popup>.MenuItem__item>span {
   color: #6b6b6b;
   display: inline-block;
   padding-top: 3px;
+}
+
+#Menu_avatar_id::marker {
+  color: transparent;
 }
 
 .Menu__avatar {
@@ -86,7 +89,8 @@
   width: 3rem;
   position: relative;
   cursor: pointer;
-  direction: rtl; /* write by Ali Kamel*/
+  direction: rtl;
+  /* write by Ali Kamel*/
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
     0 2px 1px -1px rgba(0, 0, 0, 0.12);
   transition: all 0.4s ease-in-out;
@@ -188,17 +192,11 @@
   color: #f9f9f9;
 }
 
-.MenuItem__dropdown-menu
-  > .MenuItem
-  > .MenuItem__item
-  > .MenuItem__displayName {
+.MenuItem__dropdown-menu>.MenuItem>.MenuItem__item>.MenuItem__displayName {
   color: #212529;
 }
 
-.MenuItem__dropdown-menu
-  > .MenuItem
-  > .MenuItem__item
-  > .MenuItem__button__icon {
+.MenuItem__dropdown-menu>.MenuItem>.MenuItem__item>.MenuItem__button__icon {
   color: #212529;
   display: inline-block;
 }
@@ -269,8 +267,7 @@
   padding: 2px;
 }
 
-.MenuItem__dropdown-menu--show .MenuItem__button {
-}
+.MenuItem__dropdown-menu--show .MenuItem__button {}
 
 .MenuItem__item {
   display: flex;
@@ -344,7 +341,8 @@
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.15);
 
-  opacity: 0; /* TODO*/
+  opacity: 0;
+  /* TODO*/
 }
 
 .Menu__input {
@@ -356,8 +354,7 @@
   flex: 1;
 }
 
-.Menu__signal {
-}
+.Menu__signal {}
 
 .Menu__signal__icon {
   transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -396,10 +393,8 @@
   border-radius: 1.75rem;
   width: 5rem;
 
-  animation: Menu__janeshin 1s cubic-bezier(0.65, 0.05, 0.36, 1) infinite
-    alternate;
-  -webkit-animation: Menu__janeshin 1s cubic-bezier(0.65, 0.05, 0.36, 1)
-    infinite alternate;
+  animation: Menu__janeshin 1s cubic-bezier(0.65, 0.05, 0.36, 1) infinite alternate;
+  -webkit-animation: Menu__janeshin 1s cubic-bezier(0.65, 0.05, 0.36, 1) infinite alternate;
 }
 
 .MenuItem__janeshinBar {
@@ -435,8 +430,7 @@
     background-color: #4285f4;
   }
 
-  @media (max-width: 480px) {
-  }
+  @media (max-width: 480px) {}
 
   .Menu__search-icon__container {
     display: flex;

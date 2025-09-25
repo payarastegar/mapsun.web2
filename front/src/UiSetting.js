@@ -14,6 +14,12 @@ const defaultSettings = {
 
 
 const settings = {
+  TestMapsun: {
+    ...defaultSettings,
+    mapsunSite_Address: "http://mapsunclienttest.ir/",
+    webService_baseAddress: "https://api.mapsunapp.ir/",
+    sendPusheNothification: true,
+  },
   Mapsun: {
     ...defaultSettings,
     mapsunSite_Address: "https://mapsunapp.ir/",

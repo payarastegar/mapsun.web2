@@ -17,20 +17,51 @@ const LoadingContainer = forwardRef((props, ref) => {
         event && event.preventDefault();
       }
     },
-    [show] 
+    [show]
   );
 
-  const renderCustomLoader = () => {
+  const renderCustomDot = (index,delay,size = 10 ) => {
+    const wrapper = {
+      position: "absolute",
+      width: "100%",
+      height: "100%",
+      animation: "chase-and-gather 2s infinite linear",
+      animationDelay: `${delay}s`
+    }
+    const styleDot = {
+      width: `${size}px`,
+      height: `${size}px`,
+      position: "absolute",
+      top: "0",
+      left: "50%",
+      transform: "translateX(-50%)",
+      backgroundColor: "#4285F4",
+      borderRadius: "50%",
+    }
     return (
-      <div className="spinner-container">
-        <div className="dot-wrapper follower follower-1"><div className="dot small"></div></div>
-        <div className="dot-wrapper follower follower-2"><div className="dot small"></div></div>
-        <div className="dot-wrapper follower follower-3"><div className="dot small"></div></div>
-        <div className="dot-wrapper follower follower-4"><div className="dot small"></div></div>
-        <div className="dot-wrapper leader"><div className="dot big"></div></div>
+      <div style={wrapper} key={`spinner_wrapper_${index}`}>
+        <div style={styleDot} key={`spinner_dot_${index}`}></div>
       </div>
     );
   };
+
+  const renderCustomLoader = () => {
+    let followers = []
+    for (let i = 5; i >= 0; i--) {
+      // const size = 15 - (i * 2)
+      // followers.push(renderCustomDot(i,i * 0.12,size))
+      followers.push(renderCustomDot(i,i * 0.12))
+    }
+    return (
+      <div className="spinner-container" key="spinner_1">
+        {followers}
+      </div>
+    );
+  };
+
+  const { showFullLoading } = props;
+
+  const style = showFullLoading ? {} : { top: "3.75rem" }
 
   return (
     <div
@@ -39,8 +70,9 @@ const LoadingContainer = forwardRef((props, ref) => {
       onKeyPress={_handleEvents}
       id="maskDisable"
       className={"maskDisable"}
+      style={style}
     >
-      {show && renderCustomLoader()}
+      {(show) && renderCustomLoader()}
     </div>
   );
 });

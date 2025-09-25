@@ -32,6 +32,7 @@ class ProfileDialog extends BaseComponent {
             closeAll: false,
 
             tab: 'passEdit',
+            userImage: null,
             needOtp: true
         };
 
@@ -55,6 +56,10 @@ class ProfileDialog extends BaseComponent {
         //         lastItem && this.cancelDialog(lastItem.formId, lastItem.paramList)
         //     }
         // });
+    }
+
+    componentDidMount() {
+        this._loadUserImage();
     }
 
     showDialog = (show) => {
@@ -251,14 +256,14 @@ class ProfileDialog extends BaseComponent {
         }
     }
 
-    _getUserImage = (loginName) => {
-        const userImage = SystemClass.getLastUserImage()
-        if (!userImage) return
-
-        return userImage
-
-        return WebService.URL.webService_baseAddress + 'api/files/' + userImage + "/?userInfo=" + encodeURIComponent(SystemClass.getLastLogin(loginName))
-    }
+    _loadUserImage = async (loginName) => {
+        try {
+            const imageUrl = await SystemClass.getLastUserImage();
+            this.setState({ userImage: imageUrl });
+        } catch (error) {
+            console.error("Failed to load user image:", error);
+        }
+    };
 
     // endregion element
     render() {
@@ -275,6 +280,7 @@ class ProfileDialog extends BaseComponent {
         // const inputPasswordErrorClass = this.data.saveTry == 0 || this.isPasswordValid() ? '' : 'LoginContainer__alert'
 
         const inputPasswordErrorClass = ''
+
 
         return (
             <div id="DialogContainer" className={["dialog"].filter(c => c).join(' ')}
@@ -325,7 +331,7 @@ class ProfileDialog extends BaseComponent {
                                     {/*<input className="ProfileDialog__inputFile" type="file" accept="image/*"*/}
                                     {/*onChange={this._handleImageUpload}/>*/}
                                     <img className="ProfileDialog__avatar"
-                                        src={this._getUserImage() || defaultUserImage}
+                                        src={this.state.userImage || defaultUserImage}
                                     />
                                     {/*<div className="ProfileDialog__avatarHover">*/}
                                     {/*<FontAwesome className={'ProfileDialog__uploadIcon'} name="camera"/>*/}
@@ -345,8 +351,8 @@ class ProfileDialog extends BaseComponent {
                             <Button outline
                                 className={["ProfileDialog__tabButton", tab === 'passEdit' && "ProfileDialog__tabButton--active"].filter(c => c).join(' ')}
                                 onClick={this._handleOnTabClick.bind(this, 'passEdit')}>
-                                <FontAwesome className={'ml-2'} name="user-lock" />
                                 تغییر رمز
+                                <FontAwesome className={'ml-2'} name="user-lock" />
                             </Button>
                         </div>
                     </div>
@@ -459,11 +465,16 @@ class ProfileDialog extends BaseComponent {
                                     </div>
                                 }
 
-                                <div className="mt-4">
-                                    <Button outline onClick={this._handleOnSave}
-                                        disabled={!this.isValid()}>
-                                        <FontAwesome className={'ml-2'} name="save" />
+                                <div className="mt-4"
+                                    style={{ display: "flex", justifyContent: "center" }}
+                                >
+                                    <Button outline
+                                        onClick={this._handleOnSave}
+                                        disabled={!this.isValid()}
+                                        style={{ backgroundColor: "green", color: "white" }}
+                                    >
                                         تغییر رمزعبور
+                                        <FontAwesome className={'ml-2'} name="save" />
                                     </Button>
                                 </div>
                             </form>

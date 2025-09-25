@@ -274,7 +274,7 @@ body {
 
 .maskDisable {
   position: fixed;
-  top: 3.75rem;
+  top: 0;
   bottom: 0;
   right: 0;
   left: 0;
@@ -314,60 +314,6 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-
-.dot-wrapper {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    animation: chase-and-gather 2s infinite linear;
-}
-
-
-.dot {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #4285F4;
-    border-radius: 50%;
-}
-
-.leader .dot.big {
-    width: 10px;
-    height: 10px;
-}
-.follower-1 .dot {
-    width: 10px;
-    height: 10px;
-}
-.follower-2 .dot {
-    width: 10px;
-    height: 10px;
-}
-.follower-3 .dot {
-    width: 10px;
-    height: 10px;
-}
-.follower-4 .dot {
-    width: 10px;
-    height: 10px;
-}
-
-.leader {
-    animation-delay: 0s;
-}
-.follower-1 {
-    animation-delay: 0.12s;
-}
-.follower-2 {
-    animation-delay: 0.24s;
-}
-.follower-3 {
-    animation-delay: 0.36s;
-}
-.follower-4 {
-    animation-delay: 0.48s;
-}
 
 .invalid-feedback {
   /*display: block !important;*/
