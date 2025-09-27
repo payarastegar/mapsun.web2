@@ -1,52 +1,25 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback, useRef } from "react";
+import React, { useState, useRef, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Button, Modal, ModalHeader, ModalBody } from "reactstrap";
-import Script from "react-load-script";
-import FontAwesome from "react-fontawesome";
-
-import SystemClass from "../../SystemClass";
-import Utils from "../../Utils";
-import WebService from "../../WebService";
-import ProgressBar from "../ProgressBar/ProgressBar";
-
-// Import CSS
 import "./Dialog.css";
-import "../StimulSoftReport/Themes/stimulsoft.designer.office2013.whiteblue.css";
-import "../StimulSoftReport/Themes/stimulsoft.viewer.office2013.whiteblue.css";
-
-// Import Fonts
-import Vazir from "../../content/fonts/Vazir-Bold-FD.woff";
-import Nahid from "../../content/fonts/Nahid-FD.woff";
-import IRANSansWeb from "../../content/IRANSans/Farsi_numerals/webFonts/fonts/woff/IRANSansWeb(FaNum).woff";
-import B_Titr from "../../content/fonts/report/B Titr Bold.TTF";
-import B_Traffic from "../../content/fonts/report/B Traffic.TTF";
-import B_Homa from "../../content/fonts/report/B Homa.TTF";
-import B_Koodak from "../../content/fonts/report/B Koodak Outline.TTF";
-import B_Roya from "../../content/fonts/report/B Roya.TTF";
-import B_Yekan from "../../content/fonts/report/B Yekan.TTF";
-import B_Zar from "../../content/fonts/report/B Zar.TTF";
-import B_Kamran from "../../content/fonts/report/B Kamran.TTF";
-import B_Nazanin from "../../content/fonts/report/B Nazanin.TTF";
+import SystemClass from "../../SystemClass";
+import FontAwesome from "react-fontawesome";
+import ProgressBar from "../ProgressBar/ProgressBar";
 
 const DialogReportDesigner = forwardRef((props, ref) => {
     const [isShow, setIsShow] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [scriptsLoaded, setScriptsLoaded] = useState({
-        report: false,
-        viewer: false,
-        designer: false,
-    });
+    const [isLoading, setIsLoading] = useState(true);
     const dataRef = useRef({ mrtFileUrl: null, formModel: null });
-    const allScriptsLoaded = Object.values(scriptsLoaded).every(Boolean);
+    const iframeRef = useRef(null);
 
     const dialogInstance = {
         showDialog: (mrtFileUrl, formModel) => {
             dataRef.current = { mrtFileUrl, formModel };
             setIsShow(true);
-            setLoading(true);
+            setIsLoading(true); 
         },
         hideDialog: () => {
             setIsShow(false);
-        },
+        }
     };
 
     useImperativeHandle(ref, () => dialogInstance, []);
@@ -58,114 +31,61 @@ const DialogReportDesigner = forwardRef((props, ref) => {
         };
     }, [dialogInstance]);
 
-
-    const handleKeyPress = useCallback((event) => {
-        if (event.keyCode === 27 && !SystemClass.loading) {
-            dialogInstance.hideDialog();
-        }
-    }, [dialogInstance]);
-
-    useEffect(() => {
-        if (isShow) {
-            document.addEventListener("keydown", handleKeyPress);
-        }
-        return () => {
-            document.removeEventListener("keydown", handleKeyPress);
-        };
-    }, [isShow, handleKeyPress]);
-    // <<<=======================================================================>>>
-
-    const handleScriptLoad = (scriptName) => {
-        setScriptsLoaded((prev) => ({ ...prev, [scriptName]: true }));
-    };
-    
-    const initializeDesigner = useCallback(() => {
-        const { mrtFileUrl, formModel } = dataRef.current;
-        if (!allScriptsLoaded || !mrtFileUrl || !formModel || !window.Stimulsoft) {
-            return;
-        }
-
-        const Stimulsoft = window.Stimulsoft;
-        Stimulsoft.Base.StiLicense.key = "6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHkcgIvwL0jnpsDqRpWg5FI5kt2G7A0tYIcUygBh1sPs7plofUOqPB1a4HBIXJB621mau2oiAIj+ysU7gKUXfjn/D5BocmduNB+ZMiDGPxFrAp3PoD0nYNkkWh8r7gBZ1v/JZSXGE3bQDrCQCNSy6mgby+iFAMV8/PuZ1z77U+Xz3fkpbm6MYQXYp3cQooLGLUti7k1TFWrnawT0iEEDJ2iRcU9wLqn2g9UiWesEZtKwI/UmEI2T7nv5NbgV+CHguu6QU4WWzFpIgW+3LUnKCT/vCDY+ymzgycw9A9+HFSzARiPzgOaAuQYrFDpzhXV+ZeX31AxWlnzjDWqpfluygSNPtGul5gyNt2CEoJD1Yom0VN9fvRonYsMsimkFFx2AwyVpPcs+JfVBtpPbTcZscnzUdmiIvxv8Gcin6sNSibM6in/uUKFt3bVgW/XeMYa7MLGF53kvBSwi78poUDigA2n12SmghLR0AHxyEDIgZGOTbNI33GWu7ZsPBeUdGu55R8w=";
-
-        const fonts = [Vazir, Nahid, IRANSansWeb, B_Titr, B_Traffic, B_Homa, B_Koodak, B_Roya, B_Yekan, B_Zar, B_Kamran, B_Nazanin];
-        fonts.forEach((font, index) => {
-            const fontName = ['Vazir-FD', 'Nahid-FD', 'IRANSansWeb(FaNum)'][index];
-            Stimulsoft.Base.StiFontCollection.addOpentypeFontFile(font, fontName);
-        });
-
-        const report = new Stimulsoft.Report.StiReport();
-        report.loadFile(mrtFileUrl);
-
-        const dataSourceForDesigner = {};
-        Object.keys(formModel.dataSources).forEach((dataSourceName) => {
-            const ds = formModel.dataSources[dataSourceName].dataArray;
-            dataSourceForDesigner[dataSourceName] = JSON.parse(JSON.stringify(ds)).map((row) => {
-                Object.keys(row).forEach((key) => {
-                    if (typeof row[key] === "string") {
-                        row[key] = row[key].replace(/!@#/g, "\n").replace(/\(\(.*?\)\)/g, "");
-                    }
-                    if (Array.isArray(row[key]) || Utils.isObject(row[key])) {
-                        row[key] = undefined;
-                    }
-                });
-                return row;
+    // وقتی iframe به طور کامل بارگذاری شد، داده‌ها را به آن ارسال می‌کنیم
+    const handleIframeLoad = () => {
+        if (isShow && iframeRef.current) {
+            const { mrtFileUrl, formModel } = dataRef.current;
+            const dataSourceForViewer = {};
+             Object.keys(formModel.dataSources).forEach((dataSourceName) => {
+                dataSourceForViewer[dataSourceName] = formModel.dataSources[dataSourceName].dataArray;
             });
-        });
 
-        const dataSet = new Stimulsoft.System.Data.DataSet("jsonDataSource");
-        dataSet.readJson(dataSourceForDesigner);
-        report.regData(dataSet.dataSetName, "", dataSet);
-        report.dictionary.synchronize();
-
-        const options = new Stimulsoft.Designer.StiDesignerOptions();
-        options.appearance.fullScreenMode = false;
-        options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
-
-        const designer = new Stimulsoft.Designer.StiDesigner(options, "StiDesigner", false);
-        designer.onExit = () => dialogInstance.hideDialog();
-        designer.onClose = () => dialogInstance.hideDialog();
-        designer.report = report;
-        designer.renderHtml("reportDesigner");
-
-        setLoading(false);
-    }, [allScriptsLoaded, dialogInstance]);
-
-    useEffect(() => {
-        if (isShow && allScriptsLoaded) {
-            setTimeout(initializeDesigner, 100);
+            const message = {
+                action: 'renderReport',
+                mrtFileUrl: mrtFileUrl,
+                dataSource: JSON.stringify(dataSourceForViewer),
+            };
+            
+            // ارسال پیام به iframe
+            iframeRef.current.contentWindow.postMessage(message, '*');
+            setIsLoading(false); // مخفی کردن لودر
         }
-    }, [isShow, allScriptsLoaded, initializeDesigner]);
+    };
 
     return (
-        <div className="dialog">
-            {isShow && (
-                <>
-                    <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.reports.js`} onLoad={() => handleScriptLoad("report")} />
-                    {scriptsLoaded.report && <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.viewer.js?v=3`} onLoad={() => handleScriptLoad("viewer")} />}
-                    {scriptsLoaded.viewer && <Script url={`${WebService.URL.mapsunSite_Address}/content/stimulsoft.designer.js`} onLoad={() => handleScriptLoad("designer")} />}
-                </>
-            )}
-            <Modal size="xl" isOpen={isShow} modalClassName="scroll__container" className="dialog__container dialog__container--report">
-                <ModalHeader>
-                    <div style={{ display: "flex", width: "100%" }}>
-                        <div style={{ flex: "1" }} />
-                        <Button className="Menu__icon dialog__closeIcon" outline color="light" onClick={() => dialogInstance.hideDialog()}>
-                            <FontAwesome name="times-circle" />
-                        </Button>
+        <Modal size="xl" isOpen={isShow} modalClassName="scroll__container" className="dialog__container dialog__container--report">
+            <ModalHeader>
+                <div style={{ display: "flex", width: "100%" }}>
+                    <span>طراحی گزارش</span>
+                    <div style={{ flex: "1" }} />
+                    <Button className="Menu__icon dialog__closeIcon" outline color="light" onClick={() => dialogInstance.hideDialog()}>
+                        <FontAwesome name="times-circle" />
+                    </Button>
+                </div>
+            </ModalHeader>
+            <ModalBody style={{ padding: '0', height: '80vh', overflow: 'visible' }} className="dialog__body dialog__body--report">
+                {isLoading && (
+                    <div style={{textAlign: 'center', paddingTop: '2rem'}}>
+                        <ProgressBar />
+                        <h5 style={{margin:"1rem"}}>در حال آماده‌سازی محیط گزارش...</h5>
                     </div>
-                </ModalHeader>
-                <ModalBody style={{ padding: "0" }} className="dialog__body dialog__body--report">
-                    {loading && (
-                        <div>
-                            <ProgressBar />
-                            <h5 style={{ textAlign: "center", padding: "2rem" }}>در حال بارگذاری محیط طراحی گزارش</h5>
-                        </div>
-                    )}
-                    <div style={{ direction: "ltr", textAlign: "left", display: loading ? 'none' : 'block' }} id="reportDesigner" />
-                </ModalBody>
-            </Modal>
-        </div>
+                )}
+                {isShow && (
+                    <iframe
+                        ref={iframeRef}
+                        src="/report-designer.html"
+                        onLoad={handleIframeLoad}
+                        title="Report Viewer"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            border: 'none',
+                            visibility: isLoading ? 'hidden' : 'visible'
+                        }}
+                    />
+                )}
+            </ModalBody>
+        </Modal>
     );
 });
 

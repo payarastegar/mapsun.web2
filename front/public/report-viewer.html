@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html style="height: 100%; width: 100%; margin: 0; padding: 0;">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Report Viewer</title>
+    <link rel="stylesheet" type="text/css" href="/content/Themes/stimulsoft.viewer.office2013.whiteblue.css">
+    <link rel="stylesheet" type="text/css" href="/content/Themes/stimulsoft.designer.office2013.whiteblue.css">
+    <script type="text/javascript" src="/content/stimulsoft.reports.js"></script>
+    <script type="text/javascript" src="/content/stimulsoft.viewer.js?v=3"></script>
+    <style>
+        /* حذف هرگونه حاشیه اضافی */
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+
+        /* .stiJsViewerParentMenu {
+            position: absolute;
+            background: floralwhite;
+            border: gray solid 2px;
+            border-radius: 5px;
+        }
+
+        .stiJsViewerMenu > .stiJsViewerMenuStandartItem:hover {
+            background-color: gray;
+        } */
+    </style>
+</head>
+
+<body style="text-align: right;">
+
+    <div id="viewerContent" style="height: 100%; width: 100%;"></div>
+
+    <script type="text/javascript">
+        // لیست فونت‌ها و مسیر آن‌ها در پوشه public
+        const fontFiles = [
+            { url: '\\content\\fonts\\Vazir-Bold-FD.woff', name: 'Vazir-FD' },
+            { url: '\\content\\fonts\\Nahid-FD.woff', name: 'Nahid-FD' },
+            // { url: '\\content\\fonts\\IRANSansWeb(FaNum).woff', name: 'IRANSansWeb(FaNum)' },
+            { url: '\\content\\fonts\\report\\B Titr Bold.TTF' },
+            { url: '\\content\\fonts\\report\\B Traffic.TTF' },
+            { url: '\\content\\fonts\\report\\B Homa.TTF' },
+            { url: '\\content\\fonts\\report\\B Koodak Outline.TTF' },
+            { url: '\\content\\fonts\\report\\B Roya.TTF' },
+            { url: '\\content\\fonts\\report\\B Yekan.TTF' },
+            { url: '\\content\\fonts\\report\\B Zar.TTF' },
+            { url: '\\content\\fonts\\report\\B Kamran.TTF' },
+            { url: '\\content\\fonts\\report\\B Nazanin.TTF' },
+        ];
+
+        // تابعی برای بارگذاری تمام فونت‌ها به صورت غیرهمزمان
+        async function loadFonts() {
+            // Stimulsoft.Base.StiFontCollection.addOpentypeFontFile خودش یک Promise برمی‌گرداند
+            const fontPromises = fontFiles.map(font =>
+                Stimulsoft.Base.StiFontCollection.addOpentypeFontFile(font.url, font.name)
+            );
+
+            try {
+                await Promise.all(fontPromises);
+                console.log("All fonts loaded successfully.");
+            } catch (error) {
+                console.error("Error loading fonts:", error);
+            }
+        }
+
+        // منتظر دریافت پیام از برنامه اصلی React می‌مانیم
+        window.addEventListener('message', async function (event) {
+            const data = event.data;
+            if (!data || !data.action || data.action !== 'renderReport') {
+                return;
+            }
+
+            document.getElementById('viewerContent').innerHTML = '';
+            console.log("Iframe received data, preparing to render report...");
+
+            // تنظیم لایسنس
+            Stimulsoft.Base.StiLicense.key = "6vJhGtLLLz2GNviWmUTrhSqnOItdDwjBylQzQcAOiHkcgIvwL0jnpsDqRpWg5FI5kt2G7A0tYIcUygBh1sPs7plofUOqPB1a4HBIXJB621mau2oiAIj+ysU7gKUXfjn/D5BocmduNB+ZMiDGPxFrAp3PoD0nYNkkWh8r7gBZ1v/JZSXGE3bQDrCQCNSy6mgby+iFAMV8/PuZ1z77U+Xz3fkpbm6MYQXYp3cQooLGLUti7k1TFWrnawT0iEEDJ2iRcU9wLqn2g9UiWesEZtKwI/UmEI2T7nv5NbgV+CHguu6QU4WWzFpIgW+3LUnKCT/vCDY+ymzgycw9A9+HFSzARiPzgOaAuQYrFDpzhXV+ZeX31AxWlnzjDWqpfluygSNPtGul5gyNt2CEoJD1Yom0VN9fvRonYsMsimkFFx2AwyVpPcs+JfVBtpPbTcZscnzUdmiIvxv8Gcin6sNSibM6in/uUKFt3bVgW/XeMYa7MLGF53kvBSwi78poUDigA2n12SmghLR0AHxyEDIgZGOTbNI33GWu7ZsPBeUdGu55R8w=";
+
+            await loadFonts();
+
+            // ساخت گزارش
+            const report = new Stimulsoft.Report.StiReport();
+            report.loadFile(data.mrtFileUrl);
+
+            // آماده‌سازی دیتاسورس
+            const dataSet = new Stimulsoft.System.Data.DataSet("jsonDataSource");
+            dataSet.readJson(data.dataSource);
+            report.regData(dataSet.dataSetName, "", dataSet);
+            report.dictionary.synchronize();
+
+            // تنظیمات Viewer
+            const options = new Stimulsoft.Viewer.StiViewerOptions();
+            options.appearance.scrollbarsMode = true;
+            options.appearance.fullScreenMode = false;
+            options.toolbar.showDesignButton = true;
+            options.height = "100%";
+            options.toolbar.printDestination = Stimulsoft.Viewer.StiPrintDestination.Direct;
+            options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
+            // options.toolbar.menuContainer = document.getElementById('viewerContent');
+
+            // ساخت و رندر Viewer
+            const viewer = new Stimulsoft.Viewer.StiViewer(options, "StiViewer", false);
+            viewer.report = report;
+            viewer.renderHtml("viewerContent");
+        });
+    </script>
+</body>
+
+</html>
